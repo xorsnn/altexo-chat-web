@@ -1,0 +1,19 @@
+
+div(style="position:fixed;z-index:100;left:20px;top:20px")
+  //- img(ng-src=require('../../../img/logo_dark.svg'), height=50)
+
+video.local.md-whiteframe-2dp(id='localVideo', autoplay='true', muted='true',
+  width='320px', height='240px', style='display:none')
+
+video.remote.md-whiteframe-2dp(id='remoteVideo', autoplay='true',
+  width='320px', height='240px', style='display:none')
+
+al-video-stream
+altexo-web-rtc-view(chat='chat', ng-if='chat.hasRoom()')
+
+div(style="position:fixed;z-index:100;left:20px;bottom:20px", ng-init='enterRoom(chat)')
+  h5 Room: {{ chat.roomName|uppercase }}
+  - var dbg = process.env.NODE_ENV == 'dev' || DEBUG;
+  if dbg
+    p Candidates sent: {{ iceSent }}
+    p Candidates received: {{ iceReceived }}

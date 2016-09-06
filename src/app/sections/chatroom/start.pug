@@ -1,0 +1,14 @@
+
+section.md-padding(layout='row', flex='')
+  al-used-rooms
+  md-content(flex, layout-padding)
+    h3 Create a chat room and invite your friends
+    form
+      div(layout='column', style={width: '50vw'})
+        md-input-container
+          label Enter room name
+          input(ng-model='room.name', required='')
+        md-checkbox(ng-model='room.kurento', ng-change="kurentoClick(room.kurento)")
+          | Kurento
+        div(layout='row', layout-align='end')
+          md-button.md-raised(ng-click='createRoom(chat, room)') Create

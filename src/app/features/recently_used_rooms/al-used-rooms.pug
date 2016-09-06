@@ -1,0 +1,22 @@
+md-sidenav(
+    class="md-sidenav-left",
+    md-component-id="left",
+    md-is-locked-open="$mdMedia('gt-sm')",
+    md-whiteframe="4")
+  md-toolbar(class="md-theme-indigo", layout="row", layout-align="left center")
+    img(ng-src="${require('../../../img/logo_white.svg')}", height=50, style="margin-left:16px")
+  md-content(layout-padding)
+    md-list(flex)
+      md-subheader(class="md-no-sticky") Recently used rooms
+      md-list-item(class="md-3-line",
+        ng-repeat="room in $ctrl.AlRoomsService.usedRooms track by $index",
+        ng-click="$ctrl.onUsedRoomClicked(room)")
+        div(class="md-list-item-text", layout="column")
+          h3 {{ room }}
+      md-divider
+
+//- md-button(ng-click="close()", class="md-primary", hide-gt-sm)
+//-   | Close Sidenav Left
+//- p(hide, show-gt-sm)
+//-   | This sidenav is locked open on your device. To go back to the default behavior,
+//-   | narrow your display.
