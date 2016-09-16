@@ -8,7 +8,7 @@ section.md-padding(layout='row', flex='')
         md-input-container
           label Enter room name
           input(ng-model='room.name', required='')
-        md-checkbox(ng-model='room.kurento', ng-change="kurentoClick(room.kurento)")
-          | Kurento
+        //- md-checkbox(ng-model='room.kurento', ng-change="kurentoClick(room.kurento)")
+        //-   | Kurento
         div(layout='row', layout-align='end')
           md-button.md-raised(ng-click='createRoom(chat, room)') Create

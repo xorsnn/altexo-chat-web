@@ -3,8 +3,10 @@ angular.module('AltexoApp')
 
 .controller 'StartStreamCtrl',
 ($scope, $location, AuthTokenService, AlRoomsService, Storage) ->
-  defaultKurentoUse = Storage.get('defaultKurentoUse')
-  defaultKurentoUse = defaultKurentoUse == true ? true : false
+  # TODO: make default kurento use false untill payment configured
+  # defaultKurentoUse = Storage.get('defaultKurentoUse')
+  # defaultKurentoUse = defaultKurentoUse == true ? true : false
+  defaultKurentoUse = false
 
   $scope.room = {
     name: AlRoomsService.getLatestRoom()
