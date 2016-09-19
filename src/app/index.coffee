@@ -1,7 +1,5 @@
 'use strict'
 
-Raven = require('raven-js')
-
 Raven.config(AL_SENTRY_ENDPOINT, {
   ignoreUrls: [ /<raven_urls_to_ignore>/ ]
 } ).addPlugin(require('raven-js/plugins/angular'), angular).install()
