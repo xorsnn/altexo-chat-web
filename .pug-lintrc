@@ -1,2 +1,3 @@
-{ "extends": "clock"
+{
+  "extends": "clock"
 }
