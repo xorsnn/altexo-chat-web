@@ -12,8 +12,8 @@ class AlVideoStreamController
 
     @webglRenderer = Detector.webgl
     @reflectionShader = {
-      frag: require("raw!../../../shaders/reflection.frag")
-      vert: require("raw!../../../shaders/reflection.vert")
+      frag: require('raw!../../../shaders/reflection.frag')
+      vert: require('raw!../../../shaders/reflection.vert')
     }
     @reqAnimFrame = null
 
@@ -122,7 +122,7 @@ class AlVideoStreamController
     else
       materialReflection = new THREE.ShaderMaterial({
         uniforms: {
-          "map": { value: @remoteTexture }
+          'map': { value: @remoteTexture }
         }
         vertexShader: @reflectionShader.vert
         fragmentShader: @reflectionShader.frag
@@ -130,29 +130,29 @@ class AlVideoStreamController
         # depthTest: false
         # depthWrite: false
         transparent: true
-			})
+      } )
 
     #
 
     plane = new THREE.PlaneGeometry( 320, 240, 4, 4 )
 
     @mesh = new THREE.Mesh( plane, material )
-    @mesh.position.x = -320
-    @mesh.rotation.y = Math.PI/6
+    @mesh.position.x = - 320
+    @mesh.rotation.y = Math.PI / 6
     @scene.add(@mesh)
 
     unless @webglRenderer
       @mesh = new THREE.Mesh( plane, materialReflection )
-      @mesh.position.y = -240
-      @mesh.position.x = -320
-      @mesh.rotation.y = -Math.PI/6
+      @mesh.position.y = - 240
+      @mesh.position.x = - 320
+      @mesh.rotation.y = - Math.PI / 6
       @mesh.rotation.x = - Math.PI
       @scene.add( @mesh )
     else
       @mesh = new THREE.Mesh( plane, materialReflection )
-      @mesh.position.y = -240
-      @mesh.position.x = -320
-      @mesh.rotation.y = Math.PI/6
+      @mesh.position.y = - 240
+      @mesh.position.x = - 320
+      @mesh.rotation.y = Math.PI / 6
       @scene.add( @mesh )
 
     return
@@ -192,11 +192,15 @@ class AlVideoStreamController
       @textureReflection = new THREE.Texture( @imageReflection )
       @textureReflection.minFilter = THREE.LinearFilter
 
-      materialReflection = new THREE.MeshBasicMaterial( { map: @textureReflection, side: THREE.BackSide, overdraw: 0.5 } )
+      materialReflection = new THREE.MeshBasicMaterial( {
+        map: @textureReflection,
+        side: THREE.BackSide,
+        overdraw: 0.5
+      } )
     else
       materialReflection = new THREE.ShaderMaterial({
         uniforms: {
-          "map": { value: @texture }
+          'map': { value: @texture }
         }
         vertexShader: @reflectionShader.vert
         fragmentShader: @reflectionShader.frag
@@ -204,7 +208,7 @@ class AlVideoStreamController
         # depthTest: false
         # depthWrite: false
         transparent: true
-			})
+      } )
 
     #
 
@@ -212,21 +216,21 @@ class AlVideoStreamController
 
     @mesh = new THREE.Mesh( plane, material )
     @mesh.position.x = 320
-    @mesh.rotation.y = -Math.PI/6
+    @mesh.rotation.y = - Math.PI / 6
     @scene.add(@mesh)
 
     unless @webglRenderer
       @mesh = new THREE.Mesh( plane, materialReflection )
-      @mesh.position.y = -240
+      @mesh.position.y = - 240
       @mesh.position.x = 320
-      @mesh.rotation.y = Math.PI/6
+      @mesh.rotation.y = Math.PI / 6
       @mesh.rotation.x = - Math.PI
       @scene.add( @mesh )
     else
       @mesh = new THREE.Mesh( plane, materialReflection )
-      @mesh.position.y = -240
+      @mesh.position.y = - 240
       @mesh.position.x = 320
-      @mesh.rotation.y = -Math.PI/6
+      @mesh.rotation.y = - Math.PI / 6
       @scene.add( @mesh )
 
     return
@@ -265,7 +269,7 @@ class AlVideoStreamController
     if @webglRenderer
       material = new THREE.SpriteMaterial({
         color: 0x0808080,
-      })
+      } )
     else
       material = new THREE.SpriteCanvasMaterial({
         color: 0x0808080,
@@ -274,14 +278,13 @@ class AlVideoStreamController
           context.arc( 0, 0, 0.5, 0, PI2, true )
           context.fill()
           return
-      })
+      } )
 
     for ix in [0...amountx]
       for iy in [0...amounty]
         particle = new THREE.Sprite( material )
         particle.position.x = ix * separation - ( ( amountx * separation ) / 2 )
-        particle.position.y = -120
-        # particle.position.y = 0
+        particle.position.y = - 120
         particle.position.z = iy * separation - ( ( amounty * separation ) / 2 )
         particle.scale.x = particle.scale.y = 2
         @scene.add( particle )

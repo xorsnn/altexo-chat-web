@@ -6,7 +6,11 @@ angular.module('AltexoApp')
 
   $scope.viewLink = ->
     $location.absUrl().replace(/([^:\/])\/.+/,
-      "$1/chat/room/#{$scope.chat.roomName}")
+      "$1/room/#{$scope.chat.roomName}")
+
+  $scope.onLogoClick = ->
+    $location.path('/')
+    return
 
   $scope.$on '$destroy', ->
     $scope.chat.leaveRoom()
