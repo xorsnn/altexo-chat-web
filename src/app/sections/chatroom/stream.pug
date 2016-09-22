@@ -1,6 +1,6 @@
 
 div(style="position:fixed;z-index:100;left:20px;top:20px")
-  img(ng-src="${require('../../../img/logo_dark.svg')}", height=50)
+  img(ng-src="${require('../../../img/logo_dark.svg')}", height=50, ng-click="onLogoClick()")
 
 video.local.md-whiteframe-2dp(id='localVideo', autoplay='true', muted='true',
   width='320px', height='240px', style='display:none')
