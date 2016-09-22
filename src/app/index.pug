@@ -18,11 +18,7 @@ html(lang='en')
     meta(property="og:site_name", content="altexo.com")
 
     link(rel='icon',type='image/png', href='/img/favicon.png')
-
-    if DEBUG == 'true'
-      base(href='/')
-    else
-      base(href='/')
+    base(href='/')
 
   body(layout='row', ng-cloak='', ng-controller='RootCtrl')
     ng-view(layout='column', flex='grow', style='overflow-y:hidden;overflow-x:hidden;position:relative')
