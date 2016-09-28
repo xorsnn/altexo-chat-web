@@ -118,7 +118,11 @@ class AlVideoStreamController
       @remoteTextureReflection = new THREE.Texture( @remoteImageReflection )
       @remoteTextureReflection.minFilter = THREE.LinearFilter
 
-      materialReflection = new THREE.MeshBasicMaterial( { map: @remoteTextureReflection, side: THREE.BackSide, overdraw: 0.5 } )
+      materialReflection = new THREE.MeshBasicMaterial( {
+        map: @remoteTextureReflection,
+        side: THREE.BackSide,
+        overdraw: 0.5
+      } )
     else
       materialReflection = new THREE.ShaderMaterial({
         uniforms: {
@@ -126,9 +130,6 @@ class AlVideoStreamController
         }
         vertexShader: @reflectionShader.vert
         fragmentShader: @reflectionShader.frag
-        # blending: THREE.AdditiveBlending
-        # depthTest: false
-        # depthWrite: false
         transparent: true
       } )
 
@@ -204,9 +205,6 @@ class AlVideoStreamController
         }
         vertexShader: @reflectionShader.vert
         fragmentShader: @reflectionShader.frag
-        # blending: THREE.AdditiveBlending
-        # depthTest: false
-        # depthWrite: false
         transparent: true
       } )
 
