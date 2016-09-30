@@ -18,4 +18,6 @@ module.exports = function () {
   require('../../../bower_components/angular-promisify/dist/denodeify.js');
 
   global.Raven = require('raven-js');
+
+  require('../../vendor/modernizr/modernizr-custom.js');
 };

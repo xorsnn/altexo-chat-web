@@ -1,0 +1,19 @@
+{
+  "minify": false,
+  "options": [
+    "setClasses"
+  ],
+  "feature-detects": [
+    "test/canvas",
+    "test/json",
+    "test/requestanimationframe",
+    "test/video",
+    "test/webgl",
+    "test/websockets",
+    "test/css/animations",
+    "test/css/flexbox",
+    "test/svg/asimg",
+    "test/webrtc/getusermedia",
+    "test/webrtc/peerconnection"
+  ]
+}
