@@ -1,43 +1,49 @@
 'use strict'
+AlModernizr = require('./al-modernizr.class.coffee')
 
 Raven.config(AL_SENTRY_ENDPOINT, {
   ignoreUrls: [ /<raven_urls_to_ignore>/ ]
 } ).addPlugin(require('raven-js/plugins/angular'), angular).install()
 
-APP = angular.module 'AltexoApp', ['ngMaterial', 'ngRoute', 'ngRaven', 'denodeify']
+alModernizr = new AlModernizr()
 
-# TODO: move to a separate file for root ctrl
-require('./_services/chat.service.coffee')
-APP
-.controller 'RootCtrl',
-($scope, AltexoChat) ->
-  $scope.chat = new AltexoChat()
-  return
+if alModernizr.check()
+  APP = angular.module 'AltexoApp', ['ngMaterial', 'ngRoute', 'ngRaven', 'denodeify']
 
-APP
-.factory 'httpRequestInterceptor',
-(AuthTokenService) -> {
-  request: (config) ->
-    unless AuthTokenService.auth_token then config
-    else _.extend config, {
-      headers: _.defaults {
-        'Authorization': "Token #{AuthTokenService.auth_token}"
-      } , config.headers
-      }
-}
+  # TODO: move to a separate file for root ctrl
+  require('./_services/chat.service.coffee')
+  APP
+  .controller 'RootCtrl',
+  ($scope, AltexoChat) ->
+    $scope.chat = new AltexoChat()
+    return
 
-require('./_services/auth-token.service.coffee')
-require('./_services/storage.service.coffee')
-require('./_services/al-rooms.service.coffee')
-require('./config.coffee')
+  APP
+  .factory 'httpRequestInterceptor',
+  (AuthTokenService) -> {
+    request: (config) ->
+      unless AuthTokenService.auth_token then config
+      else _.extend config, {
+        headers: _.defaults {
+          'Authorization': "Token #{AuthTokenService.auth_token}"
+        } , config.headers
+        }
+  }
 
-##
-# Features
-#
-require('./features/video_stream/index.coffee')
-require('./features/recently_used_rooms/index.coffee')
+  require('./_services/auth-token.service.coffee')
+  require('./_services/storage.service.coffee')
+  require('./_services/al-rooms.service.coffee')
+  require('./config.coffee')
 
-# TODO: take a look later and may be move to 'features'
-require('./sections/chatroom/web-rtc-view.directive.coffee')
+  ##
+  # Features
+  #
+  require('./features/video_stream/index.coffee')
+  require('./features/recently_used_rooms/index.coffee')
 
-module.exports = APP
+  # TODO: take a look later and may be move to 'features'
+  require('./sections/chatroom/web-rtc-view.directive.coffee')
+
+  module.exports = APP
+else
+  module.exports = null
