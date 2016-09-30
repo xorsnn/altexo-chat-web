@@ -2,14 +2,14 @@ EventEmitter = require('eventemitter').EventEmitter
 
 angular.module('AltexoApp')
 .constant 'RpcError', -> {
-  PARSE_ERROR: -32700
-  INVALID_REQUEST: -32600
-  METHOD_NOT_FOUND: -32601
-  INVALID_PARAMS: -32602
-  INTERNAL_ERROR: -32603
+  PARSE_ERROR: - 32700
+  INVALID_REQUEST: - 32600
+  METHOD_NOT_FOUND: - 32601
+  INVALID_PARAMS: - 32602
+  INTERNAL_ERROR: - 32603
 }
 .factory 'JsonRpc', ($q, RpcError) ->
-  
+
   class JsonRpc extends EventEmitter
 
     rpc: {}
@@ -57,7 +57,8 @@ angular.module('AltexoApp')
       return
 
     request: (method, params) ->
-      requestId = Math.floor(Math.random()*1e9)
+      # TODO: think about not random ids
+      requestId = Math.floor(Math.random() * 1e9)
       unless params
         this._send { id: requestId, method }
       else
