@@ -21,10 +21,8 @@ angular.module('AltexoApp')
     # add room to used
     AlRoomsService.roomUsed(room.name)
 
-    chat.ensureOpen()
-    .then -> chat.authenticate(AuthTokenService.auth_token)
-    .then -> chat.createRoom(room.name, (not room.kurento))
-    .then -> $location.path('/stream')
+    $location.path("/room/#{room.name}")
+    return
 
   $scope.$on 'alUsedRoomClicked', (event, roomClicked) ->
     $scope.room.name = roomClicked

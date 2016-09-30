@@ -49,9 +49,13 @@ angular.module('AltexoApp')
       this.rpc.request('room/open', [name, p2p])
       .then => this._setRoom(name, p2p)
 
-    enterRoom: (name) ->
+    enterRoom: (name, errorCb = null) ->
       this.rpc.request('room/enter', [name])
-      .then => this._setRoom(name, null)
+      .then (res) =>
+        this._setRoom(name, null)
+        $q (resolve) -> resolve(true)
+      , (err) =>
+        $q (resolve, reject) -> reject(err)
 
     leaveRoom: ->
       this.rpc.request('room/leave')

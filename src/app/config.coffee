@@ -5,9 +5,6 @@ require('./sections/chatroom/start.pug')
 require('./sections/chatroom/stream.ctrl.coffee')
 require('./sections/chatroom/stream.pug')
 
-require('./sections/chatroom/live-view.ctrl.coffee')
-require('./sections/chatroom/view.pug')
-
 angular.module('AltexoApp')
 .config ($httpProvider, $routeProvider, $locationProvider, $mdThemingProvider) ->
   $httpProvider.interceptors.push 'httpRequestInterceptor'
@@ -18,10 +15,6 @@ angular.module('AltexoApp')
     controller: 'StartStreamCtrl'
   }
   .when '/room/:room', {
-    templateUrl: 'sections/chatroom/view.pug'
-    controller: 'LiveViewCtrl'
-  }
-  .when '/stream', {
     templateUrl: 'sections/chatroom/stream.pug'
     controller: 'StreamCtrl'
   }

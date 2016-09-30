@@ -2,11 +2,11 @@
 angular.module('AltexoApp')
 
 .controller 'StreamCtrl',
-($scope, $location) ->
+($scope, $location, $routeParams) ->
 
   $scope.viewLink = ->
     $location.absUrl().replace(/([^:\/])\/.+/,
-      "$1/room/#{$scope.chat.roomName}")
+      "$1/room/#{$routeParams.room}")
 
   $scope.onLogoClick = ->
     $location.path('/')
