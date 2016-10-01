@@ -1,0 +1,22 @@
+md-content.al-experiment-content(class="md-padding", layout='row', flex='grow')
+  .md-whiteframe-2dp.al-stream-content(id="modelSpace", flex='grow',
+    layout='column', ng-class="{ 'dark-background': $ctrl.styles.darkBackground }")
+    .al-experiment-cp(layout='row', layout-align="start center", style="padding:10px")
+      a(href='https://altexo.com/')
+        .al-logo-block(id="gui", layout='row', ng-class="{ 'dark-background': $ctrl.styles.darkBackground }")
+          div(layout='row', layout-align='center center')
+            img(src="${require('../../../img/logo_dark.svg')}", height='50')
+
+    div(flex, layout="row", layout-align="center center")
+      div
+        h3 SOME FEATURES ON THIS PAGE ARE <br> NOT AVAILABLE IN YOUR BROWSER.
+
+        h3 PLEASE, CHECK THAT YOUR VERSION <br> OF A BROWSER SUPPORTS:
+        ul
+          li(ng-repeat='feature in AlNotSupportedCtrl.unsupportedFeatures track by $index') {{ feature }}
+
+        h3 WE RECOMMEND USING FOLLOWING BROWSERS:
+        ul
+          li - Chrome
+          li - Firefox
+          li - Opera
