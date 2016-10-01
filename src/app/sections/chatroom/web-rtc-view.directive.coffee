@@ -2,12 +2,14 @@ require('../../_services/web-rtc-peer.service.coffee')
 
 angular.module('AltexoApp')
 
-.directive 'altexoWebRtcView', (WebRtcPeer, $routeParams, AuthTokenService) -> {
+.directive 'altexoWebRtcView', (WebRtcPeer, $routeParams, AuthTokenService, AlRoomsService) -> {
   restrict: 'E'
   template: '<ng-transclude/>'
   transclude: true
   link: ($scope, $element, attrs) ->
     chat = $scope.$eval(attrs.chat)
+    # add room to used
+    AlRoomsService.roomUsed($routeParams.room)
 
     # TODO: untill kurento configured consider allways p2p
     # waitCall = $scope.$eval(attrs.waitCall ? 'false')

@@ -18,8 +18,6 @@ angular.module('AltexoApp')
     return
 
   $scope.createRoom = (chat, room) ->
-    # add room to used
-    AlRoomsService.roomUsed(room.name)
 
     $location.path("/room/#{room.name}")
     return
