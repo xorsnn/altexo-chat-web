@@ -1,14 +1,20 @@
 
 section.md-padding(layout='row', flex='')
   al-used-rooms
-  md-content(flex, layout-padding)
+  md-content(flex, layout-padding, layout='column', layout-align='center center')
+    p
+      | Free one 2 one 3D video and holographic calls.
+      | <br>No login required — no installs
     h3 Create a chat room and invite your friends
     form
-      div(layout='column', style={width: '50vw'})
-        md-input-container
+      div(layout-xs='column', layout='row', style={width: '50vw'})
+        md-input-container(flex)
           label Enter room name
           input(ng-model='room.name', required='')
+          md-tooltip(md-direction='top', md-visible='tooltipVisible') Enter your cool room name here, or use automatically generated.
+        md-button.md-raised(ng-click='createRoom(chat, room)', style='height: 36px;') Create
         //- md-checkbox(ng-model='room.kurento', ng-change="kurentoClick(room.kurento)")
         //-   | Kurento
-        div(layout='row', layout-align='end')
-          md-button.md-raised(ng-click='createRoom(chat, room)') Create
+
+    //- p
+    //-   | Create a room -> Copy & share the link -> Enjoy our cool 3D environment
