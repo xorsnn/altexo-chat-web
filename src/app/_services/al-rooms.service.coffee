@@ -1,5 +1,6 @@
 
 class AlRoomsService
+  usedRooms: []
   ### @ngInject ###
   constructor: (Storage) ->
     @storage = Storage
@@ -19,7 +20,12 @@ class AlRoomsService
   getLatestRoom: () ->
     for room in @usedRooms
       return room
-    return String(Math.floor(Math.random()*1e9))
+    return String(Math.floor(Math.random() * 1e9))
+
+  removeRoom: (roomToRemove) ->
+    @usedRooms = _.pull(@usedRooms, roomToRemove)
+    @storage.set('usedRooms', @usedRooms)
+    return
 
 angular.module('AltexoApp')
 .service 'AlRoomsService', AlRoomsService

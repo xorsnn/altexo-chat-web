@@ -8,11 +8,14 @@ md-sidenav(
   md-content(layout-padding)
     md-list(flex)
       md-subheader(class="md-no-sticky") Recently used rooms
-      md-list-item(class="md-3-line",
+      md-list-item(class="md-1-line"
         ng-repeat="room in $ctrl.AlRoomsService.usedRooms track by $index",
         ng-click="$ctrl.onUsedRoomClicked(room)")
-        div(class="md-list-item-text", layout="column")
-          h3 {{ room }}
+        div(class="md-list-item-text")
+          h3(style="padding:0; margin:0; font-weight:400; font-size:18px") {{ room }}
+        md-button(class="md-secondary md-icon-button", ng-click="$ctrl.onUsedRoomRemoveClicked(room)",
+          aria-label="call")
+          md-icon(md-svg-icon="${require('../../../img/icons/ic_clear_black_24px.svg')}")
       md-divider
 
 //- md-button(ng-click="close()", class="md-primary", hide-gt-sm)

@@ -10,4 +10,8 @@ class AlUsedRoomsController
     @rootScope.$broadcast 'alUsedRoomClicked', roomClicked
     return
 
+  onUsedRoomRemoveClicked: (roomClicked) ->
+    @AlRoomsService.removeRoom(roomClicked)
+    return
+
 module.exports = AlUsedRoomsController
