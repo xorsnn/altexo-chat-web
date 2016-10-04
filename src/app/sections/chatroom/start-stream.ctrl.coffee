@@ -21,7 +21,7 @@ class AlStartStreamCtrl
 
     $scope.createRoom = (chat, room) ->
 
-      $location.path('/room/#{room.name}')
+      $location.path("/room/#{room.name}")
       return
 
     $scope.$on 'alUsedRoomClicked', (event, roomClicked) ->
