@@ -54,7 +54,7 @@ angular.module('AltexoApp')
       .then (res) =>
         this._setRoom(name, null)
         $q (resolve) -> resolve(true)
-      , (err) =>
+      , (err) ->
         $q (resolve, reject) -> reject(err)
 
     leaveRoom: ->

@@ -19,7 +19,7 @@ angular.module('AltexoApp')
     $scope.iceSent = 0
     $scope.iceReceived = 0
 
-    alJoin = =>
+    alJoin = ->
       (switch (attrs.mode ? 'sendrecv')
         when 'sendonly'
           console.info '>> altexo-web-rtc-view: send only'
