@@ -14,7 +14,7 @@ div(style="position:fixed;z-index:100;left:20px;bottom:20px")
   h5 Room: {{ ::chat.roomName|uppercase }}
   p Invite by sharing the link: &nbsp;
     span(style="text-decoration: underline;") {{ ::viewLink() }}
-  - var dbg = DEBUG;
-  if dbg
+    
+  if DEBUG == 'true'
     p Candidates sent: {{ iceSent }}
     p Candidates received: {{ iceReceived }}

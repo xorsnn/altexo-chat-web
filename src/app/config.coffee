@@ -27,8 +27,9 @@ angular.module('AltexoApp')
   }
 
   #  enable html5Mode for pushstate ('#'-less URLs)
-  $locationProvider.html5Mode(true)
-  $locationProvider.hashPrefix('!')
+  unless DEBUG == 'true'
+    $locationProvider.html5Mode(true)
+    $locationProvider.hashPrefix('!')
 
   $mdThemingProvider.theme('default')
   .primaryPalette('blue-grey')
