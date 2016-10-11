@@ -3,7 +3,11 @@
   "version": "0.0.1",
   "description": "altexo site",
   "scripts": {
-    "start": ". ./scripts/config/env_local_dev.sh && node node_modules/.bin/webpack-dev-server --content-base src/app --hot"
+    "start": ". ./scripts/config/env_local_dev.sh && node node_modules/.bin/webpack-dev-server --content-base src/app --hot",
+    "build": "webpack",
+    "build-staging": "webpack",
+    "build-dev": "webpack",
+    "build-virtual": "webpack"
   },
   "devDependencies": {
     "coffee-fmt": "^0.12.0",
