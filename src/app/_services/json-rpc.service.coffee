@@ -1,12 +1,22 @@
 EventEmitter = require('eventemitter').EventEmitter
 
 angular.module('AltexoApp')
-.constant 'RpcError', -> {
+.constant 'RpcError', {
   PARSE_ERROR: - 32700
   INVALID_REQUEST: - 32600
   METHOD_NOT_FOUND: - 32601
   INVALID_PARAMS: - 32602
   INTERNAL_ERROR: - 32603
+  REQUEST_AUTH_ERROR: - 32000
+  RAW_ERROR: - 32001
+  NOT_AUTHENTICATED: 1001
+  PEER_NOT_FOUND: 1002
+  ROOM_NOT_FOUND: 1003
+  CURRENT_ROOM_PRESENT: 1004
+  NO_CURRENT_ROOM: 1005
+  ROOM_NAME_OCCUPIED: 1006
+  NOT_AUTHORIZED: 1007
+  ONLY_TWO_PERSONS_ALLOWED: 2001
 }
 .factory 'JsonRpc', ($q, RpcError) ->
 
