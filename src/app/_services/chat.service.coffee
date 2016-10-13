@@ -55,7 +55,7 @@ angular.module('AltexoApp')
           prevContacts = this.room.contacts
 
           this.room.contacts = contacts
-          this.rpc.emit('update')
+          this.rpc.emit('digest-data')
 
           added = _.differenceBy(contacts, prevContacts, 'id')
           if added.length
@@ -81,10 +81,10 @@ angular.module('AltexoApp')
     restartRoom: ->
       {name, p2p} = this.room
       this.room = null
-      this.rpc.emit('update')
+      this.rpc.emit('digest-data')
       this.destroyRoom()
       .then => this.createRoom(name, p2p)
-      .then => this.rpc.emit('update')
+      # .then => this.rpc.emit('digest-data')
 
     ensureConnected: ->
       (if this.isConnected() then $q.resolve(true) \

@@ -4,13 +4,18 @@ angular.module('AltexoApp')
 .controller 'StreamCtrl',
 ($scope, $location, $timeout, $routeParams, $mdToast, AlRoomsService, RpcError) ->
 
+  $scope.controls = {
+    local: { audio: true, video: true }
+    remote: { audio: true, video: true }
+  }
+
   $scope.chat.ensureConnected()
   .then -> $scope.chat.openRoom($routeParams.room)
   .then ->
     # add room to used
     AlRoomsService.roomUsed($routeParams.room)
 
-    endScopeUpdates = $scope.chat.$on 'update', ->
+    endScopeUpdates = $scope.chat.$on 'digest-data', ->
       $scope.$digest()
 
     endToastAdds = $scope.chat.$on 'add-user', (users) ->

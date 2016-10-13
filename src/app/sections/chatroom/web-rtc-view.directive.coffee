@@ -51,7 +51,28 @@ angular.module('AltexoApp')
         endReceivePeerCandidates()
         webRtcPeer.dispose()
 
-      # unless waitCall
+      watchMuteState = (local, type) ->
+        state = "#{attrs.mediaState}.#{local}.#{type}"
+        endWatch = $scope.$watch state, (value, prev) ->
+          unless value == prev
+            streams = switch local
+              when 'local' then webRtcPeer.peerConnection.getLocalStreams()
+              when 'remote' then webRtcPeer.peerConnection.getRemoteStreams()
+            if streams.length
+              tracks = switch type
+                when 'audio' then streams[0].getAudioTracks()
+                when 'video' then streams[0].getVideoTracks()
+              if tracks.length
+                tracks[0].enabled = value
+          return
+        $scope.$on '$destroy', endWatch
+
+      if attrs.mediaState
+        watchMuteState('local', 'video')
+        watchMuteState('local', 'audio')
+        watchMuteState('remote', 'video')
+        watchMuteState('remote', 'audio')
+
       unless chat.isWaiter()
         console.info '>> altexo-web-rtc-view: call'
 
