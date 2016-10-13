@@ -2,7 +2,7 @@
 angular.module('AltexoApp')
 
 .controller 'StreamCtrl',
-($scope, $q, $location, $routeParams, $mdToast, AlRoomsService, RpcError) ->
+($scope, $location, $timeout, $routeParams, $mdToast, AlRoomsService, RpcError) ->
 
   $scope.chat.ensureConnected()
   .then -> $scope.chat.openRoom($routeParams.room)
@@ -10,12 +10,31 @@ angular.module('AltexoApp')
     # add room to used
     AlRoomsService.roomUsed($routeParams.room)
 
-    endChatUpdates = $scope.chat.$on 'update', ->
+    endScopeUpdates = $scope.chat.$on 'update', ->
       $scope.$digest()
+
+    endToastAdds = $scope.chat.$on 'add-user', (users) ->
+      users.forEach (user) ->
+        $mdToast.show($mdToast.simple()
+          .textContent("#{user.name} entered this room."))
+
+    endToastRemoves = $scope.chat.$on 'remove-user', (users) ->
+      users.forEach (user) ->
+        $mdToast.show($mdToast.simple()
+          .textContent("#{user.name} leaved this room."))
+
+    endRedirects = $scope.chat.$on 'room-destroyed', ->
+      $mdToast.show($mdToast.simple()
+        .textContent('Room was destroyed by initiator.'))
+      $timeout(500).then ->
+        $location.path('/')
 
     # TODO: handle leaving room on closing
     $scope.$on '$destroy', ->
-      endChatUpdates()
+      endScopeUpdates()
+      endToastAdds()
+      endToastRemoves()
+      endRedirects()
       $scope.chat.leaveRoom()
 
     return

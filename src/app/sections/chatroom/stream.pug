@@ -17,7 +17,8 @@ altexo-web-rtc-view(chat='chat', ng-if='chat.room != null')
 div(style="position:fixed;z-index:100;left:20px;bottom:150px", ng-if='chat.room != null')
   h5 Contacts
   ul
-    li(ng-repeat='contact in chat.room.contacts') {{ ''+contact.id+': '+contact.name }}
+    li(ng-repeat='contact in chat.room.contacts track by contact.id')
+      | {{ contact.name }}
 
 div(style="position:fixed;z-index:100;left:20px;bottom:20px", ng-if='chat.room != null')
   h5 Room: {{ chat.room.name|uppercase }}
