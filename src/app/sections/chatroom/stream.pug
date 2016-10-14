@@ -2,15 +2,14 @@
 div(style="position:fixed;z-index:100;left:20px;top:20px")
   img(ng-src="${require('../../../img/logo_dark.svg')}", height=50, ng-click="onLogoClick()")
 
-al-video-stream
-
-video.local.md-whiteframe-2dp(id='localVideo', autoplay='true', muted='true',
-  width='320px', height='240px', style='display:none')
-
-video.remote.md-whiteframe-2dp(id='remoteVideo', autoplay='true',
-  width='320px', height='240px', style='display:none')
 
 altexo-web-rtc-view(chat='chat', media-state='controls', ng-if='chat.room != null')
+  al-video-stream
+  video.local.md-whiteframe-2dp(id='localVideo', autoplay='true', muted='true',
+    width='320px', height='240px', style='display:none')
+  video.remote.md-whiteframe-2dp(id='remoteVideo', autoplay='true',
+    width='320px', height='240px', style='display:none')
+
 
 div(style="position:fixed;z-index:100;left:220px;bottom:110px", ng-if='chat.room != null')
   h5 Controls

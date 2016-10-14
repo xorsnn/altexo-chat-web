@@ -1,7 +1,8 @@
 @import '../../node_modules/angular-material/angular-material.scss';
 @import '../../node_modules/roboto-fontface/css/roboto/roboto-fontface.css';
 
-al-video-stream {
+al-video-stream,
+altexo-web-rtc-view {
   display: flex;
   flex: 1;
 }
