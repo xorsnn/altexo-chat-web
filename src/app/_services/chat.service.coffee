@@ -6,7 +6,7 @@ require('../_constants/al.const.coffee')
 angular.module('AltexoApp')
 
 .factory 'AltexoChat',
-($q, JsonRpc, RpcError, AL_CONST) ->
+($q, $timeout, JsonRpc, RpcError, AL_CONST) ->
 
   class AltexoRpc extends JsonRpc
 
@@ -28,10 +28,12 @@ angular.module('AltexoApp')
         this.emit 'ice-candidate', candidate
 
       'room:contacts': (data) ->
-        this.emit 'contact-list', data
+        $timeout(0).then =>
+          this.emit 'contact-list', data
 
       'room:destroy': ->
-        this.emit 'room-destroyed'
+        $timeout(0).then =>
+          this.emit 'room-destroyed'
     }
 
 
@@ -53,9 +55,7 @@ angular.module('AltexoApp')
       this.$on 'contact-list', (contacts) =>
         if this.room
           prevContacts = this.room.contacts
-
           this.room.contacts = contacts
-          this.rpc.emit('digest-data')
 
           added = _.differenceBy(contacts, prevContacts, 'id')
           if added.length
@@ -79,12 +79,10 @@ angular.module('AltexoApp')
         this.createRoom(name, p2p)
 
     restartRoom: ->
-      {name, p2p} = this.room
+      { name, p2p } = this.room
       this.room = null
-      this.rpc.emit('digest-data')
-      this.destroyRoom()
-      .then => this.createRoom(name, p2p)
-      # .then => this.rpc.emit('digest-data')
+      this.destroyRoom().then =>
+        this.createRoom(name, p2p)
 
     ensureConnected: ->
       (if this.isConnected() then $q.resolve(true) \

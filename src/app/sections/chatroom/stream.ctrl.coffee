@@ -15,9 +15,6 @@ angular.module('AltexoApp')
     # add room to used
     AlRoomsService.roomUsed($routeParams.room)
 
-    endScopeUpdates = $scope.chat.$on 'digest-data', ->
-      $scope.$digest()
-
     endToastAdds = $scope.chat.$on 'add-user', (users) ->
       users.forEach (user) ->
         $mdToast.show($mdToast.simple()
@@ -31,12 +28,10 @@ angular.module('AltexoApp')
     endRedirects = $scope.chat.$on 'room-destroyed', ->
       $mdToast.show($mdToast.simple()
         .textContent('Room was destroyed by initiator.'))
-      $timeout(500).then ->
-        $location.path('/')
+      $location.path('/')
 
     # TODO: handle leaving room on closing
     $scope.$on '$destroy', ->
-      endScopeUpdates()
       endToastAdds()
       endToastRemoves()
       endRedirects()
