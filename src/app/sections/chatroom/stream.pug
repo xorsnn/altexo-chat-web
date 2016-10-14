@@ -10,8 +10,24 @@ altexo-web-rtc-view(chat='chat', media-state='controls', ng-if='chat.room != nul
   video.remote.md-whiteframe-2dp(id='remoteVideo', autoplay='true',
     width='320px', height='240px', style='display:none')
 
+div(style="position:fixed;z-index:100;left:20px;bottom:410px")
+  h5 Chat
+  //- label(for='message') Message:&nbsp;
+  input(type='text', ng-model='textMessage')
+  button(ng-click='sendMessage(textMessage)') Send
+  div
+    div(ng-repeat='msg in chat.messages track by msg.id')
+      strong {{ ::msg.contact.name }}: &nbsp;
+      span {{ ::msg.text }}
 
-div(style="position:fixed;z-index:100;left:220px;bottom:110px", ng-if='chat.room != null')
+
+div(style="position:fixed;z-index:100;left:420px;bottom:110px")
+  h5 User
+  label(for='nickname') Nickname:&nbsp;
+  input(type='text', ng-model='$storage.nickname',
+    ng-change='setChatAlias($storage.nickname)')
+
+div(style="position:fixed;z-index:100;left:220px;bottom:110px")
   h5 Controls
   label(for='localVideo') Show local video
   input(type='checkbox', ng-model='controls.local.video', name='localVideo')

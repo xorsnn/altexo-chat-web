@@ -27,11 +27,15 @@ angular.module('AltexoApp')
       'ice-candidate': (candidate) ->
         this.emit 'ice-candidate', candidate
 
-      'room:contacts': (data) ->
+      'room/contacts': (data) ->
         $timeout(0).then =>
           this.emit 'contact-list', data
 
-      'room:destroy': ->
+      'room/text': (text, contact) ->
+        $timeout(0).then =>
+          this.emit 'chat-text', { text, contact }
+
+      'room/destroy': ->
         $timeout(0).then =>
           this.emit 'room-destroyed'
     }
@@ -41,6 +45,7 @@ angular.module('AltexoApp')
 
     id: null
     room: null
+    messages: null
 
     constructor: ->
       this.ws = new WebSocket("#{AL_CONST.chatEndpoint}/al_chat")
@@ -69,6 +74,15 @@ angular.module('AltexoApp')
               # peer quit, restart room for waiting offer from next peer
               this.restartRoom()
 
+        return
+
+      messageId = 0
+      this.messages = []
+      this.$on 'chat-text', (message) =>
+        message.id = ++messageId
+        this.messages.push(message)
+        if this.messages.length > 10
+          this.messages.shift()
         return
 
     openRoom: (name, p2p=true) ->
@@ -104,6 +118,12 @@ angular.module('AltexoApp')
 
     authenticate: (token) ->
       this.rpc.request('authenticate', [token])
+
+    setAlias: (nickname) ->
+      this.rpc.notify('user/alias', [nickname])
+
+    sendMessage: (text) ->
+      this.rpc.notify('room/text', [text])
 
     createRoom: (name, p2p) ->
       this.rpc.request('room/open', [name, p2p])

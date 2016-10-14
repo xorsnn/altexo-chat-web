@@ -49,10 +49,11 @@
     "denodeify": "^1.2.1",
     "eventemitter": "^0.3.3",
     "jquery": "^3.1.0",
+    "kurento-utils": "git@github.com:pryzm0/kurento-utils-js.git#54eae58548b089d318d8c7f5423b27752e9d2040",
     "lodash": "^4.15.0",
+    "ngstorage": "^0.3.11",
     "raven-js": "^3.5.1",
     "roboto-fontface": "^0.6.0",
-    "three": "^0.80.1",
-    "kurento-utils": "git@github.com:pryzm0/kurento-utils-js.git#54eae58548b089d318d8c7f5423b27752e9d2040"
+    "three": "^0.80.1"
   }
 }

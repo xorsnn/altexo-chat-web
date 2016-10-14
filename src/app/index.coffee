@@ -1,11 +1,13 @@
 'use strict'
 
+require('ngstorage')
+
 Raven.config(AL_SENTRY_ENDPOINT, {
   ignoreUrls: [ /<raven_urls_to_ignore>/ ]
 } ).addPlugin(require('raven-js/plugins/angular'), angular).install()
 
 
-APP = angular.module 'AltexoApp', ['ngMaterial', 'ngRoute', 'ngRaven', 'denodeify']
+APP = angular.module 'AltexoApp', ['ngMaterial', 'ngRoute', 'ngRaven', 'ngStorage', 'denodeify']
 
 # TODO: move to a separate file for root ctrl
 require('./_services/chat.service.coffee')

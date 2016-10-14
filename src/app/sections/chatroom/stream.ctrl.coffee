@@ -1,8 +1,14 @@
+_ = require('lodash')
 
 angular.module('AltexoApp')
 
 .controller 'StreamCtrl',
-($scope, $location, $timeout, $routeParams, $mdToast, AlRoomsService, RpcError) ->
+($scope, $location, $timeout, $routeParams, $mdToast, $localStorage, AlRoomsService, RpcError) ->
+
+  $scope.$storage = $localStorage.$default {
+    nickname: 'John Doe'
+  }
+  $scope.textMessage = ''
 
   $scope.controls = {
     local: { audio: true, video: true }
@@ -10,6 +16,7 @@ angular.module('AltexoApp')
   }
 
   $scope.chat.ensureConnected()
+  .then -> $scope.chat.setAlias($localStorage.nickname)
   .then -> $scope.chat.openRoom($routeParams.room)
   .then ->
     # add room to used
@@ -51,3 +58,12 @@ angular.module('AltexoApp')
   $scope.onLogoClick = ->
     $location.path('/')
     return
+
+  $scope.setChatAlias = (value) ->
+    $scope.chat.setAlias(value)
+
+  $scope.setChatAlias = _($scope.setChatAlias).debounce(1750).value()
+
+  $scope.sendMessage = (text) ->
+    $scope.chat.sendMessage(text)
+    $scope.textMessage = ''
