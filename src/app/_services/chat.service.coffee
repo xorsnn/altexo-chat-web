@@ -122,6 +122,9 @@ angular.module('AltexoApp')
     setAlias: (nickname) ->
       this.rpc.notify('user/alias', [nickname])
 
+    setMode: (value) ->
+      this.rpc.notify('user/mode', [value])
+
     sendMessage: (text) ->
       this.rpc.notify('room/text', [text])
 
