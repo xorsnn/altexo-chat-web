@@ -1,0 +1,29 @@
+.stream {
+  .logo_dark {
+    position: fixed;
+    z-index: 100;
+    left: 20px;
+    top: 20px;
+  }
+
+  .control-panel {
+    position: fixed;
+    z-index: 100;
+    left: 220px;
+    bottom: 110px;
+  }
+
+  .md-sidenav-right {
+    md-input-container {
+      margin: 0;
+
+      .md-errors-spacer {
+        display: none;
+      }
+    }
+
+    button {
+      margin: 0;
+    }
+  }
+}

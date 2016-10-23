@@ -3,7 +3,7 @@ _ = require('lodash')
 angular.module('AltexoApp')
 
 .controller 'StreamCtrl',
-($scope, $location, $timeout, $routeParams, $mdToast, $localStorage, AlRoomsService, RpcError) ->
+($scope, $location, $timeout, $routeParams, $mdToast, $localStorage, $mdSidenav, $log, AlRoomsService, RpcError) ->
 
   $scope.$storage = $localStorage.$default {
     nickname: 'John Doe'
@@ -14,6 +14,13 @@ angular.module('AltexoApp')
     local: { audio: true, video: true }
     remote: { audio: true, video: true }
   }
+
+  $scope.toggleChat = () ->
+    $mdSidenav('right')
+      .toggle()
+      .then ->
+        $log.debug('toggle ' + 'right' + ' is done')
+    return
 
   $scope.chat.ensureConnected()
   .then -> $scope.chat.setAlias($localStorage.nickname)
