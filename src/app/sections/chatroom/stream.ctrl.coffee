@@ -72,5 +72,6 @@ angular.module('AltexoApp')
   $scope.setChatAlias = _($scope.setChatAlias).debounce(1750).value()
 
   $scope.sendMessage = (text) ->
-    $scope.chat.sendMessage(text)
+    unless _.trim(text) == ''
+      $scope.chat.sendMessage(text)
     $scope.textMessage = ''

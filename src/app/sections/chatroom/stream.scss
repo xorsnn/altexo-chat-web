@@ -5,15 +5,27 @@
     left: 20px;
     top: 20px;
   }
-
-  .control-panel {
+  // .control-panel {
+  //   position: fixed;
+  //   z-index: 100;
+  //   left: 220px;
+  //   bottom: 110px;
+  // }
+  .control-panel-wrapper {
     position: fixed;
     z-index: 100;
-    left: 220px;
-    bottom: 110px;
+    left: 0;
+    width: 100%;
+    bottom: 20px;
+
+    .invitation-link {
+      margin-left: 20px;
+    }
   }
 
   .md-sidenav-right {
+    z-index: 101;
+
     md-input-container {
       margin: 0;
 
@@ -25,5 +37,12 @@
     button {
       margin: 0;
     }
+  }
+
+  .username {
+    position: fixed;
+    z-index: 99;
+    right: 20px;
+    top: 20px;
   }
 }

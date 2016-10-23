@@ -11,32 +11,39 @@ section.stream(layout="row", flex)
     video.remote.md-whiteframe-2dp(id='remoteVideo', autoplay='true',
       width='320px', height='240px', style='display:none')
 
-  div(style="position:fixed;z-index:100;left:420px;bottom:110px")
-    h5 User
-    label(for='nickname') Nickname:&nbsp;
-    input(type='text', ng-model='$storage.nickname',
-      ng-change='setChatAlias($storage.nickname)')
+  .username
+    md-input-container(md-no-float, class="md-block")
+      label Your login
+      input(type="text",
+             ng-model="$storage.nickname",
+             md-autofocus,
+             ng-change='setChatAlias($storage.nickname)')
 
-  .control-panel
-    md-button(class="md-fab md-mini md-primary", aria-label="Turn off video", ng-click="controls.local.video=!controls.local.video")
-      md-icon(md-svg-src="${require('../../../img/icons/ic_videocam_black_24px.svg')}", ng-if="controls.local.video")
-      md-icon(md-svg-src="${require('../../../img/icons/ic_videocam_off_black_24px.svg')}", ng-if="!controls.local.video")
-    md-button(class="md-fab md-mini md-primary", aria-label="Turn off audio", ng-click="controls.local.audio=!controls.local.audio")
-      md-icon(md-svg-src="${require('../../../img/icons/ic_mic_black_24px.svg')}", ng-if="controls.local.audio")
-      md-icon(md-svg-src="${require('../../../img/icons/ic_mic_off_black_24px.svg')}", ng-if="!controls.local.audio")
-    md-button(class="md-fab md-mini md-primary", aria-label="Open/close chat", ng-click="toggleChat()")
-      md-icon(md-svg-src="${require('../../../img/icons/ic_chat_bubble_black_24px.svg')}")
 
-  div(style="position:fixed;z-index:100;left:20px;bottom:150px", ng-if='chat.room != null')
-    h5 Contacts
-    ul
-      li(ng-repeat='contact in chat.room.contacts track by contact.id')
-        | {{ contact.name }}
+  //- div(style="position:fixed;z-index:100;left:20px;bottom:150px", ng-if='chat.room != null')
+  //-   h5 Contacts
+  //-   ul
+  //-     li(ng-repeat='contact in chat.room.contacts track by contact.id')
+  //-       | {{ contact.name }}
 
-  div(style="position:fixed;z-index:100;left:20px;bottom:20px", ng-if='chat.room != null')
-    h5 Room: {{ chat.room.name|uppercase }}
-    p Invite by sharing the link: &nbsp;
-      span(style="text-decoration: underline;") {{ ::viewLink() }}
+  .control-panel-wrapper(ng-if='chat.room != null')
+    div(layout='row')
+      div
+        p.invitation-link Invite by sharing the link: &nbsp;
+          span(style="text-decoration: underline;") {{ ::viewLink() }}
+      .control-panel(layout='row', flex)
+        div(flex)
+        div
+          md-button(class="md-fab md-primary", aria-label="Turn off video", ng-click="controls.local.video=!controls.local.video")
+            md-icon(md-svg-src="${require('../../../img/icons/ic_videocam_black_24px.svg')}", ng-if="controls.local.video")
+            md-icon(md-svg-src="${require('../../../img/icons/ic_videocam_off_black_24px.svg')}", ng-if="!controls.local.video")
+          md-button(class="md-fab md-primary", aria-label="Turn off audio", ng-click="controls.local.audio=!controls.local.audio")
+            md-icon(md-svg-src="${require('../../../img/icons/ic_mic_black_24px.svg')}", ng-if="controls.local.audio")
+            md-icon(md-svg-src="${require('../../../img/icons/ic_mic_off_black_24px.svg')}", ng-if="!controls.local.audio")
+        div(flex)
+        div
+          md-button(class="md-fab md-mini md-primary", aria-label="Open/close chat", ng-click="toggleChat()")
+            md-icon(md-svg-src="${require('../../../img/icons/ic_chat_bubble_black_24px.svg')}")
 
     if DEBUG == 'true'
       p Candidates sent: {{ iceSent }}
@@ -54,7 +61,7 @@ section.stream(layout="row", flex)
           span {{ ::msg.text }}
       form
         div(layout='row')
-          md-input-container(md-no-float class="md-block")
+          md-input-container(md-no-float, class="md-block")
             input(type="text", id="testInput",
                    ng-model="textMessage", md-autofocus,placeholder="Type your message")
           md-button(ng-click='sendMessage(textMessage)', class="md-primary")
