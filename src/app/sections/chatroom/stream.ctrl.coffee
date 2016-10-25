@@ -29,6 +29,11 @@ angular.module('AltexoApp')
     # add room to used
     AlRoomsService.roomUsed($routeParams.room)
 
+    modeChangeToast = $scope.chat.$on 'mode-changed', (users) ->
+      users.forEach (user) ->
+        $mdToast.show($mdToast.simple()
+          .textContent("#{user.name} changed mode."))
+
     endToastAdds = $scope.chat.$on 'add-user', (users) ->
       users.forEach (user) ->
         $mdToast.show($mdToast.simple()
@@ -49,6 +54,7 @@ angular.module('AltexoApp')
       endToastAdds()
       endToastRemoves()
       endRedirects()
+      modeChangeToast()
       $scope.chat.leaveRoom()
 
     return
@@ -75,3 +81,19 @@ angular.module('AltexoApp')
     unless _.trim(text) == ''
       $scope.chat.sendMessage(text)
     $scope.textMessage = ''
+
+  $scope.toggleVideo = ->
+    $scope.controls.local.video =! $scope.controls.local.video
+    $scope.chat.setMode {
+      audio: $scope.controls.local.audio
+      video: if $scope.controls.local.video then '2d' else 'none'
+    }
+    return
+
+  $scope.toggleAudio = ->
+    $scope.controls.local.audio =! $scope.controls.local.audio
+    $scope.chat.setMode {
+      audio: $scope.controls.local.audio
+      video: if $scope.controls.local.video then '2d' else 'none'
+    }
+    return

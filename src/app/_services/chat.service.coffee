@@ -62,6 +62,10 @@ angular.module('AltexoApp')
           prevContacts = this.room.contacts
           this.room.contacts = contacts
 
+          modeChanged = _.differenceBy(contacts, prevContacts, 'mode')
+          if modeChanged.length
+            this.rpc.emit('mode-changed', modeChanged)
+
           added = _.differenceBy(contacts, prevContacts, 'id')
           if added.length
             this.rpc.emit('add-user', added)
@@ -85,7 +89,7 @@ angular.module('AltexoApp')
           this.messages.shift()
         return
 
-    openRoom: (name, p2p=true) ->
+    openRoom: (name, p2p = true) ->
       this.enterRoom(name)
       .then null, (error) =>
         unless error.code == RpcError.ROOM_NOT_FOUND
