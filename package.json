@@ -54,6 +54,9 @@
     "ngstorage": "^0.3.11",
     "raven-js": "^3.5.1",
     "roboto-fontface": "^0.6.0",
-    "three": "^0.80.1"
+    "three": "^0.80.1",
+    "p5": "^0.5.3",
+    "sylvester": "0.0.21",
+    "glutils": "^0.3.1"
   }
 }
