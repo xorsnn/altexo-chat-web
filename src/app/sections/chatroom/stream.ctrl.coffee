@@ -3,11 +3,7 @@ _ = require('lodash')
 angular.module('AltexoApp')
 
 .controller 'StreamCtrl',
-($scope, $location, $routeParams, $mdToast, $localStorage, $mdSidenav, $log, AlRoomsService, RpcError) ->
-
-  $scope.$storage = $localStorage.$default {
-    nickname: 'John Doe'
-  }
+($scope, $location, $routeParams, $localStorage, $mdToast, $mdSidenav, $log, RpcError) ->
   $scope.textMessage = ''
 
   $scope.controls = {
@@ -24,7 +20,7 @@ angular.module('AltexoApp')
   .then -> $scope.chat.openRoom($routeParams.room)
   .then ->
     # add room to used
-    AlRoomsService.roomUsed($routeParams.room)
+    $scope.rememberRoom($routeParams.room)
 
     endChatOpen = $scope.chat.$on 'chat-text', ->
       $mdSidenav('right').open()

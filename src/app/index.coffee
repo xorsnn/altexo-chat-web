@@ -21,7 +21,19 @@ APP = angular.module 'AltexoApp', [
 require('./_services/chat.service.coffee')
 APP
 .controller 'RootCtrl',
-($scope, AltexoChat) ->
+($scope, AltexoChat, $localStorage) ->
+  $scope.$storage = $localStorage.$default {
+    nickname: 'Anonymous'
+    usedRooms: []
+  }
+  $scope.rememberRoom = (name) ->
+    { usedRooms } = $scope.$storage
+    if usedRooms.indexOf(name) != -1
+      usedRooms.splice(usedRooms.indexOf(name), 1)
+    usedRooms.unshift(name)
+    if usedRooms.length > 6
+      usedRooms.pop()
+    return
   $scope.chat = new AltexoChat()
   return
 
