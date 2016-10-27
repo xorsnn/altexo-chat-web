@@ -57,7 +57,7 @@ section.stream(layout="row", flex)
       div(flex)
         div(ng-repeat='msg in chat.messages track by msg.id')
           strong {{ ::msg.contact.name }}: &nbsp;
-          span {{ ::msg.text }}
+          span(ng-bind-html='::msg.text|linky')
       form
         div(layout='row')
           md-input-container.md-block(md-no-float)
