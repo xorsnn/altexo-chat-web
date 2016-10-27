@@ -3,7 +3,7 @@ _ = require('lodash')
 angular.module('AltexoApp')
 
 .controller 'StreamCtrl',
-($scope, $location, $timeout, $routeParams, $mdToast, $localStorage, $mdSidenav, $log, AlRoomsService, RpcError) ->
+($scope, $location, $routeParams, $mdToast, $localStorage, $mdSidenav, $log, AlRoomsService, RpcError) ->
 
   $scope.$storage = $localStorage.$default {
     nickname: 'John Doe'
@@ -15,11 +15,8 @@ angular.module('AltexoApp')
     remote: { audio: true, video: true }
   }
 
-  $scope.toggleChat = () ->
-    $mdSidenav('right')
-      .toggle()
-      .then ->
-        $log.debug('toggle ' + 'right' + ' is done')
+  $scope.toggleChat = ->
+    $mdSidenav('right').toggle()
     return
 
   $scope.chat.ensureConnected()
@@ -28,6 +25,9 @@ angular.module('AltexoApp')
   .then ->
     # add room to used
     AlRoomsService.roomUsed($routeParams.room)
+
+    endChatOpen = $scope.chat.$on 'chat-text', ->
+      $mdSidenav('right').open()
 
     modeChangeToast = $scope.chat.$on 'mode-changed', (users) ->
       users.forEach (user) ->
@@ -55,6 +55,7 @@ angular.module('AltexoApp')
       endToastRemoves()
       endRedirects()
       modeChangeToast()
+      endChatOpen()
       $scope.chat.leaveRoom()
 
     return
