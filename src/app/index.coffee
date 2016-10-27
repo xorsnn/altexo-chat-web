@@ -51,7 +51,6 @@ APP
 
 require('./_services/auth-token.service.coffee')
 require('./_services/storage.service.coffee')
-require('./_services/al-rooms.service.coffee')
 require('./config.coffee')
 
 ##
