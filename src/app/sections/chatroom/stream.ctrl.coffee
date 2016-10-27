@@ -3,7 +3,9 @@ _ = require('lodash')
 angular.module('AltexoApp')
 
 .controller 'StreamCtrl',
-($scope, $location, $routeParams, $localStorage, $mdToast, $mdSidenav, $log, RpcError) ->
+($scope, $location, $routeParams, $localStorage, $mdToast, $mdSidenav, $log,
+  $rootScope, RpcError) ->
+
   $scope.textMessage = ''
 
   $scope.controls = {
@@ -16,9 +18,11 @@ angular.module('AltexoApp')
     return
 
   $scope.chat.ensureConnected()
-  .then -> $scope.chat.setAlias($localStorage.nickname)
-  .then -> $scope.chat.openRoom($routeParams.room)
-  .then ->
+  .then (id) ->
+    $scope.chat.setAlias($localStorage.nickname)
+  .then (dt) ->
+    $scope.chat.openRoom($routeParams.room)
+  .then (dt) ->
     # add room to used
     $scope.rememberRoom($routeParams.room)
 
@@ -27,13 +31,25 @@ angular.module('AltexoApp')
 
     modeChangeToast = $scope.chat.$on 'mode-changed', (users) ->
       users.forEach (user) ->
-        $mdToast.show($mdToast.simple()
-          .textContent("#{user.name} changed mode."))
+        unless $scope.chat.id == user.id
+          $rootScope.$broadcast 'al-mode-change',
+            {
+              'id': user.id
+              'mode': user.mode
+            }
+          $mdToast.show($mdToast.simple()
+            .textContent("#{user.name} changed mode."))
 
     endToastAdds = $scope.chat.$on 'add-user', (users) ->
       users.forEach (user) ->
-        $mdToast.show($mdToast.simple()
-          .textContent("#{user.name} entered this room."))
+        unless $scope.chat.id == user.id
+          $rootScope.$broadcast 'al-mode-change',
+            {
+              'id': user.id
+              'mode': user.mode
+            }
+          $mdToast.show($mdToast.simple()
+            .textContent("#{user.name} entered this room."))
 
     endToastRemoves = $scope.chat.$on 'remove-user', (users) ->
       users.forEach (user) ->
