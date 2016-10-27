@@ -19,7 +19,6 @@ section.stream(layout="row", flex)
              md-autofocus,
              ng-change='setChatAlias($storage.nickname)')
 
-
   //- div(style="position:fixed;z-index:100;left:20px;bottom:150px", ng-if='chat.room != null')
   //-   h5 Contacts
   //-   ul
@@ -61,8 +60,9 @@ section.stream(layout="row", flex)
           span {{ ::msg.text }}
       form
         div(layout='row')
-          md-input-container(md-no-float, class="md-block")
-            input(type="text", id="testInput",
-                   ng-model="textMessage", md-autofocus,placeholder="Type your message")
-          md-button(ng-click='sendMessage(textMessage)', class="md-primary")
+          md-input-container.md-block(md-no-float)
+            input#testInput(type="text", md-autofocus, ng-model="textMessage",
+                ng-keypress='$event.keyCode == 13 ? sendMessage(textMessage) : null',
+                placeholder="Type your message")
+          md-button.md-primary(ng-click='sendMessage(textMessage)')
             | Send
