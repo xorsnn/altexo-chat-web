@@ -70,8 +70,30 @@ class AlVideoStreamController
       mesh: {
         original: null
         reflection: null
+        soundViz: null
+        soundVizReflection: null
       }
-      streamMode: null
+      # FIXME: default values store in localStorage
+      streamMode: {
+        mode: {
+          video: '2d',
+          audio: true
+        }
+      }
+      sound: {
+        modification: {
+          rotation: {
+            x: 0
+            y: - Math.PI / 6
+            z: 0
+          }
+          position: {
+            x: 320
+            y: @ICOSAHEDRON_RADIUS + (@ICOSAHEDRON_RADIUS * @SURFACE_DISTANCE_KOEFFICIENT) # surface coordinate - 120
+            z: 0
+          }
+        }
+      }
     }
 
     ##
@@ -104,8 +126,24 @@ class AlVideoStreamController
       mesh: {
         original: null
         reflection: null
+        soundViz: null
+        soundVizReflection: null
       }
       streamMode: null
+      sound: {
+        modification: {
+          rotation: {
+            x: 0
+            y: - Math.PI / 6
+            z: 0
+          }
+          position: {
+            x: - 320
+            y: @ICOSAHEDRON_RADIUS + (@ICOSAHEDRON_RADIUS * @SURFACE_DISTANCE_KOEFFICIENT) # surface coordinate - 120
+            z: 0
+          }
+        }
+      }
     }
 
     @mesh = null
@@ -141,23 +179,9 @@ class AlVideoStreamController
 
     @visualisatorMaterial = null
     @visualisatorReflectionMaterial = null
-    @icosahedronMesh = null
-    @icosahedronReflectionMesh = null
+    # @icosahedronMesh = null
+    # @icosahedronReflectionMesh = null
 
-    @rendererData = {
-      modification: {
-        rotation: {
-          x: 0
-          y: - Math.PI / 6
-          z: 0
-        }
-        position: {
-          x: 0
-          y: @ICOSAHEDRON_RADIUS + (@ICOSAHEDRON_RADIUS * @SURFACE_DISTANCE_KOEFFICIENT) # surface coordinate - 120
-          z: 0
-        }
-      }
-    }
 
     $element.ready () =>
       $timeout () =>
@@ -170,23 +194,28 @@ class AlVideoStreamController
       return
 
     $rootScope.$on 'al-mode-change', (event, data) =>
-      @remoteRendererData.streamMode = data
-      @_updateRemoteMode()
+      @remoteRendererData.streamMode = data.remote
+      @localRendererData.streamMode = data.local
+      if @remoteRendererData.streamMode
+        @_updateRemoteMode()
+      if @localRendererData.streamMode
+        @_updateLocalMode()
       return
 
     return
 
   _initSoundVisualizator: (rendererData) =>
-    @visualisatorMaterial = new THREE.ShaderMaterial({
-      uniforms:
-        spectrum: { type: 'fv1', value: @spectrum }
-        distanceK: { type: 'f', value: @SURFACE_DISTANCE_KOEFFICIENT}
-      vertexShader: require('raw!./shaders/icosahedron.vert')
-      fragmentShader: require('raw!./shaders/icosahedron.frag')
-      wireframe: true
-      side: THREE.DoubleSide
-      transparent: true
-    } )
+    unless @visualisatorMaterial
+      @visualisatorMaterial = new THREE.ShaderMaterial({
+        uniforms:
+          spectrum: { type: 'fv1', value: @spectrum }
+          distanceK: { type: 'f', value: @SURFACE_DISTANCE_KOEFFICIENT}
+        vertexShader: require('raw!./shaders/icosahedron.vert')
+        fragmentShader: require('raw!./shaders/icosahedron.frag')
+        wireframe: true
+        side: THREE.DoubleSide
+        transparent: true
+      } )
 
     geometry = new THREE.IcosahedronGeometry(@ICOSAHEDRON_RADIUS, 0)
 
@@ -210,37 +239,40 @@ class AlVideoStreamController
     bufferGeometry.setIndex( new THREE.BufferAttribute( index, 1 ) )
     bufferGeometry.addAttribute( 'alFFTIndex', new THREE.BufferAttribute( spec, 1 ) )
 
-    @icosahedronMesh = new THREE.Mesh(
+    rendererData.mesh.soundViz = new THREE.Mesh(
       bufferGeometry,
       @visualisatorMaterial
     )
 
-    @icosahedronMesh.position.x = rendererData.modification.position.x
-    @icosahedronMesh.position.y = @SURFACE_Y + rendererData.modification.position.y
-    @scene.add( @icosahedronMesh )
+    rendererData.mesh.soundViz.position.x = rendererData.sound.modification.position.x
+    rendererData.mesh.soundViz.position.y = @SURFACE_Y + rendererData.sound.modification.position.y
+    # FIXME: remove if nessesary
+    # @scene.add( rendererData.mesh.soundViz )
 
-    @visualisatorReflectionMaterial = new THREE.ShaderMaterial({
-      uniforms:
-        icosahedronRadius: {type: 'f', value: @ICOSAHEDRON_RADIUS}
-        centerY: {type: 'f', value: @SURFACE_Y - rendererData.modification.position.y}
-        spectrum: { type: 'fv1', value: @spectrum }
-        distanceK: { type: 'f', value: @SURFACE_DISTANCE_KOEFFICIENT}
-      vertexShader: require('raw!./shaders/icosahedron_reflection.vert')
-      fragmentShader: require('raw!./shaders/icosahedron_reflection.frag')
-      wireframe: true
-      side: THREE.DoubleSide
-      transparent: true
-    } )
+    unless @visualisatorReflectionMaterial
+      @visualisatorReflectionMaterial = new THREE.ShaderMaterial({
+        uniforms:
+          icosahedronRadius: {type: 'f', value: @ICOSAHEDRON_RADIUS}
+          centerY: {type: 'f', value: @SURFACE_Y - rendererData.sound.modification.position.y}
+          spectrum: { type: 'fv1', value: @spectrum }
+          distanceK: { type: 'f', value: @SURFACE_DISTANCE_KOEFFICIENT}
+        vertexShader: require('raw!./shaders/icosahedron_reflection.vert')
+        fragmentShader: require('raw!./shaders/icosahedron_reflection.frag')
+        wireframe: true
+        side: THREE.DoubleSide
+        transparent: true
+      } )
 
-    @icosahedronReflectionMesh = new THREE.Mesh(
+    rendererData.mesh.soundVizReflection = new THREE.Mesh(
       bufferGeometry,
       @visualisatorReflectionMaterial
     )
 
-    @icosahedronReflectionMesh.position.x = rendererData.modification.position.x
-    @icosahedronReflectionMesh.position.y = @SURFACE_Y - rendererData.modification.position.y
-    @icosahedronReflectionMesh.rotation.x = - Math.PI
-    @scene.add( @icosahedronReflectionMesh )
+    rendererData.mesh.soundVizReflection.position.x = rendererData.sound.modification.position.x
+    rendererData.mesh.soundVizReflection.position.y = @SURFACE_Y - rendererData.sound.modification.position.y
+    rendererData.mesh.soundVizReflection.rotation.x = - Math.PI
+    # FIXME: remove if nessesary
+    # @scene.add( rendererData.mesh.soundVizReflection )
 
     return
 
@@ -342,6 +374,10 @@ class AlVideoStreamController
 
     document.addEventListener( 'mousemove', @_onDocumentMouseMove, false )
     window.addEventListener( 'resize', @_onWindowResize, false )
+
+    @_initSoundVisualizator(@remoteRendererData)
+    @_initSoundVisualizator(@localRendererData)
+
     return
 
   _onWindowResize: () =>
@@ -370,21 +406,50 @@ class AlVideoStreamController
       height: @remoteVideo.videoHeight
     }
 
-  _animateLocalStream: () ->
-    unless @localStreaming
-      localVideoSize = @_getLocalVideoSize()
-      unless localVideoSize.width == 0 or localVideoSize.height == 0
-        @localRendererData.streamSize.width = localVideoSize.width
-        @localRendererData.streamSize.height = localVideoSize.height
-        # consider the strem to be started
-        @localStreaming = true
-        @_initVideoRenderer(@localRendererData)
-    else
-      if ( @video.readyState == @video.HAVE_ENOUGH_DATA )
-        @localRendererData.imageContext.drawImage( @video, 0, 0 )
+  _updateLocalMode: () ->
+    if @localRendererData.streamMode.mode.video == 'none'
+      if @localRendererData.mesh.original and @localRendererData.mesh.reflection
+        @scene.remove(@localRendererData.mesh.original)
+        @scene.remove(@localRendererData.mesh.reflection)
+      if @localRendererData.mesh.soundViz and @localRendererData.mesh.soundVizReflection
+        @scene.add(@localRendererData.mesh.soundViz)
+        @scene.add(@localRendererData.mesh.soundVizReflection)
+    else if @localRendererData.streamMode.mode.video == '2d'
+      if @localRendererData.mesh.original and @localRendererData.mesh.reflection
+        @scene.add(@localRendererData.mesh.original)
+        @scene.add(@localRendererData.mesh.reflection)
+      if @localRendererData.mesh.soundViz and @localRendererData.mesh.soundVizReflection
+        @scene.remove(@localRendererData.mesh.soundViz)
+        @scene.remove(@localRendererData.mesh.soundVizReflection)
 
-        if ( @localRendererData.texture )
-          @localRendererData.texture.needsUpdate = true
+    return
+
+  _animateLocalStream: () ->
+    if !!@localRendererData.streamMode
+      if @localRendererData.streamMode.mode.video == '2d'
+
+        unless @localStreaming
+          localVideoSize = @_getLocalVideoSize()
+          unless localVideoSize.width == 0 or localVideoSize.height == 0
+            @localRendererData.streamSize.width = localVideoSize.width
+            @localRendererData.streamSize.height = localVideoSize.height
+            # consider the strem to be started
+            @localStreaming = true
+            @_initVideoRenderer(@localRendererData)
+        else
+          if ( @video.readyState == @video.HAVE_ENOUGH_DATA )
+            @localRendererData.imageContext.drawImage( @video, 0, 0 )
+
+            if ( @localRendererData.texture )
+              @localRendererData.texture.needsUpdate = true
+
+      if @localRendererData.streamMode.mode.video == 'none'
+        # NOTE: ICOSAHEDRON
+        if (@localRendererData.mesh.original and @localRendererData.mesh.soundVizReflection)
+          @localRendererData.mesh.soundViz.rotation.x += 0.005
+          @localRendererData.mesh.soundViz.rotation.y += 0.005
+          @localRendererData.mesh.soundVizReflection.rotation.x -= 0.005
+          @localRendererData.mesh.soundVizReflection.rotation.y -= 0.005
 
     return
 
@@ -393,10 +458,16 @@ class AlVideoStreamController
       if @remoteRendererData.mesh.original and @remoteRendererData.mesh.reflection
         @scene.remove(@remoteRendererData.mesh.original)
         @scene.remove(@remoteRendererData.mesh.reflection)
+      if @remoteRendererData.mesh.soundViz and @remoteRendererData.mesh.soundVizReflection
+        @scene.add(@remoteRendererData.mesh.soundViz)
+        @scene.add(@remoteRendererData.mesh.soundVizReflection)
     else if @remoteRendererData.streamMode.mode.video == '2d'
       if @remoteRendererData.mesh.original and @remoteRendererData.mesh.reflection
         @scene.add(@remoteRendererData.mesh.original)
         @scene.add(@remoteRendererData.mesh.reflection)
+      if @remoteRendererData.mesh.soundViz and @remoteRendererData.mesh.soundVizReflection
+        @scene.remove(@remoteRendererData.mesh.soundViz)
+        @scene.remove(@remoteRendererData.mesh.soundVizReflection)
 
     return
 
@@ -421,19 +492,11 @@ class AlVideoStreamController
 
       if @remoteRendererData.streamMode.mode.video == 'none'
         # NOTE: ICOSAHEDRON
-        @spectrum = @fft.analyze()
-        if @visualisatorMaterial
-          @visualisatorMaterial.uniforms.spectrum.value = @spectrum
-        if @visualisatorReflectionMaterial
-          @visualisatorReflectionMaterial.uniforms.spectrum.value = @spectrum
-
-        if (@icosahedronMesh and @icosahedronReflectionMesh)
-          @icosahedronMesh.rotation.x += 0.005
-          @icosahedronMesh.rotation.y += 0.005
-          @icosahedronReflectionMesh.rotation.x -= 0.005
-          @icosahedronReflectionMesh.rotation.y -= 0.005
-        else
-          @_initSoundVisualizator(@rendererData)
+        if (@remoteRendererData.mesh.original and @remoteRendererData.mesh.soundVizReflection)
+          @remoteRendererData.mesh.soundViz.rotation.x += 0.005
+          @remoteRendererData.mesh.soundViz.rotation.y += 0.005
+          @remoteRendererData.mesh.soundVizReflection.rotation.x -= 0.005
+          @remoteRendererData.mesh.soundVizReflection.rotation.y -= 0.005
 
     return
 
@@ -444,6 +507,13 @@ class AlVideoStreamController
     @camera.position.x += ( @mouseX - @camera.position.x ) * 0.05
     @camera.position.y += ( - @mouseY - @camera.position.y ) * 0.05
     @camera.lookAt( @scene.position )
+
+    # FIXME: move analyze outside not to do it twice if  both are without video
+    @spectrum = @fft.analyze()
+    if @visualisatorMaterial
+      @visualisatorMaterial.uniforms.spectrum.value = @spectrum
+    if @visualisatorReflectionMaterial
+      @visualisatorReflectionMaterial.uniforms.spectrum.value = @spectrum
 
     @_animateLocalStream()
     @_animateRemoteStream()

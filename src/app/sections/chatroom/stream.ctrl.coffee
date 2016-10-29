@@ -30,26 +30,53 @@ angular.module('AltexoApp')
       $mdSidenav('right').open()
 
     modeChangeToast = $scope.chat.$on 'mode-changed', (users) ->
+      mode = {
+        local: null
+        remote: null
+      }
       users.forEach (user) ->
         unless $scope.chat.id == user.id
-          $rootScope.$broadcast 'al-mode-change',
+          mode.remote =
             {
               'id': user.id
               'mode': user.mode
             }
-          $mdToast.show($mdToast.simple()
-            .textContent("#{user.name} changed mode."))
+        else
+          mode.local =
+            {
+              'id': user.id
+              'mode': user.mode
+            }
+
+        $mdToast.show($mdToast.simple()
+          .textContent("#{user.name} changed mode."))
+
+      $rootScope.$broadcast 'al-mode-change', mode
+      return
 
     endToastAdds = $scope.chat.$on 'add-user', (users) ->
+      mode = {
+        local: null
+        remote: null
+      }
       users.forEach (user) ->
         unless $scope.chat.id == user.id
-          $rootScope.$broadcast 'al-mode-change',
+          mode.remote =
             {
               'id': user.id
               'mode': user.mode
             }
-          $mdToast.show($mdToast.simple()
-            .textContent("#{user.name} entered this room."))
+        else
+          mode.local =
+            {
+              'id': user.id
+              'mode': user.mode
+            }
+        $mdToast.show($mdToast.simple()
+          .textContent("#{user.name} entered this room."))
+
+      $rootScope.$broadcast 'al-mode-change', mode
+      return
 
     endToastRemoves = $scope.chat.$on 'remove-user', (users) ->
       users.forEach (user) ->
