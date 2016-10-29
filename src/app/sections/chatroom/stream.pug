@@ -1,20 +1,68 @@
 
-div(style="position:fixed;z-index:100;left:20px;top:20px")
-  img(ng-src="${require('../../../img/logo_dark.svg')}", height=50, ng-click="onLogoClick()")
+section.stream(layout="row", flex)
 
-video.local.md-whiteframe-2dp(id='localVideo', autoplay='true', muted='true',
-  width='320px', height='240px', style='display:none')
+  .logo_dark
+    img(ng-src="${require('../../../img/logo_dark.svg')}", height=50, ng-click="onLogoClick()")
 
-video.remote.md-whiteframe-2dp(id='remoteVideo', autoplay='true',
-  width='320px', height='240px', style='display:none')
+  altexo-web-rtc-view(chat='chat', media-state='controls', ng-if='chat.room != null')
+    al-video-stream
+    video.local.md-whiteframe-2dp(id='localVideo', autoplay='true', muted='true',
+      width='320px', height='240px', style='display:none')
+    video.remote.md-whiteframe-2dp(id='remoteVideo', autoplay='true',
+      width='320px', height='240px', style='display:none')
 
-al-video-stream
-altexo-web-rtc-view(chat='chat', wait-call='chat.p2p')
-div(style="position:fixed;z-index:100;left:20px;bottom:20px")
-  h5 Room: {{ ::chat.roomName|uppercase }}
-  p Invite by sharing the link: &nbsp;
-    span(style="text-decoration: underline;") {{ ::viewLink() }}
-    
-  if DEBUG == 'true'
-    p Candidates sent: {{ iceSent }}
-    p Candidates received: {{ iceReceived }}
+  .username
+    md-input-container(md-no-float, class="md-block")
+      label Your login
+      input(type="text",
+             ng-model="$storage.nickname",
+             md-autofocus,
+             ng-change='setChatAlias($storage.nickname)')
+
+  //- div(style="position:fixed;z-index:100;left:20px;bottom:150px", ng-if='chat.room != null')
+  //-   h5 Contacts
+  //-   ul
+  //-     li(ng-repeat='contact in chat.room.contacts track by contact.id')
+  //-       | {{ contact.name }}
+
+  .control-panel-wrapper(ng-if='chat.room != null')
+    div(layout='row')
+      div
+        p.invitation-link Invite by sharing the link: &nbsp;
+          span(style="text-decoration: underline;") {{ ::viewLink() }}
+      .control-panel(layout='row', flex)
+        div(flex)
+        div
+          md-button(class="md-fab md-primary", aria-label="Turn off video", ng-click="toggleVideo()")
+            md-icon(md-svg-src="${require('../../../img/icons/ic_videocam_black_24px.svg')}", ng-if="controls.local.video")
+            md-icon(md-svg-src="${require('../../../img/icons/ic_videocam_off_black_24px.svg')}", ng-if="!controls.local.video")
+          md-button(class="md-fab md-primary", aria-label="Turn off audio", ng-click="toggleAudio()")
+            md-icon(md-svg-src="${require('../../../img/icons/ic_mic_black_24px.svg')}", ng-if="controls.local.audio")
+            md-icon(md-svg-src="${require('../../../img/icons/ic_mic_off_black_24px.svg')}", ng-if="!controls.local.audio")
+        div(flex)
+        div
+          md-button(class="md-fab md-mini md-primary", aria-label="Open/close chat", ng-click="toggleChat()")
+            md-icon(md-svg-src="${require('../../../img/icons/ic_chat_bubble_black_24px.svg')}")
+
+    if DEBUG == 'true'
+      p Candidates sent: {{ iceSent }}
+      p Candidates received: {{ iceReceived }}
+
+  md-sidenav(class="md-sidenav-right md-whiteframe-4dp",
+    md-component-id="right", md-disable-backdrop, layout='column')
+    md-toolbar(class="md-theme-light", layout='row', layout-align='end center')
+      md-button(class="md-icon-button launch", ng-click="toggleChat()")
+        md-icon(md-svg-icon="${require('../../../img/icons/ic_clear_black_24px.svg')}")
+    md-content(layout-padding, layout='column', flex="grow")
+      div(flex)
+        div(ng-repeat='msg in chat.messages track by msg.id')
+          strong {{ ::msg.contact.name }}: &nbsp;
+          span(ng-bind-html='::msg.text|linky')
+      form
+        div(layout='row')
+          md-input-container.md-block(md-no-float)
+            input#testInput(type="text", md-autofocus, ng-model="textMessage",
+                ng-keypress='$event.keyCode == 13 ? sendMessage(textMessage) : null',
+                placeholder="Type your message")
+          md-button.md-primary(ng-click='sendMessage(textMessage)')
+            | Send

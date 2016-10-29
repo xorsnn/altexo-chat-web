@@ -1,7 +1,7 @@
 
 class AlStartStreamCtrl
   ### @ngInject ###
-  constructor: ($scope, $location, AuthTokenService, AlRoomsService, Storage) ->
+  constructor: ($scope, $location, $localStorage, AuthTokenService, Storage) ->
     @scope = $scope
     @location = $location
 
@@ -11,16 +11,18 @@ class AlStartStreamCtrl
     defaultKurentoUse = false
 
     $scope.room = {
-      name: AlRoomsService.getLatestRoom()
+      name: "#{Math.floor(Math.random() * 1e9)}"
       kurento: defaultKurentoUse
     }
+
+    if $localStorage.usedRooms.length
+      $scope.room.name = $localStorage.usedRooms[0]
 
     $scope.kurentoClick = (kurentoVal) ->
       Storage.set('defaultKurentoUse', kurentoVal)
       return
 
     $scope.createRoom = (chat, room) ->
-
       $location.path("/room/#{room.name}")
       return
 

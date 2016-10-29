@@ -6,9 +6,21 @@ require('../../../../node_modules/three/examples/js/renderers/Projector.js')
 if DEBUG == 'true'
   Stats = require('../../../../node_modules/three/examples/js/libs/stats.min.js')
 
+global.p5 = require('p5')
+sylvester = require('sylvester')
+for attrname in Object.keys(sylvester)
+  global[attrname] = sylvester[attrname]
+
+require('../../../../node_modules/p5/lib/addons/p5.dom.js')
+require('../../../../node_modules/p5/lib/addons/p5.sound.js')
+
 class AlVideoStreamController
+  ICOSAHEDRON_RADIUS: 120
+  SURFACE_Y: - 120
+  SURFACE_DISTANCE_KOEFFICIENT: 0.4
+
   ### @ngInject ###
-  constructor: ($scope, $element, $timeout) ->
+  constructor: ($scope, $element, $timeout, $rootScope) ->
 
     @webglRenderer = Detector.webgl
     @reflectionShader = {
@@ -30,25 +42,109 @@ class AlVideoStreamController
 
     ##
     # Local
-    @video = null
-    @image = null
-    @imageContext = null
-    @imageReflection = null
-    @imageReflectionContext = null
-    @imageReflectionGradient = null
-    @texture = null
-    @textureReflection = null
+    @localRendererData = {
+      video: null
+      image: null
+      imageContext: null
+      imageReflection: null
+      imageReflectionContext: null
+      imageReflectionGradient: null
+      texture: null
+      textureReflection: null
+      streamSize: {
+        width: 0
+        height: 0
+      }
+      modification: {
+        rotation: {
+          x: 0
+          y: - Math.PI / 6
+          z: 0
+        }
+        position: {
+          x: 320
+          y: - 240
+          z: 0
+        }
+      }
+      mesh: {
+        original: null
+        reflection: null
+        soundViz: null
+        soundVizReflection: null
+      }
+      # FIXME: default values store in localStorage
+      streamMode: {
+        mode: {
+          video: '2d',
+          audio: true
+        }
+      }
+      sound: {
+        modification: {
+          rotation: {
+            x: 0
+            y: - Math.PI / 6
+            z: 0
+          }
+          position: {
+            x: 320
+            y: @ICOSAHEDRON_RADIUS + (@ICOSAHEDRON_RADIUS * @SURFACE_DISTANCE_KOEFFICIENT) # surface coordinate - 120
+            z: 0
+          }
+        }
+      }
+    }
 
     ##
     # Remote
-    @remoteVideo = null
-    @remoteImage = null
-    @remoteImageContext = null
-    @remoteImageReflection = null
-    @remoteImageReflectionContext = null
-    @remoteImageReflectionGradient = null
-    @remoteTexture = null
-    @remoteTextureReflection = null
+    @remoteRendererData = {
+      video: null
+      image: null
+      imageContext: null
+      imageReflection: null
+      imageReflectionContext: null
+      imageReflectionGradient: null
+      texture: null
+      textureReflection: null
+      streamSize: {
+        width: 0
+        height: 0
+      }
+      modification: {
+        rotation: {
+          x: 0
+          y: Math.PI / 6
+          z: 0
+        }
+        position: {
+          x: - 320
+          y: - 240
+          z: 0
+        }
+      }
+      mesh: {
+        original: null
+        reflection: null
+        soundViz: null
+        soundVizReflection: null
+      }
+      streamMode: null
+      sound: {
+        modification: {
+          rotation: {
+            x: 0
+            y: - Math.PI / 6
+            z: 0
+          }
+          position: {
+            x: - 320
+            y: @ICOSAHEDRON_RADIUS + (@ICOSAHEDRON_RADIUS * @SURFACE_DISTANCE_KOEFFICIENT) # surface coordinate - 120
+            z: 0
+          }
+        }
+      }
+    }
 
     @mesh = null
 
@@ -71,6 +167,22 @@ class AlVideoStreamController
       height: 0
     }
 
+    # ANALYZE MIC INPUT
+    @spectrum = []
+    for i in [0...12]
+      @spectrum.push(1)
+
+    mic = new p5.AudioIn()
+    mic.start()
+    @fft = new p5.FFT(0.8, 16)
+    @fft.setInput(mic)
+
+    @visualisatorMaterial = null
+    @visualisatorReflectionMaterial = null
+    # @icosahedronMesh = null
+    # @icosahedronReflectionMesh = null
+
+
     $element.ready () =>
       $timeout () =>
         @_init()
@@ -81,155 +193,127 @@ class AlVideoStreamController
       cancelAnimationFrame(@reqAnimFrame)
       return
 
+    $rootScope.$on 'al-mode-change', (event, data) =>
+      @remoteRendererData.streamMode = data.remote
+      @localRendererData.streamMode = data.local
+      if @remoteRendererData.streamMode
+        @_updateRemoteMode()
+      if @localRendererData.streamMode
+        @_updateLocalMode()
+      return
+
     return
 
-  _initRemoteRenderer: () ->
-    @remoteStreamSize = @_getRemoteVideoSize()
-
-    #
-
-    @remoteImage = document.createElement( 'canvas' )
-    @remoteImage.width = @remoteStreamSize.width
-    @remoteImage.height = @remoteStreamSize.height
-
-    @remoteImageContext = @remoteImage.getContext( '2d' )
-    @remoteImageContext.fillStyle = '#000000'
-    @remoteImageContext.fillRect( 0, 0, @remoteStreamSize.width, @remoteStreamSize.height )
-
-    @remoteTexture = new THREE.Texture( @remoteImage )
-    @remoteTexture.minFilter = THREE.LinearFilter
-
-    material = new THREE.MeshBasicMaterial( { map: @remoteTexture, overdraw: 0.5 } )
-
-    materialReflection = null
-    unless @webglRenderer
-      @remoteImageReflection = document.createElement( 'canvas' )
-      @remoteImageReflection.width = @remoteStreamSize.width
-      @remoteImageReflection.height = @remoteStreamSize.height
-
-      @remoteImageReflectionContext = @remoteImageReflection.getContext( '2d' )
-      @remoteImageReflectionContext.fillStyle = '#000000'
-      @remoteImageReflectionContext.fillRect( 0, 0, @remoteStreamSize.width, @remoteStreamSize.height )
-
-      @remoteImageReflectionGradient = @remoteImageReflectionContext.createLinearGradient( 0, 0, 0, @remoteStreamSize.height )
-      @remoteImageReflectionGradient.addColorStop( 0.2, 'rgba(240, 240, 240, 1)' )
-      @remoteImageReflectionGradient.addColorStop( 1, 'rgba(240, 240, 240, 0.8)' )
-
-      @remoteTextureReflection = new THREE.Texture( @remoteImageReflection )
-      @remoteTextureReflection.minFilter = THREE.LinearFilter
-
-      materialReflection = new THREE.MeshBasicMaterial( {
-        map: @remoteTextureReflection,
-        side: THREE.BackSide,
-        overdraw: 0.5
-      } )
-    else
-      materialReflection = new THREE.ShaderMaterial({
-        uniforms: {
-          'map': { value: @remoteTexture }
-        }
-        vertexShader: @reflectionShader.vert
-        fragmentShader: @reflectionShader.frag
+  _initSoundVisualizator: (rendererData) =>
+    unless @visualisatorMaterial
+      @visualisatorMaterial = new THREE.ShaderMaterial({
+        uniforms:
+          spectrum: { type: 'fv1', value: @spectrum }
+          distanceK: { type: 'f', value: @SURFACE_DISTANCE_KOEFFICIENT}
+        vertexShader: require('raw!./shaders/icosahedron.vert')
+        fragmentShader: require('raw!./shaders/icosahedron.frag')
+        wireframe: true
+        side: THREE.DoubleSide
         transparent: true
       } )
+
+    geometry = new THREE.IcosahedronGeometry(@ICOSAHEDRON_RADIUS, 0)
+
+    # NOTE: using unindexed vertices
+    indexList = []
+    for i in [0...(20 * 3) ]
+      indexList.push(i)
+
+    index = new Uint16Array( indexList )
+
+    specList = []
+    for face in geometry.faces
+      specList.push(face.a)
+      specList.push(face.b)
+      specList.push(face.c)
+
+    spec = new Float32Array( specList )
+
+    bufferGeometry = new THREE.BufferGeometry()
+    bufferGeometry.fromGeometry(geometry)
+    bufferGeometry.setIndex( new THREE.BufferAttribute( index, 1 ) )
+    bufferGeometry.addAttribute( 'alFFTIndex', new THREE.BufferAttribute( spec, 1 ) )
+
+    rendererData.mesh.soundViz = new THREE.Mesh(
+      bufferGeometry,
+      @visualisatorMaterial
+    )
+
+    rendererData.mesh.soundViz.position.x = rendererData.sound.modification.position.x
+    rendererData.mesh.soundViz.position.y = @SURFACE_Y + rendererData.sound.modification.position.y
+    # FIXME: remove if nessesary
+    # @scene.add( rendererData.mesh.soundViz )
+
+    unless @visualisatorReflectionMaterial
+      @visualisatorReflectionMaterial = new THREE.ShaderMaterial({
+        uniforms:
+          icosahedronRadius: {type: 'f', value: @ICOSAHEDRON_RADIUS}
+          centerY: {type: 'f', value: @SURFACE_Y - rendererData.sound.modification.position.y}
+          spectrum: { type: 'fv1', value: @spectrum }
+          distanceK: { type: 'f', value: @SURFACE_DISTANCE_KOEFFICIENT}
+        vertexShader: require('raw!./shaders/icosahedron_reflection.vert')
+        fragmentShader: require('raw!./shaders/icosahedron_reflection.frag')
+        wireframe: true
+        side: THREE.DoubleSide
+        transparent: true
+      } )
+
+    rendererData.mesh.soundVizReflection = new THREE.Mesh(
+      bufferGeometry,
+      @visualisatorReflectionMaterial
+    )
+
+    rendererData.mesh.soundVizReflection.position.x = rendererData.sound.modification.position.x
+    rendererData.mesh.soundVizReflection.position.y = @SURFACE_Y - rendererData.sound.modification.position.y
+    rendererData.mesh.soundVizReflection.rotation.x = - Math.PI
+    # FIXME: remove if nessesary
+    # @scene.add( rendererData.mesh.soundVizReflection )
+
+    return
+
+  _initVideoRenderer: (rendererData) =>
+
+    rendererData.image = document.createElement( 'canvas' )
+    rendererData.image.width = rendererData.streamSize.width
+    rendererData.image.height = rendererData.streamSize.height
+
+    rendererData.imageContext = rendererData.image.getContext( '2d' )
+    rendererData.imageContext.fillStyle = '#000000'
+    rendererData.imageContext.fillRect( 0, 0, rendererData.streamSize.width, rendererData.streamSize.height )
+
+    rendererData.texture = new THREE.Texture( rendererData.image )
+    rendererData.texture.minFilter = THREE.LinearFilter
+
+    material = new THREE.MeshBasicMaterial( { map: rendererData.texture, overdraw: 0.5 } )
+
+    materialReflection = new THREE.ShaderMaterial({
+      uniforms: {
+        'map': { value: rendererData.texture }
+      }
+      vertexShader: @reflectionShader.vert
+      fragmentShader: @reflectionShader.frag
+      transparent: true
+    } )
 
     #
 
     plane = new THREE.PlaneGeometry( 320, 240, 4, 4 )
 
-    @mesh = new THREE.Mesh( plane, material )
-    @mesh.position.x = - 320
-    @mesh.rotation.y = Math.PI / 6
-    @scene.add(@mesh)
+    rendererData.mesh.original = new THREE.Mesh( plane, material )
+    rendererData.mesh.original.position.x = rendererData.modification.position.x
+    rendererData.mesh.original.rotation.y = rendererData.modification.rotation.y
+    @scene.add( rendererData.mesh.original )
 
-    unless @webglRenderer
-      @mesh = new THREE.Mesh( plane, materialReflection )
-      @mesh.position.y = - 240
-      @mesh.position.x = - 320
-      @mesh.rotation.y = - Math.PI / 6
-      @mesh.rotation.x = - Math.PI
-      @scene.add( @mesh )
-    else
-      @mesh = new THREE.Mesh( plane, materialReflection )
-      @mesh.position.y = - 240
-      @mesh.position.x = - 320
-      @mesh.rotation.y = Math.PI / 6
-      @scene.add( @mesh )
-
-    return
-
-  _initLocalRenderer: () ->
-    @localStreamSize = @_getLocalVideoSize()
-
-    #
-
-    @image = document.createElement( 'canvas' )
-    @image.width = @localStreamSize.width
-    @image.height = @localStreamSize.height
-
-    @imageContext = @image.getContext( '2d' )
-    @imageContext.fillStyle = '#000000'
-    @imageContext.fillRect( 0, 0, @localStreamSize.width, @localStreamSize.height )
-
-    @texture = new THREE.Texture( @image )
-    @texture.minFilter = THREE.LinearFilter
-
-    material = new THREE.MeshBasicMaterial( { map: @texture, overdraw: 0.5 } )
-
-    materialReflection = null
-    unless @webglRenderer
-      @imageReflection = document.createElement( 'canvas' )
-      @imageReflection.width = @localStreamSize.width
-      @imageReflection.height = @localStreamSize.height
-
-      @imageReflectionContext = @imageReflection.getContext( '2d' )
-      @imageReflectionContext.fillStyle = '#000000'
-      @imageReflectionContext.fillRect( 0, 0, @localStreamSize.width, @localStreamSize.height )
-
-      @imageReflectionGradient = @imageReflectionContext.createLinearGradient( 0, 0, 0, @localStreamSize.height )
-      @imageReflectionGradient.addColorStop( 0.2, 'rgba(240, 240, 240, 1)' )
-      @imageReflectionGradient.addColorStop( 1, 'rgba(240, 240, 240, 0.8)' )
-
-      @textureReflection = new THREE.Texture( @imageReflection )
-      @textureReflection.minFilter = THREE.LinearFilter
-
-      materialReflection = new THREE.MeshBasicMaterial( {
-        map: @textureReflection,
-        side: THREE.BackSide,
-        overdraw: 0.5
-      } )
-    else
-      materialReflection = new THREE.ShaderMaterial({
-        uniforms: {
-          'map': { value: @texture }
-        }
-        vertexShader: @reflectionShader.vert
-        fragmentShader: @reflectionShader.frag
-        transparent: true
-      } )
-
-    #
-
-    plane = new THREE.PlaneGeometry( 320, 240, 4, 4 )
-
-    @mesh = new THREE.Mesh( plane, material )
-    @mesh.position.x = 320
-    @mesh.rotation.y = - Math.PI / 6
-    @scene.add(@mesh)
-
-    unless @webglRenderer
-      @mesh = new THREE.Mesh( plane, materialReflection )
-      @mesh.position.y = - 240
-      @mesh.position.x = 320
-      @mesh.rotation.y = Math.PI / 6
-      @mesh.rotation.x = - Math.PI
-      @scene.add( @mesh )
-    else
-      @mesh = new THREE.Mesh( plane, materialReflection )
-      @mesh.position.y = - 240
-      @mesh.position.x = 320
-      @mesh.rotation.y = - Math.PI / 6
-      @scene.add( @mesh )
+    rendererData.mesh.reflection = new THREE.Mesh( plane, materialReflection )
+    rendererData.mesh.reflection.position.x = rendererData.modification.position.x
+    rendererData.mesh.reflection.position.y = rendererData.modification.position.y
+    rendererData.mesh.reflection.rotation.y = rendererData.modification.rotation.y
+    @scene.add( rendererData.mesh.reflection )
 
     return
 
@@ -264,19 +348,9 @@ class AlVideoStreamController
 
     PI2 = Math.PI * 2
 
-    if @webglRenderer
-      material = new THREE.SpriteMaterial({
-        color: 0x0808080,
-      } )
-    else
-      material = new THREE.SpriteCanvasMaterial({
-        color: 0x0808080,
-        program: ( context ) ->
-          context.beginPath()
-          context.arc( 0, 0, 0.5, 0, PI2, true )
-          context.fill()
-          return
-      } )
+    material = new THREE.SpriteMaterial({
+      color: 0x0808080,
+    } )
 
     for ix in [0...amountx]
       for iy in [0...amounty]
@@ -287,10 +361,8 @@ class AlVideoStreamController
         particle.scale.x = particle.scale.y = 2
         @scene.add( particle )
 
-    if @webglRenderer
-      @renderer = new THREE.WebGLRenderer( { antialias: true } )
-    else
-      @renderer = new THREE.CanvasRenderer()
+    @renderer = new THREE.WebGLRenderer( { antialias: true } )
+
     @renderer.setClearColor( 0xf0f0f0 )
     @renderer.setPixelRatio( window.devicePixelRatio )
     @renderer.setSize( @element.offsetWidth, @element.offsetHeight )
@@ -302,6 +374,10 @@ class AlVideoStreamController
 
     document.addEventListener( 'mousemove', @_onDocumentMouseMove, false )
     window.addEventListener( 'resize', @_onWindowResize, false )
+
+    @_initSoundVisualizator(@remoteRendererData)
+    @_initSoundVisualizator(@localRendererData)
+
     return
 
   _onWindowResize: () =>
@@ -330,6 +406,100 @@ class AlVideoStreamController
       height: @remoteVideo.videoHeight
     }
 
+  _updateLocalMode: () ->
+    if @localRendererData.streamMode.mode.video == 'none'
+      if @localRendererData.mesh.original and @localRendererData.mesh.reflection
+        @scene.remove(@localRendererData.mesh.original)
+        @scene.remove(@localRendererData.mesh.reflection)
+      if @localRendererData.mesh.soundViz and @localRendererData.mesh.soundVizReflection
+        @scene.add(@localRendererData.mesh.soundViz)
+        @scene.add(@localRendererData.mesh.soundVizReflection)
+    else if @localRendererData.streamMode.mode.video == '2d'
+      if @localRendererData.mesh.original and @localRendererData.mesh.reflection
+        @scene.add(@localRendererData.mesh.original)
+        @scene.add(@localRendererData.mesh.reflection)
+      if @localRendererData.mesh.soundViz and @localRendererData.mesh.soundVizReflection
+        @scene.remove(@localRendererData.mesh.soundViz)
+        @scene.remove(@localRendererData.mesh.soundVizReflection)
+
+    return
+
+  _animateLocalStream: () ->
+    if !!@localRendererData.streamMode
+      if @localRendererData.streamMode.mode.video == '2d'
+
+        unless @localStreaming
+          localVideoSize = @_getLocalVideoSize()
+          unless localVideoSize.width == 0 or localVideoSize.height == 0
+            @localRendererData.streamSize.width = localVideoSize.width
+            @localRendererData.streamSize.height = localVideoSize.height
+            # consider the strem to be started
+            @localStreaming = true
+            @_initVideoRenderer(@localRendererData)
+        else
+          if ( @video.readyState == @video.HAVE_ENOUGH_DATA )
+            @localRendererData.imageContext.drawImage( @video, 0, 0 )
+
+            if ( @localRendererData.texture )
+              @localRendererData.texture.needsUpdate = true
+
+      if @localRendererData.streamMode.mode.video == 'none'
+        # NOTE: ICOSAHEDRON
+        if (@localRendererData.mesh.original and @localRendererData.mesh.soundVizReflection)
+          @localRendererData.mesh.soundViz.rotation.x += 0.005
+          @localRendererData.mesh.soundViz.rotation.y += 0.005
+          @localRendererData.mesh.soundVizReflection.rotation.x -= 0.005
+          @localRendererData.mesh.soundVizReflection.rotation.y -= 0.005
+
+    return
+
+  _updateRemoteMode: () ->
+    if @remoteRendererData.streamMode.mode.video == 'none'
+      if @remoteRendererData.mesh.original and @remoteRendererData.mesh.reflection
+        @scene.remove(@remoteRendererData.mesh.original)
+        @scene.remove(@remoteRendererData.mesh.reflection)
+      if @remoteRendererData.mesh.soundViz and @remoteRendererData.mesh.soundVizReflection
+        @scene.add(@remoteRendererData.mesh.soundViz)
+        @scene.add(@remoteRendererData.mesh.soundVizReflection)
+    else if @remoteRendererData.streamMode.mode.video == '2d'
+      if @remoteRendererData.mesh.original and @remoteRendererData.mesh.reflection
+        @scene.add(@remoteRendererData.mesh.original)
+        @scene.add(@remoteRendererData.mesh.reflection)
+      if @remoteRendererData.mesh.soundViz and @remoteRendererData.mesh.soundVizReflection
+        @scene.remove(@remoteRendererData.mesh.soundViz)
+        @scene.remove(@remoteRendererData.mesh.soundVizReflection)
+
+    return
+
+  _animateRemoteStream: () ->
+    if !!@remoteRendererData.streamMode
+      if @remoteRendererData.streamMode.mode.video == '2d'
+
+        unless @remoteStreaming
+          remoteVideoSize = @_getRemoteVideoSize()
+          unless remoteVideoSize.width == 0 or remoteVideoSize.height == 0
+            @remoteRendererData.streamSize.width = remoteVideoSize.width
+            @remoteRendererData.streamSize.height = remoteVideoSize.height
+            # consider the strem to be started
+            @remoteStreaming = true
+            @_initVideoRenderer(@remoteRendererData)
+        else
+          if ( @remoteVideo.readyState == @remoteVideo.HAVE_ENOUGH_DATA )
+            @remoteRendererData.imageContext.drawImage( @remoteVideo, 0, 0 )
+
+            if ( @remoteRendererData.texture )
+              @remoteRendererData.texture.needsUpdate = true
+
+      if @remoteRendererData.streamMode.mode.video == 'none'
+        # NOTE: ICOSAHEDRON
+        if (@remoteRendererData.mesh.original and @remoteRendererData.mesh.soundVizReflection)
+          @remoteRendererData.mesh.soundViz.rotation.x += 0.005
+          @remoteRendererData.mesh.soundViz.rotation.y += 0.005
+          @remoteRendererData.mesh.soundVizReflection.rotation.x -= 0.005
+          @remoteRendererData.mesh.soundVizReflection.rotation.y -= 0.005
+
+    return
+
   animate: () ->
     @reqAnimFrame = requestAnimationFrame =>
       @animate()
@@ -338,49 +508,16 @@ class AlVideoStreamController
     @camera.position.y += ( - @mouseY - @camera.position.y ) * 0.05
     @camera.lookAt( @scene.position )
 
-    unless @localStreaming
-      localVideoSize = @_getLocalVideoSize()
-      unless localVideoSize.width == 0 or localVideoSize.height == 0
-        # consider the strem to be started
-        @localStreaming = true
-        @_initLocalRenderer()
-    else
-      if ( @video.readyState == @video.HAVE_ENOUGH_DATA )
-        @imageContext.drawImage( @video, 0, 0 )
+    # FIXME: move analyze outside not to do it twice if  both are without video
+    @spectrum = @fft.analyze()
+    if @visualisatorMaterial
+      @visualisatorMaterial.uniforms.spectrum.value = @spectrum
+    if @visualisatorReflectionMaterial
+      @visualisatorReflectionMaterial.uniforms.spectrum.value = @spectrum
 
-        if ( @texture )
-          @texture.needsUpdate = true
+    @_animateLocalStream()
+    @_animateRemoteStream()
 
-        unless @webglRenderer
-          if ( @textureReflection )
-            @textureReflection.needsUpdate = true
-
-      unless @webglRenderer
-        @imageReflectionContext.drawImage( @image, 0, 0 )
-        @imageReflectionContext.fillStyle = @imageReflectionGradient
-        @imageReflectionContext.fillRect( 0, 0, @localStreamSize.width, @localStreamSize.height )
-
-    unless @remoteStreaming
-      remoteVideoSize = @_getRemoteVideoSize()
-      unless remoteVideoSize.width == 0 or remoteVideoSize.height == 0
-        # consider the strem to be started
-        @remoteStreaming = true
-        @_initRemoteRenderer()
-    else
-      if ( @remoteVideo.readyState == @remoteVideo.HAVE_ENOUGH_DATA )
-        @remoteImageContext.drawImage( @remoteVideo, 0, 0 )
-
-        if ( @remoteTexture )
-          @remoteTexture.needsUpdate = true
-
-        unless @webglRenderer
-          if ( @remoteTextureReflection )
-            @remoteTextureReflection.needsUpdate = true
-
-      unless @webglRenderer
-        @remoteImageReflectionContext.drawImage( @remoteImage, 0, 0 )
-        @remoteImageReflectionContext.fillStyle = @remoteImageReflectionGradient
-        @remoteImageReflectionContext.fillRect( 0, 0, @remoteStreamSize.width, @remoteStreamSize.height )
 
     @renderer.render( @scene, @camera )
 

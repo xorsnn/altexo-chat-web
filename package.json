@@ -3,7 +3,11 @@
   "version": "0.0.1",
   "description": "altexo site",
   "scripts": {
-    "start": ". ./scripts/config/env_local_dev.sh && node node_modules/.bin/webpack-dev-server --content-base src/app --hot"
+    "start": ". ./scripts/config/env_local_dev.sh && node node_modules/.bin/webpack-dev-server --content-base src/app --hot",
+    "build": "webpack",
+    "build-staging": "webpack",
+    "build-dev": "webpack",
+    "build-virtual": "webpack"
   },
   "devDependencies": {
     "coffee-fmt": "^0.12.0",
@@ -40,15 +44,20 @@
     "angular": "1.5.8",
     "angular-animate": "^1.5.8",
     "angular-aria": "^1.5.8",
-    "angular-material": "^1.1.0",
+    "angular-material": "1.1.1",
     "angular-route": "^1.5.8",
+    "angular-sanitize": "^1.5.8",
     "denodeify": "^1.2.1",
     "eventemitter": "^0.3.3",
+    "glutils": "^0.3.1",
     "jquery": "^3.1.0",
+    "kurento-utils": "git@github.com:pryzm0/kurento-utils-js.git#54eae58548b089d318d8c7f5423b27752e9d2040",
     "lodash": "^4.15.0",
+    "ngstorage": "^0.3.11",
+    "p5": "^0.5.3",
     "raven-js": "^3.5.1",
     "roboto-fontface": "^0.6.0",
-    "three": "^0.80.1",
-    "kurento-utils": "git@github.com:pryzm0/kurento-utils-js.git#54eae58548b089d318d8c7f5423b27752e9d2040"
+    "sylvester": "0.0.21",
+    "three": "^0.80.1"
   }
 }

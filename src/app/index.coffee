@@ -1,17 +1,39 @@
 'use strict'
 
+require('ngstorage')
+require('angular-sanitize')
+
 Raven.config(AL_SENTRY_ENDPOINT, {
   ignoreUrls: [ /<raven_urls_to_ignore>/ ]
 } ).addPlugin(require('raven-js/plugins/angular'), angular).install()
 
 
-APP = angular.module 'AltexoApp', ['ngMaterial', 'ngRoute', 'ngRaven', 'denodeify']
+APP = angular.module 'AltexoApp', [
+  'ngMaterial'
+  'ngRoute'
+  'ngRaven'
+  'ngSanitize'
+  'ngStorage'
+  'denodeify'
+]
 
 # TODO: move to a separate file for root ctrl
 require('./_services/chat.service.coffee')
 APP
 .controller 'RootCtrl',
-($scope, AltexoChat) ->
+($scope, AltexoChat, $localStorage) ->
+  $scope.$storage = $localStorage.$default {
+    nickname: 'Anonymous'
+    usedRooms: []
+  }
+  $scope.rememberRoom = (name) ->
+    { usedRooms } = $scope.$storage
+    if usedRooms.indexOf(name) != -1
+      usedRooms.splice(usedRooms.indexOf(name), 1)
+    usedRooms.unshift(name)
+    if usedRooms.length > 6
+      usedRooms.pop()
+    return
   $scope.chat = new AltexoChat()
   return
 
@@ -29,7 +51,6 @@ APP
 
 require('./_services/auth-token.service.coffee')
 require('./_services/storage.service.coffee')
-require('./_services/al-rooms.service.coffee')
 require('./config.coffee')
 
 ##

@@ -1,20 +1,18 @@
-md-sidenav(
-    class="md-sidenav-left",
+md-sidenav.md-sidenav-left(
     md-component-id="left",
     md-is-locked-open="$mdMedia('gt-sm')",
     md-whiteframe="4")
-  md-toolbar(class="md-theme-indigo", layout="row", layout-align="left center")
+  md-toolbar.md-theme-indigo(layout="row", layout-align="left center")
     img(ng-src="${require('../../../img/logo_white.svg')}", height=50, style="margin-left:16px")
   md-content(layout-padding)
     md-list(flex)
-      md-subheader(class="md-no-sticky") Recently used rooms
-      md-list-item(class="md-1-line"
-        ng-repeat="room in $ctrl.AlRoomsService.usedRooms track by $index",
-        ng-click="$ctrl.onUsedRoomClicked(room)")
-        div(class="md-list-item-text")
-          h3(style="padding:0; margin:0; font-weight:400; font-size:18px") {{ room }}
-        md-button(class="md-secondary md-icon-button", ng-click="$ctrl.onUsedRoomRemoveClicked(room)",
-          aria-label="call")
+      md-subheader.md-no-sticky Recently used rooms
+      md-list-item.md-1-line(ng-repeat="room in usedRooms track by room",
+          ng-click="$root.$broadcast('alUsedRoomClicked', room)")
+        div.md-list-item-text
+          h3(style="padding:0; margin:0; font-weight:400; font-size:18px") {{ ::room }}
+        md-button.md-secondary.md-icon-button(aria-label="call",
+            ng-click="usedRooms.splice($index, 1)")
           md-icon(md-svg-icon="${require('../../../img/icons/ic_clear_black_24px.svg')}")
       md-divider
 
