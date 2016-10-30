@@ -3,8 +3,7 @@ _ = require('lodash')
 angular.module('AltexoApp')
 
 .controller 'StreamCtrl',
-($scope, $location, $routeParams, $localStorage, $mdToast, $mdSidenav, $log,
-  $rootScope, RpcError) ->
+($scope, $location, $routeParams, $localStorage, $mdToast, $mdSidenav, $log, $rootScope, RpcError) ->
 
   $scope.textMessage = ''
 

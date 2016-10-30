@@ -15,30 +15,33 @@ require('../../../../node_modules/p5/lib/addons/p5.dom.js')
 require('../../../../node_modules/p5/lib/addons/p5.sound.js')
 
 class AlVideoStreamController
-  ICOSAHEDRON_RADIUS: 120
-  SURFACE_Y: - 120
-  SURFACE_DISTANCE_KOEFFICIENT: 0.4
+  webglRenderer: Detector.webgl
+  reflectionShader: {
+    frag: require('raw!../../../shaders/reflection.frag')
+    vert: require('raw!../../../shaders/reflection.vert')
+  }
+
+  hologramShaders: {
+    frag: require('raw!./shaders/hologramRenderer.frag')
+    vert: require('raw!./shaders/hologramRenderer.vert')
+    fragReflection: require('raw!./shaders/hologramRendererReflection.frag')
+    vertReflection: require('raw!./shaders/hologramRendererReflection.vert')
+  }
+
+  AMOUNT: 100
+
+  reqAnimFrame: null
+  container: null
+  stats: null
+  camera: null
+  scene: null
+  renderer: null
 
   ### @ngInject ###
-  constructor: ($scope, $element, $timeout, $rootScope) ->
-
-    @webglRenderer = Detector.webgl
-    @reflectionShader = {
-      frag: require('raw!../../../shaders/reflection.frag')
-      vert: require('raw!../../../shaders/reflection.vert')
-    }
-    @reqAnimFrame = null
+  constructor: ($scope, $element, $timeout, $rootScope, AL_VIDEO_VIS) ->
+    @AL_VIDEO_VIS = AL_VIDEO_VIS
 
     @element = $element[0]
-
-    @AMOUNT = 100
-
-    @container = null
-    @stats = null
-
-    @camera = null
-    @scene = null
-    @renderer = null
 
     ##
     # Local
@@ -76,7 +79,7 @@ class AlVideoStreamController
       # FIXME: default values store in localStorage
       streamMode: {
         mode: {
-          video: '2d',
+          video: @AL_VIDEO_VIS.RGB_VIDEO,
           audio: true
         }
       }
@@ -89,7 +92,7 @@ class AlVideoStreamController
           }
           position: {
             x: 320
-            y: @ICOSAHEDRON_RADIUS + (@ICOSAHEDRON_RADIUS * @SURFACE_DISTANCE_KOEFFICIENT) # surface coordinate - 120
+            y: @AL_VIDEO_VIS.ICOSAHEDRON_RADIUS + (@AL_VIDEO_VIS.ICOSAHEDRON_RADIUS * @AL_VIDEO_VIS.SURFACE_DISTANCE_KOEFFICIENT) # surface coordinate - 120
             z: 0
           }
         }
@@ -129,7 +132,12 @@ class AlVideoStreamController
         soundViz: null
         soundVizReflection: null
       }
-      streamMode: null
+      streamMode: {
+        mode: {
+          video: @AL_VIDEO_VIS.RGB_VIDEO,
+          audio: true
+        }
+      }
       sound: {
         modification: {
           rotation: {
@@ -139,14 +147,12 @@ class AlVideoStreamController
           }
           position: {
             x: - 320
-            y: @ICOSAHEDRON_RADIUS + (@ICOSAHEDRON_RADIUS * @SURFACE_DISTANCE_KOEFFICIENT) # surface coordinate - 120
+            y: @AL_VIDEO_VIS.ICOSAHEDRON_RADIUS + (@AL_VIDEO_VIS.ICOSAHEDRON_RADIUS * @AL_VIDEO_VIS.SURFACE_DISTANCE_KOEFFICIENT) # surface coordinate - 120
             z: 0
           }
         }
       }
     }
-
-    @mesh = null
 
     @mouseX = 0
     @mouseY = 0
@@ -157,15 +163,7 @@ class AlVideoStreamController
     ##
     # Local and remote streams
     @localStreaming = false
-    @localStreamSize = {
-      width: 0
-      height: 0
-    }
     @remoteStreaming = false
-    @remoteStreamSize = {
-      width: 0
-      height: 0
-    }
 
     # ANALYZE MIC INPUT
     @spectrum = []
@@ -179,9 +177,6 @@ class AlVideoStreamController
 
     @visualisatorMaterial = null
     @visualisatorReflectionMaterial = null
-    # @icosahedronMesh = null
-    # @icosahedronReflectionMesh = null
-
 
     $element.ready () =>
       $timeout () =>
@@ -204,12 +199,109 @@ class AlVideoStreamController
 
     return
 
+  # generate points for rendering field (can be used for point cloud)
+  _getArrayOfPoints: ->
+    points = []
+    widht = 640 / 2
+    height = 480 / 2
+    yAmount = 480 / 3
+    xAmount = 640 / 3
+    COORD_MULTIPLIER = 1
+    for y in [0...height] by height / yAmount
+      row = []
+      for x in [0...widht] by widht / xAmount
+        row.push([(x - widht / 2) * COORD_MULTIPLIER , (y - height / 2) * COORD_MULTIPLIER, 0])
+      points.push(row)
+    return points
+
+  # translate points coordinates to LinesSegments acceptable format
+  _getLineSegments: (points) ->
+    lineSegmentsPoints = []
+    vUv = []
+    previousPoint = null
+    for i in [0...points.length]
+      for y in [0...points[i].length]
+        if y > 1
+          vUv.push((y - 1) / points[i].length)
+          vUv.push(i / points.length)
+          lineSegmentsPoints.push(points[i][y - 1][0])
+          lineSegmentsPoints.push(points[i][y - 1][1])
+          lineSegmentsPoints.push(points[i][y - 1][2])
+
+        vUv.push(y / points[i].length)
+        vUv.push(i / points.length)
+        lineSegmentsPoints.push(points[i][y][0])
+        lineSegmentsPoints.push(points[i][y][1])
+        lineSegmentsPoints.push(points[i][y][2])
+
+    return {
+      lineSegmentsPoints: lineSegmentsPoints,
+      vUv: vUv
+    }
+
+  _initHologram: ->
+    geometry = new THREE.BufferGeometry()
+    geometryReflection = new THREE.BufferGeometry()
+
+    lineSegmentsDt = @_getLineSegments(@_getArrayOfPoints())
+    lineSegmentsReflectionDt = @_getLineSegments(@_getArrayOfPoints())
+
+    vertices = new Float32Array(lineSegmentsDt.lineSegmentsPoints)
+    vUv = new Float32Array(lineSegmentsDt.vUv)
+
+    geometry.addAttribute( 'position', new THREE.BufferAttribute( vertices, 3 ) )
+    geometry.addAttribute( 'vUv', new THREE.BufferAttribute( vUv, 2 ) )
+
+    loader = new THREE.TextureLoader()
+    loader.load(
+      require('../../../img/examples/cto_intro.png')
+      # Function when resource is loaded
+      , ( texture ) =>
+        texture.minFilter = THREE.LinearFilter
+        texture.magFilter = THREE.LinearFilter
+        @hologramMaterial = new THREE.ShaderMaterial({
+          uniforms:
+            textureMap: {type: 't', value: texture}
+            wAmount: {type: 'f', value: 320}
+            hAmount: {type: 'f', value: 240}
+          vertexShader: @hologramShaders.vert
+          fragmentShader: @hologramShaders.frag
+          side: THREE.DoubleSide
+          transparent: true
+        } )
+        mesh = new THREE.LineSegments( geometry, @hologramMaterial )
+        @scene.add(mesh)
+
+        @hologramReflectionMaterial = new THREE.ShaderMaterial({
+          uniforms:
+            textureMap: {type: 't', value: texture}
+            wAmount: {type: 'f', value: 320}
+            hAmount: {type: 'f', value: 240}
+          vertexShader: @hologramShaders.vertReflection
+          fragmentShader: @hologramShaders.fragReflection
+          side: THREE.DoubleSide
+          transparent: true
+        } )
+        mesh = new THREE.LineSegments( geometry, @hologramReflectionMaterial )
+        @scene.add(mesh)
+
+        # @_play()
+        return
+      # Function called when download progresses
+      , ( xhr ) =>
+        console.log( (xhr.loaded / xhr.total * 100) + '% loaded' )
+      #  Function called when download errors
+      , ( xhr ) =>
+        console.log( 'An error happened' )
+    )
+
+    return
   _initSoundVisualizator: (rendererData) =>
     unless @visualisatorMaterial
       @visualisatorMaterial = new THREE.ShaderMaterial({
         uniforms:
           spectrum: { type: 'fv1', value: @spectrum }
-          distanceK: { type: 'f', value: @SURFACE_DISTANCE_KOEFFICIENT}
+          distanceK: { type: 'f', value: @AL_VIDEO_VIS.SURFACE_DISTANCE_KOEFFICIENT}
         vertexShader: require('raw!./shaders/icosahedron.vert')
         fragmentShader: require('raw!./shaders/icosahedron.frag')
         wireframe: true
@@ -217,7 +309,7 @@ class AlVideoStreamController
         transparent: true
       } )
 
-    geometry = new THREE.IcosahedronGeometry(@ICOSAHEDRON_RADIUS, 0)
+    geometry = new THREE.IcosahedronGeometry(@AL_VIDEO_VIS.ICOSAHEDRON_RADIUS, 0)
 
     # NOTE: using unindexed vertices
     indexList = []
@@ -245,17 +337,17 @@ class AlVideoStreamController
     )
 
     rendererData.mesh.soundViz.position.x = rendererData.sound.modification.position.x
-    rendererData.mesh.soundViz.position.y = @SURFACE_Y + rendererData.sound.modification.position.y
+    rendererData.mesh.soundViz.position.y = @AL_VIDEO_VIS.SURFACE_Y + rendererData.sound.modification.position.y
     # FIXME: remove if nessesary
     # @scene.add( rendererData.mesh.soundViz )
 
     unless @visualisatorReflectionMaterial
       @visualisatorReflectionMaterial = new THREE.ShaderMaterial({
         uniforms:
-          icosahedronRadius: {type: 'f', value: @ICOSAHEDRON_RADIUS}
-          centerY: {type: 'f', value: @SURFACE_Y - rendererData.sound.modification.position.y}
+          icosahedronRadius: {type: 'f', value: @AL_VIDEO_VIS.ICOSAHEDRON_RADIUS}
+          centerY: {type: 'f', value: @AL_VIDEO_VIS.SURFACE_Y - rendererData.sound.modification.position.y}
           spectrum: { type: 'fv1', value: @spectrum }
-          distanceK: { type: 'f', value: @SURFACE_DISTANCE_KOEFFICIENT}
+          distanceK: { type: 'f', value: @AL_VIDEO_VIS.SURFACE_DISTANCE_KOEFFICIENT}
         vertexShader: require('raw!./shaders/icosahedron_reflection.vert')
         fragmentShader: require('raw!./shaders/icosahedron_reflection.frag')
         wireframe: true
@@ -269,7 +361,7 @@ class AlVideoStreamController
     )
 
     rendererData.mesh.soundVizReflection.position.x = rendererData.sound.modification.position.x
-    rendererData.mesh.soundVizReflection.position.y = @SURFACE_Y - rendererData.sound.modification.position.y
+    rendererData.mesh.soundVizReflection.position.y = @AL_VIDEO_VIS.SURFACE_Y - rendererData.sound.modification.position.y
     rendererData.mesh.soundVizReflection.rotation.x = - Math.PI
     # FIXME: remove if nessesary
     # @scene.add( rendererData.mesh.soundVizReflection )
@@ -378,6 +470,8 @@ class AlVideoStreamController
     @_initSoundVisualizator(@remoteRendererData)
     @_initSoundVisualizator(@localRendererData)
 
+    @_initHologram()
+
     return
 
   _onWindowResize: () =>
@@ -414,7 +508,7 @@ class AlVideoStreamController
       if @localRendererData.mesh.soundViz and @localRendererData.mesh.soundVizReflection
         @scene.add(@localRendererData.mesh.soundViz)
         @scene.add(@localRendererData.mesh.soundVizReflection)
-    else if @localRendererData.streamMode.mode.video == '2d'
+    else if @localRendererData.streamMode.mode.video == @AL_VIDEO_VIS.RGB_VIDEO
       if @localRendererData.mesh.original and @localRendererData.mesh.reflection
         @scene.add(@localRendererData.mesh.original)
         @scene.add(@localRendererData.mesh.reflection)
@@ -426,7 +520,7 @@ class AlVideoStreamController
 
   _animateLocalStream: () ->
     if !!@localRendererData.streamMode
-      if @localRendererData.streamMode.mode.video == '2d'
+      if @localRendererData.streamMode.mode.video == @AL_VIDEO_VIS.RGB_VIDEO
 
         unless @localStreaming
           localVideoSize = @_getLocalVideoSize()
@@ -461,7 +555,7 @@ class AlVideoStreamController
       if @remoteRendererData.mesh.soundViz and @remoteRendererData.mesh.soundVizReflection
         @scene.add(@remoteRendererData.mesh.soundViz)
         @scene.add(@remoteRendererData.mesh.soundVizReflection)
-    else if @remoteRendererData.streamMode.mode.video == '2d'
+    else if @remoteRendererData.streamMode.mode.video == @AL_VIDEO_VIS.RGB_VIDEO
       if @remoteRendererData.mesh.original and @remoteRendererData.mesh.reflection
         @scene.add(@remoteRendererData.mesh.original)
         @scene.add(@remoteRendererData.mesh.reflection)
@@ -473,7 +567,7 @@ class AlVideoStreamController
 
   _animateRemoteStream: () ->
     if !!@remoteRendererData.streamMode
-      if @remoteRendererData.streamMode.mode.video == '2d'
+      if @remoteRendererData.streamMode.mode.video == @AL_VIDEO_VIS.RGB_VIDEO
 
         unless @remoteStreaming
           remoteVideoSize = @_getRemoteVideoSize()
@@ -508,7 +602,7 @@ class AlVideoStreamController
     @camera.position.y += ( - @mouseY - @camera.position.y ) * 0.05
     @camera.lookAt( @scene.position )
 
-    # FIXME: move analyze outside not to do it twice if  both are without video
+    # FIXME: define if analyze is needed
     @spectrum = @fft.analyze()
     if @visualisatorMaterial
       @visualisatorMaterial.uniforms.spectrum.value = @spectrum
