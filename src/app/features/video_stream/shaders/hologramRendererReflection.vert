@@ -10,6 +10,9 @@ varying float visibility;
 const float minD = 555.0;
 const float maxD = 1005.0;
 
+const float PI = 3.1415926535897932384626433832795;
+const float PI_6 = PI / 6.0;
+
 // taken from freenect example
 const float f = 595.0; // devide by wAmoutn to normalize
 
@@ -72,9 +75,18 @@ void main() {
   vec3 hsl = rgb2hsl(texture2D(textureMap, vUV).xyz);
   vUV.x += 0.5;
   visibility = hsl.z * 2.0;
-  vec3 pos = xyz(position.x/320.0, position.y/320.0, hsl.x);
+  vec3 pos = xyz(position.x / wAmount, position.y / wAmount, hsl.x);
   pos.y = pos.y -240.0 - 120.0;
-  gl_Position = projectionMatrix * modelViewMatrix * vec4(pos.x, pos.y, pos.z, 1.0);
+
+
+  // NOTE: moving here
+  vec3 newPos;
+  newPos.x = pos.x * cos(PI_6) + pos.z * sin(PI_6) - 320.0;
+  newPos.y = pos.y;
+  newPos.z = -pos.x * sin(PI_6) + pos.z * cos(PI_6);
+
+  // gl_Position = projectionMatrix * modelViewMatrix * vec4(pos.x, pos.y, pos.z, 1.0);
+  gl_Position = projectionMatrix * modelViewMatrix * vec4(newPos, 1.0);
 
   vec4 modelMat = modelMatrix * vec4(pos, 1.0);
   if (modelMat.y > -120.0) {

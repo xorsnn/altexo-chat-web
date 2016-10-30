@@ -254,6 +254,7 @@ class AlVideoStreamController
 
     loader = new THREE.TextureLoader()
     loader.load(
+      # TODO: create some kind of geometry
       require('../../../img/examples/cto_intro.png')
       # Function when resource is loaded
       , ( texture ) =>
