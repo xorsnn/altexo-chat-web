@@ -73,8 +73,11 @@ void main() {
   vec3 hsl = rgb2hsl(texture2D(textureMap, vUV).xyz);
   vUV.x += 0.5;
   visibility = hsl.z * 2.0;
-  vec3 pos = xyz(position.x / wAmount, position.y / wAmount, hsl.x);
-  pos.y = pos.y + 240.0 - 120.0;
+
+  // TODO: move to uniforms
+  float koef = 2.0 / 3.0;
+  vec3 pos = xyz(position.x / wAmount, position.y / wAmount, hsl.x * koef);
+  pos.y = pos.y + 240.0 * koef - 120.0;
 
   // NOTE: moving here
   vec3 newPos;

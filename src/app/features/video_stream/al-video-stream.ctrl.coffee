@@ -28,6 +28,9 @@ class AlVideoStreamController
     vertReflection: require('raw!./shaders/hologramRendererReflection.vert')
   }
 
+  HOLOGRAM_W: 640 / 3
+  HOLOGRAM_H: 480 / 3
+
   AMOUNT: 100
 
   reqAnimFrame: null
@@ -132,6 +135,7 @@ class AlVideoStreamController
         soundViz: null
         soundVizReflection: null
       }
+      hologram: null
       streamMode: {
         mode: {
           video: @AL_VIDEO_VIS.RGB_VIDEO,
@@ -181,6 +185,7 @@ class AlVideoStreamController
     $element.ready () =>
       $timeout () =>
         @_init()
+        @_updateMode()
         @animate()
       , 0
 
@@ -189,28 +194,32 @@ class AlVideoStreamController
       return
 
     $rootScope.$on 'al-mode-change', (event, data) =>
-      @remoteRendererData.streamMode = data.remote
-      @localRendererData.streamMode = data.local
-      if @remoteRendererData.streamMode
-        @_updateRemoteMode()
-      if @localRendererData.streamMode
-        @_updateLocalMode()
+      @remoteRendererData.streamMode = if !!data.remote then data.remote else @remoteRendererData.streamMode
+      @localRendererData.streamMode = if !!data.local then data.local else @localRendererData.streamMode
+      @_updateMode()
       return
 
+    return
+
+  _updateMode: ->
+    if @remoteRendererData.streamMode
+      @_updateRemoteMode()
+    if @localRendererData.streamMode
+      @_updateLocalMode()
     return
 
   # generate points for rendering field (can be used for point cloud)
   _getArrayOfPoints: ->
     points = []
-    widht = 640 / 2
-    height = 480 / 2
+    width = @HOLOGRAM_W
+    height = @HOLOGRAM_H
     yAmount = 480 / 3
     xAmount = 640 / 3
     COORD_MULTIPLIER = 1
     for y in [0...height] by height / yAmount
       row = []
-      for x in [0...widht] by widht / xAmount
-        row.push([(x - widht / 2) * COORD_MULTIPLIER , (y - height / 2) * COORD_MULTIPLIER, 0])
+      for x in [0...width] by width / xAmount
+        row.push([(x - width / 2) * COORD_MULTIPLIER , (y - height / 2) * COORD_MULTIPLIER, 0])
       points.push(row)
     return points
 
@@ -239,7 +248,9 @@ class AlVideoStreamController
       vUv: vUv
     }
 
-  _initHologram: ->
+  _initHologram: (rendererData) ->
+    rendererData.hologram = {}
+
     geometry = new THREE.BufferGeometry()
     geometryReflection = new THREE.BufferGeometry()
 
@@ -252,51 +263,32 @@ class AlVideoStreamController
     geometry.addAttribute( 'position', new THREE.BufferAttribute( vertices, 3 ) )
     geometry.addAttribute( 'vUv', new THREE.BufferAttribute( vUv, 2 ) )
 
-    loader = new THREE.TextureLoader()
-    loader.load(
-      # TODO: create some kind of geometry
-      require('../../../img/examples/cto_intro.png')
-      # Function when resource is loaded
-      , ( texture ) =>
-        texture.minFilter = THREE.LinearFilter
-        texture.magFilter = THREE.LinearFilter
-        @hologramMaterial = new THREE.ShaderMaterial({
-          uniforms:
-            textureMap: {type: 't', value: texture}
-            wAmount: {type: 'f', value: 320}
-            hAmount: {type: 'f', value: 240}
-          vertexShader: @hologramShaders.vert
-          fragmentShader: @hologramShaders.frag
-          side: THREE.DoubleSide
-          transparent: true
-        } )
-        mesh = new THREE.LineSegments( geometry, @hologramMaterial )
-        @scene.add(mesh)
+    rendererData.hologram.hologramMaterial = new THREE.ShaderMaterial({
+      uniforms:
+        textureMap: {type: 't', value: rendererData.texture}
+        wAmount: {type: 'f', value: @HOLOGRAM_W}
+        hAmount: {type: 'f', value: @HOLOGRAM_H}
+      vertexShader: @hologramShaders.vert
+      fragmentShader: @hologramShaders.frag
+      side: THREE.DoubleSide
+      transparent: true
+    } )
+    rendererData.hologram.mesh = new THREE.LineSegments( geometry, rendererData.hologram.hologramMaterial )
 
-        @hologramReflectionMaterial = new THREE.ShaderMaterial({
-          uniforms:
-            textureMap: {type: 't', value: texture}
-            wAmount: {type: 'f', value: 320}
-            hAmount: {type: 'f', value: 240}
-          vertexShader: @hologramShaders.vertReflection
-          fragmentShader: @hologramShaders.fragReflection
-          side: THREE.DoubleSide
-          transparent: true
-        } )
-        mesh = new THREE.LineSegments( geometry, @hologramReflectionMaterial )
-        @scene.add(mesh)
-
-        # @_play()
-        return
-      # Function called when download progresses
-      , ( xhr ) =>
-        console.log( (xhr.loaded / xhr.total * 100) + '% loaded' )
-      #  Function called when download errors
-      , ( xhr ) =>
-        console.log( 'An error happened' )
-    )
+    rendererData.hologram.hologramReflectionMaterial = new THREE.ShaderMaterial({
+      uniforms:
+        textureMap: {type: 't', value: rendererData.texture}
+        wAmount: {type: 'f', value: @HOLOGRAM_W}
+        hAmount: {type: 'f', value: @HOLOGRAM_H}
+      vertexShader: @hologramShaders.vertReflection
+      fragmentShader: @hologramShaders.fragReflection
+      side: THREE.DoubleSide
+      transparent: true
+    } )
+    rendererData.hologram.reflectionMesh = new THREE.LineSegments( geometry, rendererData.hologram.hologramReflectionMaterial)
 
     return
+
   _initSoundVisualizator: (rendererData) =>
     unless @visualisatorMaterial
       @visualisatorMaterial = new THREE.ShaderMaterial({
@@ -339,8 +331,6 @@ class AlVideoStreamController
 
     rendererData.mesh.soundViz.position.x = rendererData.sound.modification.position.x
     rendererData.mesh.soundViz.position.y = @AL_VIDEO_VIS.SURFACE_Y + rendererData.sound.modification.position.y
-    # FIXME: remove if nessesary
-    # @scene.add( rendererData.mesh.soundViz )
 
     unless @visualisatorReflectionMaterial
       @visualisatorReflectionMaterial = new THREE.ShaderMaterial({
@@ -364,12 +354,10 @@ class AlVideoStreamController
     rendererData.mesh.soundVizReflection.position.x = rendererData.sound.modification.position.x
     rendererData.mesh.soundVizReflection.position.y = @AL_VIDEO_VIS.SURFACE_Y - rendererData.sound.modification.position.y
     rendererData.mesh.soundVizReflection.rotation.x = - Math.PI
-    # FIXME: remove if nessesary
-    # @scene.add( rendererData.mesh.soundVizReflection )
 
     return
 
-  _initVideoRenderer: (rendererData) =>
+  _initVideoRenderer: (rendererData, initHologram = false) =>
 
     rendererData.image = document.createElement( 'canvas' )
     rendererData.image.width = rendererData.streamSize.width
@@ -381,6 +369,7 @@ class AlVideoStreamController
 
     rendererData.texture = new THREE.Texture( rendererData.image )
     rendererData.texture.minFilter = THREE.LinearFilter
+    rendererData.texture.magFilter = THREE.LinearFilter
 
     material = new THREE.MeshBasicMaterial( { map: rendererData.texture, overdraw: 0.5 } )
 
@@ -400,13 +389,15 @@ class AlVideoStreamController
     rendererData.mesh.original = new THREE.Mesh( plane, material )
     rendererData.mesh.original.position.x = rendererData.modification.position.x
     rendererData.mesh.original.rotation.y = rendererData.modification.rotation.y
-    @scene.add( rendererData.mesh.original )
 
     rendererData.mesh.reflection = new THREE.Mesh( plane, materialReflection )
     rendererData.mesh.reflection.position.x = rendererData.modification.position.x
     rendererData.mesh.reflection.position.y = rendererData.modification.position.y
     rendererData.mesh.reflection.rotation.y = rendererData.modification.rotation.y
-    @scene.add( rendererData.mesh.reflection )
+
+    if initHologram
+
+      @_initHologram(rendererData)
 
     return
 
@@ -471,8 +462,6 @@ class AlVideoStreamController
     @_initSoundVisualizator(@remoteRendererData)
     @_initSoundVisualizator(@localRendererData)
 
-    @_initHologram()
-
     return
 
   _onWindowResize: () =>
@@ -502,27 +491,34 @@ class AlVideoStreamController
     }
 
   _updateLocalMode: () ->
-    if @localRendererData.streamMode.mode.video == 'none'
+    if @localRendererData.streamMode.mode.video == @AL_VIDEO_VIS.NO_VIDEO
       if @localRendererData.mesh.original and @localRendererData.mesh.reflection
-        @scene.remove(@localRendererData.mesh.original)
-        @scene.remove(@localRendererData.mesh.reflection)
+        if @scene.getObjectById(@localRendererData.mesh.original.id)
+          @scene.remove(@localRendererData.mesh.original)
+        if @scene.getObjectById(@localRendererData.mesh.reflection.id)
+          @scene.remove(@localRendererData.mesh.reflection)
       if @localRendererData.mesh.soundViz and @localRendererData.mesh.soundVizReflection
-        @scene.add(@localRendererData.mesh.soundViz)
-        @scene.add(@localRendererData.mesh.soundVizReflection)
+        unless @scene.getObjectById(@localRendererData.mesh.soundViz.id)
+          @scene.add(@localRendererData.mesh.soundViz)
+        unless @scene.getObjectById(@localRendererData.mesh.soundVizReflection.id)
+          @scene.add(@localRendererData.mesh.soundVizReflection)
     else if @localRendererData.streamMode.mode.video == @AL_VIDEO_VIS.RGB_VIDEO
-      if @localRendererData.mesh.original and @localRendererData.mesh.reflection
-        @scene.add(@localRendererData.mesh.original)
-        @scene.add(@localRendererData.mesh.reflection)
+      if !!@localRendererData.mesh.original and !!@localRendererData.mesh.reflection
+        unless @scene.getObjectById(@localRendererData.mesh.original.id)
+          @scene.add(@localRendererData.mesh.original)
+        unless @scene.getObjectById(@localRendererData.mesh.reflection.id)
+          @scene.add(@localRendererData.mesh.reflection)
       if @localRendererData.mesh.soundViz and @localRendererData.mesh.soundVizReflection
-        @scene.remove(@localRendererData.mesh.soundViz)
-        @scene.remove(@localRendererData.mesh.soundVizReflection)
+        if @scene.getObjectById(@localRendererData.mesh.soundViz.id)
+          @scene.remove(@localRendererData.mesh.soundViz)
+        if @scene.getObjectById(@localRendererData.mesh.soundVizReflection.id)
+          @scene.remove(@localRendererData.mesh.soundVizReflection)
 
     return
 
   _animateLocalStream: () ->
     if !!@localRendererData.streamMode
       if @localRendererData.streamMode.mode.video == @AL_VIDEO_VIS.RGB_VIDEO
-
         unless @localStreaming
           localVideoSize = @_getLocalVideoSize()
           unless localVideoSize.width == 0 or localVideoSize.height == 0
@@ -531,6 +527,7 @@ class AlVideoStreamController
             # consider the strem to be started
             @localStreaming = true
             @_initVideoRenderer(@localRendererData)
+            @_updateMode()
         else
           if ( @video.readyState == @video.HAVE_ENOUGH_DATA )
             @localRendererData.imageContext.drawImage( @video, 0, 0 )
@@ -538,9 +535,9 @@ class AlVideoStreamController
             if ( @localRendererData.texture )
               @localRendererData.texture.needsUpdate = true
 
-      if @localRendererData.streamMode.mode.video == 'none'
+      if @localRendererData.streamMode.mode.video == @AL_VIDEO_VIS.NO_VIDEO
         # NOTE: ICOSAHEDRON
-        if (@localRendererData.mesh.original and @localRendererData.mesh.soundVizReflection)
+        if (@localRendererData.mesh.soundViz and @localRendererData.mesh.soundVizReflection)
           @localRendererData.mesh.soundViz.rotation.x += 0.005
           @localRendererData.mesh.soundViz.rotation.y += 0.005
           @localRendererData.mesh.soundVizReflection.rotation.x -= 0.005
@@ -549,26 +546,62 @@ class AlVideoStreamController
     return
 
   _updateRemoteMode: () ->
-    if @remoteRendererData.streamMode.mode.video == 'none'
-      if @remoteRendererData.mesh.original and @remoteRendererData.mesh.reflection
-        @scene.remove(@remoteRendererData.mesh.original)
-        @scene.remove(@remoteRendererData.mesh.reflection)
-      if @remoteRendererData.mesh.soundViz and @remoteRendererData.mesh.soundVizReflection
-        @scene.add(@remoteRendererData.mesh.soundViz)
-        @scene.add(@remoteRendererData.mesh.soundVizReflection)
-    else if @remoteRendererData.streamMode.mode.video == @AL_VIDEO_VIS.RGB_VIDEO
-      if @remoteRendererData.mesh.original and @remoteRendererData.mesh.reflection
-        @scene.add(@remoteRendererData.mesh.original)
-        @scene.add(@remoteRendererData.mesh.reflection)
-      if @remoteRendererData.mesh.soundViz and @remoteRendererData.mesh.soundVizReflection
-        @scene.remove(@remoteRendererData.mesh.soundViz)
-        @scene.remove(@remoteRendererData.mesh.soundVizReflection)
+    switch @remoteRendererData.streamMode.mode.video
+      when @AL_VIDEO_VIS.NO_VIDEO
+        if @remoteRendererData.mesh.original and @remoteRendererData.mesh.reflection
+          if @scene.getObjectById(@remoteRendererData.hologram.mesh.id)
+            @scene.remove(@remoteRendererData.hologram.mesh)
+          if @scene.getObjectById(@remoteRendererData.hologram.reflectionMesh.id)
+            @scene.remove(@remoteRendererData.hologram.reflectionMesh)
+        if @remoteRendererData.mesh.original and @remoteRendererData.mesh.reflection
+          if @scene.getObjectById(@remoteRendererData.mesh.original.id)
+            @scene.remove(@remoteRendererData.mesh.original)
+          if @scene.getObjectById(@remoteRendererData.mesh.reflection.id)
+            @scene.remove(@remoteRendererData.mesh.reflection)
+        if @remoteRendererData.mesh.soundViz and @remoteRendererData.mesh.soundVizReflection
+          unless @scene.getObjectById(@remoteRendererData.mesh.soundViz.id)
+            @scene.add(@remoteRendererData.mesh.soundViz)
+          unless @scene.getObjectById(@remoteRendererData.mesh.soundVizReflection.id)
+            @scene.add(@remoteRendererData.mesh.soundVizReflection)
+      when @AL_VIDEO_VIS.RGB_VIDEO
+        if @remoteRendererData.mesh.original and @remoteRendererData.mesh.reflection
+          if @scene.getObjectById(@remoteRendererData.hologram.mesh.id)
+            @scene.remove(@remoteRendererData.hologram.mesh)
+          if @scene.getObjectById(@remoteRendererData.hologram.reflectionMesh.id)
+            @scene.remove(@remoteRendererData.hologram.reflectionMesh)
+        if @remoteRendererData.mesh.original and @remoteRendererData.mesh.reflection
+          unless @scene.getObjectById(@remoteRendererData.mesh.original.id)
+            @scene.add(@remoteRendererData.mesh.original)
+          unless @scene.getObjectById(@remoteRendererData.mesh.reflection.id)
+            @scene.add(@remoteRendererData.mesh.reflection)
+        if @remoteRendererData.mesh.soundViz and @remoteRendererData.mesh.soundVizReflection
+          if @scene.getObjectById(@remoteRendererData.mesh.soundViz.id)
+            @scene.remove(@remoteRendererData.mesh.soundViz)
+          if @scene.getObjectById(@remoteRendererData.mesh.soundVizReflection.id)
+            @scene.remove(@remoteRendererData.mesh.soundVizReflection)
+      when @AL_VIDEO_VIS.DEPTH_VIDEO
+        if @remoteRendererData.mesh.original and @remoteRendererData.mesh.reflection
+          unless @scene.getObjectById(@remoteRendererData.hologram.mesh.id)
+            @scene.add(@remoteRendererData.hologram.mesh)
+          unless @scene.getObjectById(@remoteRendererData.hologram.reflectionMesh.id)
+            @scene.add(@remoteRendererData.hologram.reflectionMesh)
+        if @remoteRendererData.mesh.soundViz and @remoteRendererData.mesh.soundVizReflection
+          if @scene.getObjectById(@remoteRendererData.mesh.soundViz.id)
+            @scene.remove(@remoteRendererData.mesh.soundViz)
+          if @scene.getObjectById(@remoteRendererData.mesh.soundVizReflection.id)
+            @scene.remove(@remoteRendererData.mesh.soundVizReflection)
+        if @remoteRendererData.mesh.original and @remoteRendererData.mesh.reflection
+          if @scene.getObjectById(@remoteRendererData.mesh.original.id)
+            @scene.remove(@remoteRendererData.mesh.original)
+          if @scene.getObjectById(@remoteRendererData.mesh.reflection.id)
+            @scene.remove(@remoteRendererData.mesh.reflection)
 
     return
 
   _animateRemoteStream: () ->
     if !!@remoteRendererData.streamMode
-      if @remoteRendererData.streamMode.mode.video == @AL_VIDEO_VIS.RGB_VIDEO
+      if (@remoteRendererData.streamMode.mode.video == @AL_VIDEO_VIS.RGB_VIDEO) or
+      (@remoteRendererData.streamMode.mode.video == @AL_VIDEO_VIS.DEPTH_VIDEO)
 
         unless @remoteStreaming
           remoteVideoSize = @_getRemoteVideoSize()
@@ -577,7 +610,8 @@ class AlVideoStreamController
             @remoteRendererData.streamSize.height = remoteVideoSize.height
             # consider the strem to be started
             @remoteStreaming = true
-            @_initVideoRenderer(@remoteRendererData)
+            @_initVideoRenderer(@remoteRendererData, true)
+            @_updateMode()
         else
           if ( @remoteVideo.readyState == @remoteVideo.HAVE_ENOUGH_DATA )
             @remoteRendererData.imageContext.drawImage( @remoteVideo, 0, 0 )
@@ -585,7 +619,7 @@ class AlVideoStreamController
             if ( @remoteRendererData.texture )
               @remoteRendererData.texture.needsUpdate = true
 
-      if @remoteRendererData.streamMode.mode.video == 'none'
+      else if @remoteRendererData.streamMode.mode.video == @AL_VIDEO_VIS.NO_VIDEO
         # NOTE: ICOSAHEDRON
         if (@remoteRendererData.mesh.original and @remoteRendererData.mesh.soundVizReflection)
           @remoteRendererData.mesh.soundViz.rotation.x += 0.005
