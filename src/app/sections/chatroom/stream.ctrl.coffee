@@ -3,8 +3,7 @@ _ = require('lodash')
 angular.module('AltexoApp')
 
 .controller 'StreamCtrl',
-($scope, $location, $routeParams, $localStorage, $mdToast, $mdSidenav, $log,
-  $rootScope, RpcError) ->
+($scope, $location, $routeParams, $localStorage, $mdToast, $mdSidenav, $log, $rootScope, RpcError, AL_VIDEO_VIS) ->
 
   $scope.textMessage = ''
 
@@ -126,7 +125,7 @@ angular.module('AltexoApp')
     $scope.controls.local.video =! $scope.controls.local.video
     $scope.chat.setMode {
       audio: $scope.controls.local.audio
-      video: if $scope.controls.local.video then '2d' else 'none'
+      video: if $scope.controls.local.video then AL_VIDEO_VIS.RGB_VIDEO else AL_VIDEO_VIS.NO_VIDEO
     }
     return
 
@@ -134,6 +133,6 @@ angular.module('AltexoApp')
     $scope.controls.local.audio =! $scope.controls.local.audio
     $scope.chat.setMode {
       audio: $scope.controls.local.audio
-      video: if $scope.controls.local.video then '2d' else 'none'
+      video: if $scope.controls.local.video then AL_VIDEO_VIS.RGB_VIDEO else AL_VIDEO_VIS.NO_VIDEO
     }
     return
