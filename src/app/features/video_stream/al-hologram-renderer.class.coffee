@@ -11,7 +11,8 @@ class AlHologramRenderer
     vertReflection: require('raw!./shaders/hologramRendererReflection.vert')
   }
 
-  constructor: () ->
+  constructor: (@rendererData, @scene) ->
+    @_init()
     return
 
   # generate points for rendering field (can be used for point cloud)
@@ -54,8 +55,8 @@ class AlHologramRenderer
       vUv: vUv
     }
 
-  _initHologram: (rendererData) ->
-    rendererData.hologram = {}
+  _init: () =>
+    @rendererData.hologram = {}
 
     geometry = new THREE.BufferGeometry()
     geometryReflection = new THREE.BufferGeometry()
@@ -69,9 +70,9 @@ class AlHologramRenderer
     geometry.addAttribute( 'position', new THREE.BufferAttribute( vertices, 3 ) )
     geometry.addAttribute( 'vUv', new THREE.BufferAttribute( vUv, 2 ) )
 
-    rendererData.hologram.hologramMaterial = new THREE.ShaderMaterial({
+    @rendererData.hologram.hologramMaterial = new THREE.ShaderMaterial({
       uniforms:
-        textureMap: {type: 't', value: rendererData.texture}
+        textureMap: {type: 't', value: @rendererData.texture}
         wAmount: {type: 'f', value: @HOLOGRAM_W}
         hAmount: {type: 'f', value: @HOLOGRAM_H}
       vertexShader: @hologramShaders.vert
@@ -79,11 +80,11 @@ class AlHologramRenderer
       side: THREE.DoubleSide
       transparent: true
     } )
-    rendererData.hologram.mesh = new THREE.LineSegments( geometry, rendererData.hologram.hologramMaterial )
+    @rendererData.hologram.mesh = new THREE.LineSegments( geometry, @rendererData.hologram.hologramMaterial )
 
-    rendererData.hologram.hologramReflectionMaterial = new THREE.ShaderMaterial({
+    @rendererData.hologram.hologramReflectionMaterial = new THREE.ShaderMaterial({
       uniforms:
-        textureMap: {type: 't', value: rendererData.texture}
+        textureMap: {type: 't', value: @rendererData.texture}
         wAmount: {type: 'f', value: @HOLOGRAM_W}
         hAmount: {type: 'f', value: @HOLOGRAM_H}
       vertexShader: @hologramShaders.vertReflection
@@ -91,6 +92,21 @@ class AlHologramRenderer
       side: THREE.DoubleSide
       transparent: true
     } )
-    rendererData.hologram.reflectionMesh = new THREE.LineSegments( geometry, rendererData.hologram.hologramReflectionMaterial)
+    @rendererData.hologram.reflectionMesh = new THREE.LineSegments( geometry, @rendererData.hologram.hologramReflectionMaterial)
 
     return
+
+  updateVisibility: (mode) =>
+    if mode == AL_VIDEO_CONST.DEPTH_VIDEO
+      unless @scene.getObjectById(@rendererData.hologram.mesh.id)
+        @scene.add(@rendererData.hologram.mesh)
+      unless @scene.getObjectById(@rendererData.hologram.reflectionMesh.id)
+        @scene.add(@rendererData.hologram.reflectionMesh)
+    else
+      if @scene.getObjectById(@rendererData.hologram.mesh.id)
+        @scene.remove(@rendererData.hologram.mesh)
+      if @scene.getObjectById(@rendererData.hologram.reflectionMesh.id)
+        @scene.remove(@rendererData.hologram.reflectionMesh)
+    return
+
+module.exports = AlHologramRenderer

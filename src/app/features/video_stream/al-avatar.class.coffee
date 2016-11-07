@@ -1,6 +1,7 @@
 
 AlRgbRenderer = require './al-rgb-renderer.class.coffee'
 AlSoundRenderer = require './al-sound-renderer.class.coffee'
+AlHologramRenderer = require './al-hologram-renderer.class.coffee'
 # AL_VIDEO_CONST = require './al-video-stream.const.coffee'
 
 class AlAvatar
@@ -42,10 +43,13 @@ class AlAvatar
       @rgbRenderer.updateVisibility(@rendererData.streamMode.mode.video)
     if @soundRenderer
       @soundRenderer.updateVisibility(@rendererData.streamMode.mode.video)
+    if @hologramRenderer
+      @hologramRenderer.updateVisibility(@rendererData.streamMode.mode.video)
 
   animate: () =>
     if !!@rendererData.streamMode
-      if @rendererData.streamMode.mode.video == AL_VIDEO_CONST.RGB_VIDEO
+      if @rendererData.streamMode.mode.video == AL_VIDEO_CONST.RGB_VIDEO or
+      @rendererData.streamMode.mode.video == AL_VIDEO_CONST.DEPTH_VIDEO
         unless @streaming
           videoSize = @_getVideoSize()
           unless videoSize.width == 0 or videoSize.height == 0
@@ -55,6 +59,7 @@ class AlAvatar
             @streaming = true
             @_init()
             @rgbRenderer = new AlRgbRenderer(this)
+            @hologramRenderer = new AlHologramRenderer(@rendererData, @scene)
             @updateMode()
 
         else
