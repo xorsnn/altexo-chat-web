@@ -1,9 +1,10 @@
 
 class AlLabel
-  constructor: () ->
+  constructor: (@rendererData, @scene) ->
+    @_init()
     return
 
-  _initLabels: () ->
+  _init: () ->
     loader = new THREE.FontLoader()
     fileL = require('../../../fonts/Roboto_Regular.json')
     loader.load fileL, ( response ) =>
@@ -31,3 +32,5 @@ class AlLabel
       return
 
     return
+
+module.exports = AlLabel

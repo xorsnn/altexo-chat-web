@@ -2,18 +2,20 @@
 AlRgbRenderer = require './al-rgb-renderer.class.coffee'
 AlSoundRenderer = require './al-sound-renderer.class.coffee'
 AlHologramRenderer = require './al-hologram-renderer.class.coffee'
-# AL_VIDEO_CONST = require './al-video-stream.const.coffee'
+AlLabel = require './al-label.class.coffee'
 
 class AlAvatar
   rgbRenderer: null
   hologramRenderer: null
   soundRenderer: null
+  labelRenderer: null
 
   streaming: false
 
   constructor: (@rendererData, @scene, @video) ->
     console.log "al avatar constructor"
     @soundRenderer = new AlSoundRenderer(@rendererData, @scene)
+    @labelRenderer = new AlLabel(@rendererData, @scene)
     return
 
   _init: () =>
@@ -68,14 +70,8 @@ class AlAvatar
             if ( @rendererData.texture )
               @rendererData.texture.needsUpdate = true
 
-      # TODO: move to soudn vis class
-      if @rendererData.streamMode.mode.video == AL_VIDEO_CONST.NO_VIDEO
-        # NOTE: ICOSAHEDRON
-        if (@rendererData.mesh.soundViz and @rendererData.mesh.soundVizReflection)
-          @rendererData.mesh.soundViz.rotation.x += 0.005
-          @rendererData.mesh.soundViz.rotation.y += 0.005
-          @rendererData.mesh.soundVizReflection.rotation.x -= 0.005
-          @rendererData.mesh.soundVizReflection.rotation.y -= 0.005
+      else if @rendererData.streamMode.mode.video == AL_VIDEO_CONST.NO_VIDEO
+        @soundRenderer.animate()
 
     return
 

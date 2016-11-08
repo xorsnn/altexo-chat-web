@@ -155,12 +155,6 @@ class AlVideoStreamController
     @windowHalfX = window.innerWidth / 2
     @windowHalfY = window.innerHeight / 2
 
-    ##
-    # Local and remote streams
-    @localStreaming = false
-    @remoteStreaming = false
-
-
     mic = new p5.AudioIn()
     mic.start()
     @fft = new p5.FFT(0.8, 16)

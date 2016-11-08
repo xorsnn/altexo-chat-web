@@ -100,4 +100,13 @@ class AlSoundRenderer
     @visualisatorReflectionMaterial.uniforms.spectrum.value = spec
     return
 
+  animate: () =>
+    # NOTE: ICOSAHEDRON
+    if (@rendererData.mesh.soundViz and @rendererData.mesh.soundVizReflection)
+      @rendererData.mesh.soundViz.rotation.x += 0.005
+      @rendererData.mesh.soundViz.rotation.y += 0.005
+      @rendererData.mesh.soundVizReflection.rotation.x -= 0.005
+      @rendererData.mesh.soundVizReflection.rotation.y -= 0.005
+    return
+
 module.exports = AlSoundRenderer
