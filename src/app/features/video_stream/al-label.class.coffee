@@ -21,12 +21,12 @@ class AlLabel
   updateText: (newText) =>
     @labelText = newText
     if @font
-      @_showLabel(false)
+      @showLabel(false)
       @_createText()
-      @_showLabel(true)
+      @showLabel(true)
 
 
-  _showLabel: (show = true) =>
+  showLabel: (show = true) =>
     if @label
       if show
         unless @scene.getObjectById(@label.id)
@@ -55,9 +55,13 @@ class AlLabel
       blending: THREE.AdditiveBlending
     } )
 
+    textGeo.computeBoundingBox()
+
     @label = new THREE.Mesh( textGeo, material )
-    @label.position.x = @rendererData.modification.position.x
+    @label.position.x = @rendererData.modification.position.x - (textGeo.boundingBox.max.x - textGeo.boundingBox.min.x) / 2
+    @label.position.y = 180
     @label.rotation.y = @rendererData.modification.rotation.y
+    @label.position.z = ((textGeo.boundingBox.max.x - textGeo.boundingBox.min.x) * Math.sin(@rendererData.modification.rotation.y)) / 2
     return
 
 module.exports = AlLabel

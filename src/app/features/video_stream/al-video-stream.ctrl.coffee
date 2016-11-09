@@ -32,6 +32,8 @@ class AlVideoStreamController
 
   ### @ngInject ###
   constructor: ($scope, $element, $timeout, $rootScope, AL_VIDEO_VIS) ->
+    @scope = $scope # todo eliminate this
+
     @AL_VIDEO_VIS = AL_VIDEO_VIS
 
     @element = $element[0]
@@ -160,9 +162,6 @@ class AlVideoStreamController
     @fft = new p5.FFT(0.8, 16)
     @fft.setInput(mic)
 
-    @visualisatorMaterial = null
-    @visualisatorReflectionMaterial = null
-
     $element.ready () =>
       $timeout () =>
         @_init()
@@ -178,8 +177,17 @@ class AlVideoStreamController
       @remoteRendererData.streamMode = if !!data.remote then data.remote else @remoteRendererData.streamMode
       @localRendererData.streamMode = if !!data.local then data.local else @localRendererData.streamMode
       @_updateMode()
+      @_updateNicks()
       return
 
+    return
+
+  _updateNicks: =>
+    if @localAvatar
+      @localAvatar.updateLabel(@scope.$storage.nickname)
+    if @remoteAvatar
+      if @remoteRendererData.streamMode.name
+        @remoteAvatar.updateLabel(@remoteRendererData.streamMode.name)
     return
 
   _updateMode: ->
@@ -251,6 +259,7 @@ class AlVideoStreamController
     # @_initLabels()
     @localAvatar = new AlAvatar(@localRendererData, @scene, document.getElementById( 'localVideo' ))
     @remoteAvatar = new AlAvatar(@remoteRendererData, @scene, document.getElementById( 'remoteVideo' ))
+    @_updateNicks()
 
     return
 

@@ -38,12 +38,14 @@ angular.module('AltexoApp')
           mode.remote =
             {
               'id': user.id
+              'name': user.name
               'mode': user.mode
             }
         else
           mode.local =
             {
               'id': user.id
+              'name': user.name
               'mode': user.mode
             }
 
@@ -63,12 +65,14 @@ angular.module('AltexoApp')
           mode.remote =
             {
               'id': user.id
+              'name': user.name
               'mode': user.mode
             }
         else
           mode.local =
             {
               'id': user.id
+              'name': user.name
               'mode': user.mode
             }
         $mdToast.show($mdToast.simple()

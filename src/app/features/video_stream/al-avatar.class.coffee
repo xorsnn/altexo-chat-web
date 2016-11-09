@@ -13,10 +13,9 @@ class AlAvatar
   streaming: false
 
   constructor: (@rendererData, @scene, @video) ->
-    console.log "al avatar constructor"
     @soundRenderer = new AlSoundRenderer(@rendererData, @scene)
     @labelRenderer = new AlLabel(@rendererData, @scene)
-    @labelRenderer.updateText('uuuuuuhhh')
+    @labelRenderer.showLabel(false)
     return
 
   _init: () =>
@@ -60,6 +59,7 @@ class AlAvatar
             @rendererData.streamSize.height = videoSize.height
             # consider the strem to be started
             @streaming = true
+            @labelRenderer.showLabel(true)
             @_init()
             @rgbRenderer = new AlRgbRenderer(this)
             @hologramRenderer = new AlHologramRenderer(@rendererData, @scene)
@@ -82,5 +82,9 @@ class AlAvatar
 
     return
 
+  updateLabel: (newLabel) =>
+    if @labelRenderer
+      @labelRenderer.updateText(newLabel)
+    return
 
 module.exports = AlAvatar
