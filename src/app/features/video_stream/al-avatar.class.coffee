@@ -16,6 +16,7 @@ class AlAvatar
     console.log "al avatar constructor"
     @soundRenderer = new AlSoundRenderer(@rendererData, @scene)
     @labelRenderer = new AlLabel(@rendererData, @scene)
+    @labelRenderer.updateText('uuuuuuhhh')
     return
 
   _init: () =>
