@@ -7,8 +7,9 @@ class AlRgbRenderer
     vert: require('raw!../../../shaders/reflection.vert')
   }
 
-  constructor: (@avatar) ->
-    console.log "al rgb renderer"
+  fullscreenMode: false
+
+  constructor: (@avatar, @camera) ->
     @_init()
     return
 
@@ -39,11 +40,27 @@ class AlRgbRenderer
     @avatar.rendererData.mesh.reflection.position.y = @avatar.rendererData.modification.position.y
     @avatar.rendererData.mesh.reflection.rotation.y = @avatar.rendererData.modification.rotation.y
 
-    # if initHologram
-    #
-    #   @_initHologram(@avatar.rendererData)
-    # console.log @avatar.rendererData.texture
+    return
 
+  toggleFullscreen: () =>
+    # TODO: implement fullscreenMode by clicking using new THREE.Raycaster();
+    @fullscreenMode = ! @fullscreenMode
+    return
+
+
+  animate: () =>
+    if @fullscreenMode
+      @avatar.rendererData.mesh.original.rotation.x = @camera.rotation.x
+      @avatar.rendererData.mesh.original.rotation.y = @camera.rotation.y
+      @avatar.rendererData.mesh.original.rotation.z = @camera.rotation.z
+
+      l = Math.sqrt(Math.pow(@camera.position.x, 2) + Math.pow(@camera.position.y, 2) + Math.pow(@camera.position.z, 2))
+      l2 = 400
+      k = (l - l2) / l
+
+      @avatar.rendererData.mesh.original.position.x = @camera.position.x * k
+      @avatar.rendererData.mesh.original.position.y = @camera.position.y * k
+      @avatar.rendererData.mesh.original.position.z = @camera.position.z * k
     return
 
   updateVisibility: (mode) =>
@@ -57,6 +74,5 @@ class AlRgbRenderer
         @avatar.scene.remove(@avatar.rendererData.mesh.original)
       if @avatar.scene.getObjectById(@avatar.rendererData.mesh.reflection.id)
         @avatar.scene.remove(@avatar.rendererData.mesh.reflection)
-
 
 module.exports = AlRgbRenderer

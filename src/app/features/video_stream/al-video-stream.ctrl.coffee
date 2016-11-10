@@ -257,8 +257,8 @@ class AlVideoStreamController
 
     # Load fonts
     # @_initLabels()
-    @localAvatar = new AlAvatar(@localRendererData, @scene, document.getElementById( 'localVideo' ))
-    @remoteAvatar = new AlAvatar(@remoteRendererData, @scene, document.getElementById( 'remoteVideo' ))
+    @localAvatar = new AlAvatar(@localRendererData, @scene, document.getElementById( 'localVideo' ), @camera)
+    @remoteAvatar = new AlAvatar(@remoteRendererData, @scene, document.getElementById( 'remoteVideo' ), @camera)
     @_updateNicks()
 
     return
