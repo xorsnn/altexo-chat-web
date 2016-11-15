@@ -2,44 +2,50 @@ require('../../_services/web-rtc-peer.service.coffee')
 
 angular.module('AltexoApp')
 
-.directive 'altexoWebRtcView', (WebRtcPeer) -> {
+.directive 'altexoWebRtcViewShareScreen', ($q, WebRtcPeer) -> {
   restrict: 'E'
-  # template: '<ng-transclude/>'
-  # transclude: true
   link: ($scope, $element, attrs) ->
     chat = $scope.$eval(attrs.chat)
 
-    # $scope.iceSent = 0
-    # $scope.iceReceived = 0
+    getScreenStream = ->
+      $q (resolve, reject) ->
+        console.log '>> altexo-web-rtc-view-share-screen: get screen media stream'
+        getUserMedia({
+          # Requesting audio will fail capturing :(
+          # audio: true
+          video: {
+            mandatory: {
+              chromeMediaSource: 'screen'
+            }
+          }
+        }, resolve, reject)
 
-    startWebRtc = (mode) ->
-      console.info '>> altexo-web-rtc-view: start', mode
+    startWebRtc = (videoStream, mode) ->
+      console.info '>> altexo-web-rtc-view-share-screen: start', mode
 
       localVideo = $element.find('video.local').get(0)
       remoteVideo = $element.find('video.remote').get(0)
 
       switch mode
         when 'sendonly'
-          WebRtcPeer.WebRtcPeerSendonly { localVideo }
+          WebRtcPeer.WebRtcPeerSendonly { videoStream, localVideo }
         when 'recvonly'
-          WebRtcPeer.WebRtcPeerRecvonly { remoteVideo }
+          WebRtcPeer.WebRtcPeerRecvonly { videoStream, remoteVideo }
         else
-          WebRtcPeer.WebRtcPeerSendrecv { localVideo, remoteVideo }
+          WebRtcPeer.WebRtcPeerSendrecv { videoStream, localVideo, remoteVideo }
           .then null, (error) ->
-            console.info '>> altexo-web-rtc-view: fallback to recvonly mode'
-            WebRtcPeer.WebRtcPeerRecvonly { remoteVideo }
+            console.info '>> altexo-web-rtc-view-share-screen: fallback to recvonly mode'
+            WebRtcPeer.WebRtcPeerRecvonly { videoStream, remoteVideo }
 
-    startWebRtc(attrs.mode ? 'sendrecv')
+    getScreenStream()
+    .then (screenStream) ->
+      startWebRtc(screenStream, attrs.mode ? 'sendrecv')
     .then (webRtcPeer) ->
 
       webRtcPeer.on 'icecandidate', (candidate) ->
-        # $scope.$apply ->
-        #   $scope.iceSent = $scope.iceSent + 1
         chat.sendCandidate(candidate)
 
       endReceivePeerCandidates = chat.$on 'ice-candidate', (candidate) ->
-        # $scope.$apply ->
-        #   $scope.iceReceived = $scope.iceReceived + 1
         webRtcPeer.addIceCandidate(candidate)
 
       $scope.$on '$destroy', ->
@@ -67,7 +73,7 @@ angular.module('AltexoApp')
         # watchMuteState('remote', 'audio')
 
       unless chat.isWaiter()
-        console.info '>> altexo-web-rtc-view: call'
+        console.info '>> altexo-web-rtc-view-share-screen: call'
 
         webRtcPeer.generateOffer()
         .then (offerSdp) ->
@@ -75,7 +81,7 @@ angular.module('AltexoApp')
         .then (answerSdp) ->
           webRtcPeer.processAnswer(answerSdp)
       else
-        console.info '>> altexo-web-rtc-view: wait call'
+        console.info '>> altexo-web-rtc-view-share-screen: wait call'
 
         chat.receiveOffer()
         .then (offerSdp) ->
@@ -84,10 +90,10 @@ angular.module('AltexoApp')
           chat.sendAnswer(answerSdp)
 
     .then ->
-      console.info '>> altexo-web-rtc-view: done'
+      console.info '>> altexo-web-rtc-view-share-screen: done'
 
     .then null, (error) ->
-      console.error '>> altexo-web-rtc-view:', error
+      console.error '>> altexo-web-rtc-view-share-screen:', error
 
     return
 }

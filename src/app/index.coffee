@@ -60,7 +60,4 @@ require('./features/modernizr/index.coffee')
 require('./features/video_stream/index.coffee')
 require('./features/recently_used_rooms/index.coffee')
 
-# TODO: take a look later and may be move to 'features'
-require('./sections/chatroom/web-rtc-view.directive.coffee')
-
 module.exports = APP

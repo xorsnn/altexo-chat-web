@@ -4,7 +4,16 @@ section.stream(layout="row", flex)
   .logo_dark
     img(ng-src="${require('../../../img/logo_dark.svg')}", height=50, ng-click="onLogoClick()")
 
-  altexo-web-rtc-view(chat='chat', media-state='controls', ng-if='chat.room != null')
+  altexo-web-rtc-view(chat='chat', media-state='controls',
+      ng-if='chat.room != null ? !shareScreen : false')
+    al-video-stream
+    video.local.md-whiteframe-2dp(id='localVideo', autoplay='true', muted='true',
+      width='320px', height='240px', style='display:none')
+    video.remote.md-whiteframe-2dp(id='remoteVideo', autoplay='true',
+      width='320px', height='240px', style='display:none')
+
+  altexo-web-rtc-view-share-screen(chat='chat', media-state='controls',
+      ng-if='chat.room != null ? shareScreen : false')
     al-video-stream
     video.local.md-whiteframe-2dp(id='localVideo', autoplay='true', muted='true',
       width='320px', height='240px', style='display:none')
@@ -41,6 +50,9 @@ section.stream(layout="row", flex)
             md-icon(md-svg-src="${require('../../../img/icons/ic_mic_off_black_24px.svg')}", ng-if="!controls.local.audio")
         div(flex)
         div
+          md-button(class="md-fab md-mini md-primary", aria-label="Share screen", ng-click="toggleShareScreen()")
+            md-icon(md-svg-src="${require('../../../img/icons/ic_chat_bubble_black_24px.svg')}")
+
           md-button(class="md-fab md-mini md-primary", aria-label="Open/close chat", ng-click="toggleChat()")
             md-icon(md-svg-src="${require('../../../img/icons/ic_chat_bubble_black_24px.svg')}")
 

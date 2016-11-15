@@ -1,12 +1,17 @@
 _ = require('lodash')
 
+# TODO: take a look later and may be move to 'features'
+require('./web-rtc-view.directive.coffee')
+require('./web-rtc-view-share-screen.directive.coffee')
+
+
 angular.module('AltexoApp')
 
 .controller 'StreamCtrl',
 ($scope, $location, $routeParams, $localStorage, $mdToast, $mdSidenav, $log, $rootScope, RpcError, AL_VIDEO_VIS) ->
 
   $scope.textMessage = ''
-
+  $scope.shareScreen = false
   $scope.controls = {
     local: { audio: true, video: true }
     remote: { audio: true, video: true }
@@ -140,3 +145,7 @@ angular.module('AltexoApp')
       video: if $scope.controls.local.video then AL_VIDEO_VIS.RGB_VIDEO else AL_VIDEO_VIS.NO_VIDEO
     }
     return
+
+  $scope.toggleShareScreen = ->
+    # TODO: probably we should send a message to peer for restarting session
+    $scope.shareScreen = not $scope.shareScreen
