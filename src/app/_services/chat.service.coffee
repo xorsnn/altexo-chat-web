@@ -141,8 +141,15 @@ angular.module('AltexoApp')
       .then => this.room = null
 
     enterRoom: (name) ->
+      # this.rpc.request('room/enter', [name])
+      # .then (@room) => this.room
+
+      # TODO: ugly solutions to notify creator about modes
       this.rpc.request('room/enter', [name])
-      .then (@room) => this.room
+      .then (@room) =>
+        $timeout(0).then =>
+          this.rpc.emit('mode-changed', this.room.contacts)
+        this.room
 
     leaveRoom: ->
       this.rpc.request('room/leave')
