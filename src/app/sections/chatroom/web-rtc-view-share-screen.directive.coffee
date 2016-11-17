@@ -2,7 +2,7 @@ require('../../_services/web-rtc-peer.service.coffee')
 
 angular.module('AltexoApp')
 
-.directive 'altexoWebRtcViewShareScreen', ($q, WebRtcPeer) -> {
+.directive 'altexoWebRtcViewShareScreen', ($window, $q, WebRtcPeer) -> {
   restrict: 'E'
   link: ($scope, $element, attrs) ->
     chat = $scope.$eval(attrs.chat)
@@ -10,15 +10,44 @@ angular.module('AltexoApp')
     getScreenStream = ->
       $q (resolve, reject) ->
         console.log '>> altexo-web-rtc-view-share-screen: get screen media stream'
-        getUserMedia({
-          # Requesting audio will fail capturing :(
-          # audio: true
-          video: {
-            mandatory: {
-              chromeMediaSource: 'screen'
-            }
-          }
-        }, resolve, reject)
+
+        extensionInstalled = false
+
+        handleMessage = (ev) ->
+          if ev.origin == $window.location.origin and ev.data
+            switch ev.data.type
+              when 'SS_PING'
+                console.log '>> altexo-web-rtc-view-share-screen: ping ok'
+                extensionInstalled = true
+              when 'SS_DIALOG_SUCCESS'
+                # TODO: checking extension
+                # unless extensionInstalled
+                #   alert('NO EXTENSION INSTALLED!')
+                $window.removeEventListener('message', handleMessage)
+                navigator.webkitGetUserMedia({
+                  # Requesting audio will fail capturing :(
+                  audio: false
+                  video: {
+                    mandatory: {
+                      chromeMediaSource: 'desktop'
+                      chromeMediaSourceId: ev.data.streamId
+                      maxWidth: $window.screen.width
+                      maxHeight: $window.screen.height
+                    }
+                  }
+                }, resolve, reject)
+              when 'SS_DIALOG_CANCEL'
+                $window.removeEventListener('message', handleMessage)
+                reject('cancel')
+          return
+
+        $window.addEventListener('message', handleMessage)
+        $window.postMessage({
+          type: 'SS_UI_REQUEST'
+          text: 'start'
+          url: $window.location.origin
+        }, '*')
+
 
     startWebRtc = (videoStream, mode) ->
       console.info '>> altexo-web-rtc-view-share-screen: start', mode
