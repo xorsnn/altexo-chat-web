@@ -54,7 +54,10 @@ class AlRgbRenderer
   toggleFullscreen: () =>
     @fullscreenMode = ! @fullscreenMode
     unless @fullscreenMode
+      @_showReflection(true)
       @_toDefaultPosition()
+    else
+      @_showReflection(false)
     return
 
 
@@ -73,16 +76,32 @@ class AlRgbRenderer
       @avatar.rendererData.mesh.original.position.z = @camera.position.z * k
     return
 
-  updateVisibility: (mode) =>
-    if mode == AL_VIDEO_CONST.RGB_VIDEO
+  _showOriginal:(show=true) =>
+    if show
       unless @avatar.scene.getObjectById(@avatar.rendererData.mesh.original.id)
         @avatar.scene.add(@avatar.rendererData.mesh.original)
-      unless @avatar.scene.getObjectById(@avatar.rendererData.mesh.reflection.id)
-        @avatar.scene.add(@avatar.rendererData.mesh.reflection)
     else
       if @avatar.scene.getObjectById(@avatar.rendererData.mesh.original.id)
         @avatar.scene.remove(@avatar.rendererData.mesh.original)
+    return
+
+  _showReflection:(show=true) =>
+    if show
+      unless @avatar.scene.getObjectById(@avatar.rendererData.mesh.reflection.id)
+        @avatar.scene.add(@avatar.rendererData.mesh.reflection)
+    else
       if @avatar.scene.getObjectById(@avatar.rendererData.mesh.reflection.id)
         @avatar.scene.remove(@avatar.rendererData.mesh.reflection)
+    return
+
+
+  updateVisibility: (mode) =>
+    if mode == AL_VIDEO_CONST.RGB_VIDEO
+      @_showOriginal(true)
+      @_showReflection(true)
+    else
+      @_showOriginal(false)
+      @_showReflection(false)
+    return
 
 module.exports = AlRgbRenderer
