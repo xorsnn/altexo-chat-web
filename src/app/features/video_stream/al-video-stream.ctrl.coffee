@@ -26,9 +26,12 @@ class AlVideoStreamController
   camera: null
   scene: null
   renderer: null
+  raycaster: null
+  mouse: new THREE.Vector2()
 
   localAvatar: null
   remoteAvatar: null
+
 
   ### @ngInject ###
   constructor: ($scope, $element, $timeout, $rootScope, AL_VIDEO_VIS) ->
@@ -216,6 +219,8 @@ class AlVideoStreamController
 
     @scene = new THREE.Scene()
 
+    @raycaster = new THREE.Raycaster()
+
     @video = document.getElementById( 'localVideo' )
     @remoteVideo = document.getElementById( 'remoteVideo' )
 
@@ -253,6 +258,7 @@ class AlVideoStreamController
       @container.appendChild( @stats.dom )
 
     document.addEventListener( 'mousemove', @_onDocumentMouseMove, false )
+    document.addEventListener( 'mousedown', @_onDocumentMouseDown, false )
     window.addEventListener( 'resize', @_onWindowResize, false )
 
     # Load fonts
@@ -272,10 +278,24 @@ class AlVideoStreamController
     @camera.updateProjectionMatrix()
 
     @renderer.setSize( @element.offsetWidth, @element.offsetHeight )
+    return
 
   _onDocumentMouseMove: ( event ) =>
     @mouseX = ( event.clientX - @windowHalfX )
     @mouseY = ( event.clientY - @windowHalfY ) * 0.2
+    return
+
+  _onDocumentMouseDown: ( event ) =>
+    @mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1
+    @mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1
+    if (@raycaster and @camera and @scene)
+      @raycaster.setFromCamera( @mouse, @camera )
+      intersects = @raycaster.intersectObjects( @scene.children )
+      if ( intersects.length > 0 )
+        @localAvatar.objectsClicked(intersects) if @localAvatar
+        @remoteAvatar.objectsClicked(intersects) if @remoteAvatar
+
+    return
 
   _updateLocalMode: () ->
     if @localAvatar

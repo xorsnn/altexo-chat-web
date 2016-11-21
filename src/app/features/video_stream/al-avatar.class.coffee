@@ -88,4 +88,12 @@ class AlAvatar
       @labelRenderer.updateText(newLabel)
     return
 
+  objectsClicked: (intersects) =>
+    if @rgbRenderer
+      for intersect in intersects
+        if @rendererData.mesh.original == intersect.object
+          @rgbRenderer.toggleFullscreen()
+
+    return
+
 module.exports = AlAvatar

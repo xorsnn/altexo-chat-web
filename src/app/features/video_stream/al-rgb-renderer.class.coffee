@@ -42,9 +42,19 @@ class AlRgbRenderer
 
     return
 
+  _toDefaultPosition: () =>
+    # TODO: implement for reflection also
+    @avatar.rendererData.mesh.original.position.x = @avatar.rendererData.modification.position.x
+    @avatar.rendererData.mesh.original.position.y = 0
+    @avatar.rendererData.mesh.original.position.z = 0
+    @avatar.rendererData.mesh.original.rotation.x = 0
+    @avatar.rendererData.mesh.original.rotation.y = @avatar.rendererData.modification.rotation.y
+    @avatar.rendererData.mesh.original.rotation.z = 0
+
   toggleFullscreen: () =>
-    # TODO: implement fullscreenMode by clicking using new THREE.Raycaster();
     @fullscreenMode = ! @fullscreenMode
+    unless @fullscreenMode
+      @_toDefaultPosition()
     return
 
 
