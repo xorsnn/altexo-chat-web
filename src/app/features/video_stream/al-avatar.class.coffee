@@ -12,7 +12,7 @@ class AlAvatar
 
   streaming: false
 
-  constructor: (@rendererData, @scene, @video) ->
+  constructor: (@rendererData, @scene, @video, @camera) ->
     @soundRenderer = new AlSoundRenderer(@rendererData, @scene)
     @labelRenderer = new AlLabel(@rendererData, @scene)
     @labelRenderer.showLabel(false)
@@ -61,7 +61,7 @@ class AlAvatar
             @streaming = true
             @labelRenderer.showLabel(true)
             @_init()
-            @rgbRenderer = new AlRgbRenderer(this)
+            @rgbRenderer = new AlRgbRenderer(this, @camera)
             @hologramRenderer = new AlHologramRenderer(@rendererData, @scene)
             @updateMode()
 
@@ -70,6 +70,7 @@ class AlAvatar
             @rendererData.imageContext.drawImage( @video, 0, 0 )
             if ( @rendererData.texture )
               @rendererData.texture.needsUpdate = true
+          @rgbRenderer.animate()
 
       else if @rendererData.streamMode.mode.video == AL_VIDEO_CONST.NO_VIDEO
         @soundRenderer.animate()
@@ -85,6 +86,14 @@ class AlAvatar
   updateLabel: (newLabel) =>
     if @labelRenderer
       @labelRenderer.updateText(newLabel)
+    return
+
+  objectsClicked: (intersects) =>
+    if @rgbRenderer
+      for intersect in intersects
+        if @rendererData.mesh.original == intersect.object
+          @rgbRenderer.toggleFullscreen()
+
     return
 
 module.exports = AlAvatar
