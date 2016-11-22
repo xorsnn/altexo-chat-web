@@ -8,7 +8,7 @@ require('./web-rtc-view-share-screen.directive.coffee')
 angular.module('AltexoApp')
 
 .controller 'StreamCtrl',
-($scope, $location, $routeParams, $localStorage, $mdToast, $mdSidenav, $log, $rootScope, RpcError, AL_VIDEO_VIS) ->
+($scope, $location, $routeParams, $localStorage, $mdToast, $mdSidenav, $mdDialog, $window, $log, $rootScope, ScreenSharingExtension, RpcError, AL_VIDEO_VIS) ->
 
   $scope.textMessage = ''
   $scope.shareScreen = false
@@ -147,5 +147,16 @@ angular.module('AltexoApp')
     return
 
   $scope.toggleShareScreen = ->
-    # TODO: probably we should send a message to peer for restarting session
-    $scope.shareScreen = not $scope.shareScreen
+    unless ScreenSharingExtension.isInstalled()
+      confirmDialog = $mdDialog.confirm({
+        title: 'No extension detected'
+        textContent: 'Please install Chrome extension to give access to screen sharing functions for this application.'
+        ok: 'Install'
+        cancel: 'Cancel'
+      })
+      $mdDialog.show(confirmDialog)
+      .then ->
+        $window.open('https://chrome.google.com/webstore/category/extensions', '_blank')
+    else
+      # TODO: probably we should send a message to peer for restarting session
+      $scope.shareScreen = not $scope.shareScreen
