@@ -63,3 +63,28 @@ chrome.windows.getAll({
     }
   }
 });
+
+// // Show page action icon
+// chrome.runtime.onInstalled.addListener(function(details) {
+//   var ruleDevelopment = {
+//     conditions: [
+//       new chrome.declarativeContent.PageStateMatcher({
+//         pageUrl: { hostSuffix: 'vagrantbox.local' }
+//       })
+//     ],
+//     actions: [ new chrome.declarativeContent.ShowPageAction() ]
+//   };
+
+//   var ruleProduction = {
+//     conditions: [
+//       new chrome.declarativeContent.PageStateMatcher({
+//         pageUrl: { hostSuffix: 'altexo.com' }
+//       })
+//     ],
+//     actions: [ new chrome.declarativeContent.ShowPageAction() ]
+//   };
+
+//   chrome.declarativeContent.onPageChanged.removeRules(undefined, function() {
+//     chrome.declarativeContent.onPageChanged.addRules([ruleDevelopment, ruleProduction]);
+//   });
+// });
