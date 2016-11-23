@@ -11,7 +11,6 @@ angular.module('AltexoApp')
 ($scope, $location, $routeParams, $localStorage, $mdToast, $mdSidenav, $mdDialog, $window, $log, $rootScope, ScreenSharingExtension, RpcError, AL_VIDEO_VIS) ->
 
   $scope.textMessage = ''
-  $scope.shareScreen = false
   $scope.controls = {
     local: { audio: true, video: true }
     remote: { audio: true, video: true }
@@ -147,6 +146,14 @@ angular.module('AltexoApp')
     return
 
   $scope.toggleShareScreen = ->
+    unless ScreenSharingExtension.isAvailable()
+      alertDialog = $mdDialog.alert({
+        title: 'Not available'
+        textContent: 'Sorry, screen sharing feature is not available in this browser. Currently it is supported in Google Chrome with official browser extension installed.'
+        ok: 'Ok'
+      })
+      $mdDialog.show(alertDialog)
+      return
     unless ScreenSharingExtension.isInstalled()
       confirmDialog = $mdDialog.confirm({
         title: 'No extension detected'
@@ -156,7 +163,8 @@ angular.module('AltexoApp')
       })
       $mdDialog.show(confirmDialog)
       .then ->
-        $window.open('https://chrome.google.com/webstore/category/extensions', '_blank')
-    else
-      # TODO: probably we should send a message to peer for restarting session
-      $scope.shareScreen = not $scope.shareScreen
+        # TODO: popup is blocked, because 'ok' button handler is called with nextTick.
+        # $window.open('https://chrome.google.com/webstore/category/extensions', '_blank')
+        $window.location.href = 'https://chrome.google.com/webstore/category/extensions'
+      return
+    $scope.chat.toggleShareScreen()

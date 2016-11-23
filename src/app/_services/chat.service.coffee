@@ -46,6 +46,7 @@ angular.module('AltexoApp')
     id: null
     room: null
     messages: null
+    shareScreen: false
 
     constructor: ->
       this.ws = new WebSocket("#{AL_CONST.chatEndpoint}/al_chat")
@@ -101,6 +102,10 @@ angular.module('AltexoApp')
       this.room = null
       this.destroyRoom().then =>
         this.createRoom(name, p2p)
+
+    toggleShareScreen: ->
+      # TODO: probably we should send a message to peer for restarting session
+      this.shareScreen = not this.shareScreen
 
     ensureConnected: ->
       (if this.isConnected() then $q.resolve(true) \

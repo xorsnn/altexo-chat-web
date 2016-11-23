@@ -8,12 +8,18 @@ angular.module('AltexoApp')
     if ev.origin == $window.location.origin and ev.data
       if ev.data.type == 'SS_PING'
         $window.removeEventListener('message', checkExtension)
+        $window.postMessage({
+          type: 'SS_UI_PONG'
+          url: $window.location.origin
+        }, '*')
         extensionInstalled = true
     return
 
   $window.addEventListener('message', checkExtension)
 
   return {
+    isAvailable: -> $window.navigator.userAgent.indexOf('Chrome') != -1
+
     isInstalled: -> extensionInstalled
 
     getStream: ->

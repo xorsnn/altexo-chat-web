@@ -21,7 +21,7 @@ APP = angular.module 'AltexoApp', [
 require('./_services/chat.service.coffee')
 APP
 .controller 'RootCtrl',
-($scope, AltexoChat, $localStorage) ->
+($scope, $localStorage, AltexoChat) ->
   $scope.$storage = $localStorage.$default {
     nickname: 'Anonymous'
     usedRooms: []
@@ -38,6 +38,11 @@ APP
   return
 
 APP
+.run (ScreenSharingExtension) ->
+  # NOTE: require ScreenSharingExtension to receive
+  # pings from extension just as app starts.
+  return
+
 .factory 'httpRequestInterceptor',
 (AuthTokenService) -> {
   request: (config) ->

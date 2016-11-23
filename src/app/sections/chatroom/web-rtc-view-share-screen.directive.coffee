@@ -3,7 +3,7 @@ require('../../_services/screen-sharing-extension.service.coffee')
 
 angular.module('AltexoApp')
 
-.directive 'altexoWebRtcViewShareScreen', (WebRtcPeer, ScreenSharingExtension) -> {
+.directive 'altexoWebRtcViewShareScreen', ($q, $timeout, WebRtcPeer, ScreenSharingExtension) -> {
   restrict: 'E'
   link: ($scope, $element, attrs) ->
     chat = $scope.$eval(attrs.chat)
@@ -27,7 +27,16 @@ angular.module('AltexoApp')
 
     ScreenSharingExtension.getStream()
     .then (screenStream) ->
+      # toggle back when "Stop sharing" button is pressed
+      screenStream.getVideoTracks()[0].onended = ->
+        $timeout(0).then ->
+          chat.shareScreen = false
+
       startWebRtc(screenStream, attrs.mode ? 'sendrecv')
+    .then null, (error) ->
+      if error == 'cancel'
+        chat.shareScreen = false
+      return $q.reject(error)
     .then (webRtcPeer) ->
 
       webRtcPeer.on 'icecandidate', (candidate) ->
