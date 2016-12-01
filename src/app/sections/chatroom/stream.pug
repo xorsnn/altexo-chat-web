@@ -42,18 +42,18 @@ section.stream(layout="row", flex)
       .control-panel(layout='row', flex)
         div(flex)
         div
-          md-button(class="md-fab md-primary", aria-label="Turn off video", ng-click="toggleVideo()")
-            md-icon(md-svg-src="${require('../../../img/icons/ic_videocam_black_24px.svg')}", ng-if="controls.local.video")
-            md-icon(md-svg-src="${require('../../../img/icons/ic_videocam_off_black_24px.svg')}", ng-if="!controls.local.video")
-          md-button(class="md-fab md-primary", aria-label="Turn off audio", ng-click="toggleAudio()")
-            md-icon(md-svg-src="${require('../../../img/icons/ic_mic_black_24px.svg')}", ng-if="controls.local.audio")
-            md-icon(md-svg-src="${require('../../../img/icons/ic_mic_off_black_24px.svg')}", ng-if="!controls.local.audio")
+          md-button.md-fab.md-primary(ng-click="toggleVideo(controls.video = !controls.video)", aria-label="Turn off video")
+            md-icon(ng-if="controls.video", md-svg-src="${require('../../../img/icons/ic_videocam_black_24px.svg')}")
+            md-icon(ng-if="!controls.video", md-svg-src="${require('../../../img/icons/ic_videocam_off_black_24px.svg')}")
+          md-button.md-fab.md-primary(ng-click="toggleAudio(controls.audio = !controls.audio)", aria-label="Turn off audio")
+            md-icon(ng-if="controls.audio", md-svg-src="${require('../../../img/icons/ic_mic_black_24px.svg')}")
+            md-icon(ng-if="!controls.audio", md-svg-src="${require('../../../img/icons/ic_mic_off_black_24px.svg')}")
         div(flex)
         div
-          md-button(class="md-fab md-mini md-primary", aria-label="Share screen", ng-click="toggleShareScreen()")
+          md-button.md-fab.md-mini.md-primary(ng-click="toggleShareScreen()", aria-label="Share screen")
             md-icon(md-svg-src="${require('../../../img/icons/ic_picture_in_picture_white_24px.svg')}")
 
-          md-button(class="md-fab md-mini md-primary", aria-label="Open/close chat", ng-click="toggleChat()")
+          md-button.md-fab.md-mini.md-primary(ng-click="toggleChat()", aria-label="Open/close chat")
             md-icon(md-svg-src="${require('../../../img/icons/ic_chat_bubble_black_24px.svg')}")
 
     if DEBUG == 'true'

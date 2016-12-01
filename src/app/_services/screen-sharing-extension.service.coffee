@@ -28,7 +28,7 @@ angular.module('AltexoApp')
           return reject('no extension')
 
         handleMessage = (ev) ->
-          if ev.origin == $window.location.origin and ev.data
+          if (ev.origin is $window.location.origin) and ev.data
             switch ev.data.type
               when 'SS_DIALOG_SUCCESS'
                 $window.removeEventListener('message', handleMessage)

@@ -10,17 +10,31 @@ angular.module('AltexoApp')
 
   class AltexoRpc extends JsonRpc
 
+    # NOTE: read-only access is suggested
+    mode: null
+
     onAttach: ->
+      this.mode = {
+        audio: 'on' # on|off|muted|<null>
+        video: 'webcam' # webcam|sharedscreen|screensaver|<null>
+      }
       this.emit 'connected', true
 
     sendAnswer: (answerSdp) ->
       this.emit 'answer', answerSdp
+
+    updateMode: (mode) ->
+      for own prop, value of mode
+        this.mode[prop] = value
+      this.notify('mode', [mode])
 
     rpc: {
       'offer': (offerSdp) ->
         this.emit 'offer', offerSdp
         return $q (resolve) =>
           this.once 'answer', resolve
+
+      'mode': -> this.mode
     }
 
     rpcNotify: {
@@ -38,11 +52,16 @@ angular.module('AltexoApp')
       'room/destroy': ->
         $timeout(0).then =>
           this.emit 'room-destroyed'
+
+      'user/mode': (uid, mode) ->
+        $timeout(0).then =>
+          this.emit 'mode', { uid, mode }
     }
 
 
   class AltexoChat
 
+    rpc: null
     id: null
     room: null
     messages: null
@@ -63,9 +82,9 @@ angular.module('AltexoApp')
           prevContacts = this.room.contacts
           this.room.contacts = contacts
 
-          modeChanged = _.differenceBy(contacts, prevContacts, 'mode')
-          if modeChanged.length
-            this.rpc.emit('mode-changed', modeChanged)
+          # modeChanged = _.differenceBy(contacts, prevContacts, 'mode')
+          # if modeChanged.length
+          #   this.rpc.emit('mode-changed', modeChanged)
 
           added = _.differenceBy(contacts, prevContacts, 'id')
           if added.length
@@ -80,6 +99,9 @@ angular.module('AltexoApp')
               this.restartRoom()
 
         return
+
+      this.$on 'mode', ({ id, value }) =>
+        this.rpc.emit('mode-changed', value, id)
 
       messageId = 0
       this.messages = []
@@ -106,6 +128,9 @@ angular.module('AltexoApp')
     toggleShareScreen: ->
       # TODO: probably we should send a message to peer for restarting session
       this.shareScreen = not this.shareScreen
+      this.setMode {
+        capture: not this.rpc.mode.capture
+      }
 
     ensureConnected: ->
       (if this.isConnected() then $q.resolve(true) \
@@ -132,7 +157,8 @@ angular.module('AltexoApp')
       this.rpc.notify('user/alias', [nickname])
 
     setMode: (value) ->
-      this.rpc.notify('user/mode', [value])
+      # this.rpc.notify('user/mode', [value])
+      this.rpc.updateMode(value)
 
     sendMessage: (text) ->
       this.rpc.notify('room/text', [text])
@@ -146,15 +172,15 @@ angular.module('AltexoApp')
       .then => this.room = null
 
     enterRoom: (name) ->
-      # this.rpc.request('room/enter', [name])
-      # .then (@room) => this.room
-
-      # TODO: ugly solutions to notify creator about modes
       this.rpc.request('room/enter', [name])
-      .then (@room) =>
-        $timeout(0).then =>
-          this.rpc.emit('mode-changed', this.room.contacts)
-        this.room
+      .then (@room) => this.room
+
+      # # TODO: ugly solutions to notify creator about modes
+      # this.rpc.request('room/enter', [name])
+      # .then (@room) =>
+      #   $timeout(0).then =>
+      #     this.rpc.emit('mode-changed', this.room.contacts)
+      #   this.room
 
     leaveRoom: ->
       this.rpc.request('room/leave')

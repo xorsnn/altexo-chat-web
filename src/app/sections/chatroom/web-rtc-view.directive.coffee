@@ -32,6 +32,16 @@ angular.module('AltexoApp')
     startWebRtc(attrs.mode ? 'sendrecv')
     .then (webRtcPeer) ->
 
+      getLocalTrack = (type) ->
+        streams = webRtcPeer.peerConnection.getLocalStreams()
+        if streams.length
+          if (tracks = switch type
+                when 'audio' then streams[0].getAudioTracks()
+                when 'video' then streams[0].getVideoTracks()
+                else []).length
+            return tracks[0]
+        return null
+
       webRtcPeer.on 'icecandidate', (candidate) ->
         # $scope.$apply ->
         #   $scope.iceSent = $scope.iceSent + 1
@@ -42,29 +52,21 @@ angular.module('AltexoApp')
         #   $scope.iceReceived = $scope.iceReceived + 1
         webRtcPeer.addIceCandidate(candidate)
 
+      $scope.$watch '#{attrs.chat}.rpc.mode.audio', (value, prev) ->
+        unless value == prev
+          if track = getLocalTrack('audio')
+            track.enabled = (value == 'on')
+        return
+
+      $scope.$watch '#{attrs.chat}.rpc.mode.video', (value, prev) ->
+        unless value == prev
+          if track = getLocalTrack('video')
+            track.enabled = (value == 'webcam') || (value == 'sharedscreen')
+        return
+
       $scope.$on '$destroy', ->
         endReceivePeerCandidates()
         webRtcPeer.dispose()
-
-      watchMuteState = (local, type) ->
-        $scope.$watch "#{attrs.mediaState}.#{local}.#{type}", (value, prev) ->
-          unless value == prev
-            streams = switch local
-              when 'local' then webRtcPeer.peerConnection.getLocalStreams()
-              when 'remote' then webRtcPeer.peerConnection.getRemoteStreams()
-            if streams.length
-              tracks = switch type
-                when 'audio' then streams[0].getAudioTracks()
-                when 'video' then streams[0].getVideoTracks()
-              if tracks.length
-                tracks[0].enabled = value
-          return
-
-      if attrs.mediaState
-        watchMuteState('local', 'video')
-        watchMuteState('local', 'audio')
-        # watchMuteState('remote', 'video')
-        # watchMuteState('remote', 'audio')
 
       unless chat.isWaiter()
         console.info '>> altexo-web-rtc-view: call'

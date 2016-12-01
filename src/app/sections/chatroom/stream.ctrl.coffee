@@ -12,8 +12,11 @@ angular.module('AltexoApp')
 
   $scope.textMessage = ''
   $scope.controls = {
-    local: { audio: true, video: true }
-    remote: { audio: true, video: true }
+    audio: true
+    video: true
+    sharedScreen: false
+    # local: { audio: true, video: true }
+    # remote: { audio: true, video: true }
   }
 
   $scope.toggleChat = ->
@@ -33,56 +36,19 @@ angular.module('AltexoApp')
       $mdSidenav('right').open()
 
     modeChangeToast = $scope.chat.$on 'mode-changed', (users) ->
-      mode = {
-        local: null
-        remote: null
-      }
       users.forEach (user) ->
-        unless $scope.chat.id == user.id
-          mode.remote =
-            {
-              'id': user.id
-              'name': user.name
-              'mode': user.mode
-            }
-        else
-          mode.local =
-            {
-              'id': user.id
-              'name': user.name
-              'mode': user.mode
-            }
-
         $mdToast.show($mdToast.simple()
           .textContent("#{user.name} changed mode."))
-
-      $rootScope.$broadcast 'al-mode-change', mode
+      # TODO: why $rootScope ?
+      $rootScope.$broadcast('al-mode-change', mode)
       return
 
     endToastAdds = $scope.chat.$on 'add-user', (users) ->
-      mode = {
-        local: null
-        remote: null
-      }
       users.forEach (user) ->
-        unless $scope.chat.id == user.id
-          mode.remote =
-            {
-              'id': user.id
-              'name': user.name
-              'mode': user.mode
-            }
-        else
-          mode.local =
-            {
-              'id': user.id
-              'name': user.name
-              'mode': user.mode
-            }
         $mdToast.show($mdToast.simple()
           .textContent("#{user.name} entered this room."))
-
-      $rootScope.$broadcast 'al-mode-change', mode
+      # TODO: why $rootScope ?
+      $rootScope.$broadcast('al-mode-change', mode)
       return
 
     endToastRemoves = $scope.chat.$on 'remove-user', (users) ->
@@ -129,21 +95,11 @@ angular.module('AltexoApp')
       $scope.chat.sendMessage(text)
     $scope.textMessage = ''
 
-  $scope.toggleVideo = ->
-    $scope.controls.local.video =! $scope.controls.local.video
-    $scope.chat.setMode {
-      audio: $scope.controls.local.audio
-      video: if $scope.controls.local.video then AL_VIDEO_VIS.RGB_VIDEO else AL_VIDEO_VIS.NO_VIDEO
-    }
-    return
+  $scope.toggleVideo = (value) ->
+    $scope.chat.setMode(if value then { video: 'webcam' } else { video: 'screensaver' })
 
-  $scope.toggleAudio = ->
-    $scope.controls.local.audio =! $scope.controls.local.audio
-    $scope.chat.setMode {
-      audio: $scope.controls.local.audio
-      video: if $scope.controls.local.video then AL_VIDEO_VIS.RGB_VIDEO else AL_VIDEO_VIS.NO_VIDEO
-    }
-    return
+  $scope.toggleAudio = (value) ->
+    $scope.chat.setMode(if value then { audio: 'on' } else { audio: null })
 
   $scope.toggleShareScreen = ->
     unless ScreenSharingExtension.isAvailable()
