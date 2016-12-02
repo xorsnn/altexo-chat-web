@@ -4,16 +4,7 @@ section.stream(layout="row", flex)
   .logo_dark
     img(ng-src="${require('../../../img/logo_dark.svg')}", height=50, ng-click="onLogoClick()")
 
-  altexo-web-rtc-view(chat='chat', media-state='controls',
-      ng-if='chat.room != null ? !chat.shareScreen : false')
-    al-video-stream
-    video.local.md-whiteframe-2dp(id='localVideo', autoplay='true', muted='true',
-      width='320px', height='240px', style='display:none')
-    video.remote.md-whiteframe-2dp(id='remoteVideo', autoplay='true',
-      width='320px', height='240px', style='display:none')
-
-  altexo-web-rtc-view-share-screen(chat='chat', media-state='controls',
-      ng-if='chat.room != null ? chat.shareScreen : false')
+  altexo-web-rtc-view(chat='chat', ng-if='!chat.isReloaded()')
     al-video-stream
     video.local.md-whiteframe-2dp(id='localVideo', autoplay='true', muted='true',
       width='320px', height='240px', style='display:none')
@@ -42,10 +33,10 @@ section.stream(layout="row", flex)
       .control-panel(layout='row', flex)
         div(flex)
         div
-          md-button.md-fab.md-primary(ng-click="toggleVideo(controls.video = !controls.video)", aria-label="Turn off video")
+          md-button.md-fab.md-primary(ng-click="chat.toggleVideo(controls.video = !controls.video)", aria-label="Turn off video")
             md-icon(ng-if="controls.video", md-svg-src="${require('../../../img/icons/ic_videocam_black_24px.svg')}")
             md-icon(ng-if="!controls.video", md-svg-src="${require('../../../img/icons/ic_videocam_off_black_24px.svg')}")
-          md-button.md-fab.md-primary(ng-click="toggleAudio(controls.audio = !controls.audio)", aria-label="Turn off audio")
+          md-button.md-fab.md-primary(ng-click="chat.toggleAudio(controls.audio = !controls.audio)", aria-label="Turn off audio")
             md-icon(ng-if="controls.audio", md-svg-src="${require('../../../img/icons/ic_mic_black_24px.svg')}")
             md-icon(ng-if="!controls.audio", md-svg-src="${require('../../../img/icons/ic_mic_off_black_24px.svg')}")
         div(flex)

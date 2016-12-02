@@ -15,8 +15,6 @@ angular.module('AltexoApp')
     audio: true
     video: true
     sharedScreen: false
-    # local: { audio: true, video: true }
-    # remote: { audio: true, video: true }
   }
 
   $scope.toggleChat = ->
@@ -94,12 +92,6 @@ angular.module('AltexoApp')
     unless _.trim(text) == ''
       $scope.chat.sendMessage(text)
     $scope.textMessage = ''
-
-  $scope.toggleVideo = (value) ->
-    $scope.chat.setMode(if value then { video: 'webcam' } else { video: 'screensaver' })
-
-  $scope.toggleAudio = (value) ->
-    $scope.chat.setMode(if value then { audio: 'on' } else { audio: null })
 
   $scope.toggleShareScreen = ->
     unless ScreenSharingExtension.isAvailable()

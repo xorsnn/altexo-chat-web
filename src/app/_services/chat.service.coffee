@@ -23,10 +23,11 @@ angular.module('AltexoApp')
     sendAnswer: (answerSdp) ->
       this.emit 'answer', answerSdp
 
-    updateMode: (mode) ->
-      for own prop, value of mode
-        this.mode[prop] = value
-      this.notify('mode', [mode])
+    switchMode: (mode) ->
+      $timeout(0).then =>
+        for own prop, value of mode
+          this.mode[prop] = value
+        this.notify('user/mode', [mode])
 
     rpc: {
       'offer': (offerSdp) ->
@@ -65,7 +66,6 @@ angular.module('AltexoApp')
     id: null
     room: null
     messages: null
-    shareScreen: false
 
     constructor: ->
       this.ws = new WebSocket("#{AL_CONST.chatEndpoint}/al_chat")
@@ -125,13 +125,6 @@ angular.module('AltexoApp')
       this.destroyRoom().then =>
         this.createRoom(name, p2p)
 
-    toggleShareScreen: ->
-      # TODO: probably we should send a message to peer for restarting session
-      this.shareScreen = not this.shareScreen
-      this.setMode {
-        capture: not this.rpc.mode.capture
-      }
-
     ensureConnected: ->
       (if this.isConnected() then $q.resolve(true) \
         else $q (resolve) => this.$once 'connected', resolve)
@@ -150,15 +143,32 @@ angular.module('AltexoApp')
     isConnected: ->
       this.ws.readyState == WebSocket.OPEN
 
+    isReloaded: ->
+      false
+
     authenticate: (token) ->
       this.rpc.request('authenticate', [token])
 
     setAlias: (nickname) ->
       this.rpc.notify('user/alias', [nickname])
 
-    setMode: (value) ->
-      # this.rpc.notify('user/mode', [value])
-      this.rpc.updateMode(value)
+    toggleAudio: (value) ->
+      this.rpc.switchMode \
+        unless value then { audio: 'muted' }
+        else { audio: 'on' }
+
+    toggleVideo: (value) ->
+      this.rpc.switchMode \
+        unless value then { video: 'screensaver' }
+        else { video: 'webcam' }
+
+    toggleShareScreen: (value) ->
+      this._reload = true
+      (this.rpc.switchMode \
+        unless value then { video: 'webcam' }
+        else { video: 'sharedscreen' })
+      .then =>
+        this._reload = false
 
     sendMessage: (text) ->
       this.rpc.notify('room/text', [text])

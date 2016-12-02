@@ -1,5 +1,15 @@
 require('../../_services/web-rtc-peer.service.coffee')
 
+getLocalTrack = (webRtcPeer, type) ->
+  streams = webRtcPeer.peerConnection.getLocalStreams()
+  if streams.length
+    if (tracks = switch type
+          when 'audio' then streams[0].getAudioTracks()
+          when 'video' then streams[0].getVideoTracks()
+          else []).length
+      return tracks[0]
+  return null
+
 angular.module('AltexoApp')
 
 .directive 'altexoWebRtcView', (WebRtcPeer) -> {
@@ -8,66 +18,66 @@ angular.module('AltexoApp')
   # transclude: true
   link: ($scope, $element, attrs) ->
     chat = $scope.$eval(attrs.chat)
+    # shareScreen = $scope.$eval(attrs.shareScreen || 'false')
+    shareScreen = chat.rpc.mode.video == 'sharedscreen'
 
-    # $scope.iceSent = 0
-    # $scope.iceReceived = 0
-
-    startWebRtc = (mode) ->
-      console.info '>> altexo-web-rtc-view: start', mode
-
+    startWebRtc = ->
       localVideo = $element.find('video.local').get(0)
       remoteVideo = $element.find('video.remote').get(0)
 
-      switch mode
-        when 'sendonly'
-          WebRtcPeer.WebRtcPeerSendonly { localVideo }
-        when 'recvonly'
-          WebRtcPeer.WebRtcPeerRecvonly { remoteVideo }
-        else
-          WebRtcPeer.WebRtcPeerSendrecv { localVideo, remoteVideo }
-          .then null, (error) ->
-            console.info '>> altexo-web-rtc-view: fallback to recvonly mode'
-            WebRtcPeer.WebRtcPeerRecvonly { remoteVideo }
+      console.info '>> altexo-web-rtc-view: start sendrecv'
+      WebRtcPeer.WebRtcPeerSendrecv { localVideo, remoteVideo }
+      .then null, (error) ->
+        console.info '>> altexo-web-rtc-view: fallback to recvonly mode'
+        WebRtcPeer.WebRtcPeerRecvonly { remoteVideo }
 
-    startWebRtc(attrs.mode ? 'sendrecv')
+    startScreenSharing = ->
+      localVideo = $element.find('video.local').get(0)
+      remoteVideo = $element.find('video.remote').get(0)
+
+      ScreenSharingExtension.getStream()
+      .then (videoStream) ->
+        # toggle back when "Stop sharing" button is pressed
+        videoStream.getVideoTracks()[0].onended = ->
+          chat.toggleShareScreen(false)
+        # start WebRtcPeer, fallback to receive only when sendrecv fails
+        WebRtcPeer.WebRtcPeerSendrecv { videoStream, localVideo, remoteVideo }
+        .then null, (error) ->
+          WebRtcPeer.WebRtcPeerRecvonly { videoStream, remoteVideo }
+      .catch (error) ->
+        if error == 'cancel'
+          chat.toggleShareScreen(false)
+
+    (if shareScreen then startScreenSharing()
+      else startWebRtc())
     .then (webRtcPeer) ->
 
-      getLocalTrack = (type) ->
-        streams = webRtcPeer.peerConnection.getLocalStreams()
-        if streams.length
-          if (tracks = switch type
-                when 'audio' then streams[0].getAudioTracks()
-                when 'video' then streams[0].getVideoTracks()
-                else []).length
-            return tracks[0]
-        return null
-
+      # Exchange candidates.
       webRtcPeer.on 'icecandidate', (candidate) ->
-        # $scope.$apply ->
-        #   $scope.iceSent = $scope.iceSent + 1
         chat.sendCandidate(candidate)
 
       endReceivePeerCandidates = chat.$on 'ice-candidate', (candidate) ->
-        # $scope.$apply ->
-        #   $scope.iceReceived = $scope.iceReceived + 1
         webRtcPeer.addIceCandidate(candidate)
 
-      $scope.$watch '#{attrs.chat}.rpc.mode.audio', (value, prev) ->
+      # Turn on/off tracks when mode changes.
+      $scope.$watch "#{attrs.chat}.rpc.mode.audio", (value, prev) ->
         unless value == prev
-          if track = getLocalTrack('audio')
+          if track = getLocalTrack(webRtcPeer, 'audio')
             track.enabled = (value == 'on')
         return
 
-      $scope.$watch '#{attrs.chat}.rpc.mode.video', (value, prev) ->
+      $scope.$watch "#{attrs.chat}.rpc.mode.video", (value, prev) ->
         unless value == prev
-          if track = getLocalTrack('video')
+          if track = getLocalTrack(webRtcPeer, 'video')
             track.enabled = (value == 'webcam') || (value == 'sharedscreen')
         return
 
+      # Clean up.
       $scope.$on '$destroy', ->
         endReceivePeerCandidates()
         webRtcPeer.dispose()
 
+      # Connect with peer.
       unless chat.isWaiter()
         console.info '>> altexo-web-rtc-view: call'
 
