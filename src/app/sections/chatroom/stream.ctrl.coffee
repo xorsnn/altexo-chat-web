@@ -4,6 +4,8 @@ _ = require('lodash')
 require('./web-rtc-view.directive.coffee')
 require('./web-rtc-view-share-screen.directive.coffee')
 
+AL_VIDEO_CONST = require('../../features/video_stream/al-video-stream.const.coffee')
+
 
 angular.module('AltexoApp')
 
@@ -14,7 +16,6 @@ angular.module('AltexoApp')
   $scope.controls = {
     audio: true
     video: true
-    sharedScreen: false
   }
 
   $scope.toggleChat = ->
@@ -38,6 +39,10 @@ angular.module('AltexoApp')
         $mdToast.show($mdToast.simple()
           .textContent("#{user.name} changed mode."))
       # TODO: why $rootScope ?
+      mode = {
+        video: if $scope.controls.video then AL_VIDEO_CONST.DEPTH_VIDEO else AL_VIDEO_CONST.NO_VIDEO
+        audio: $scope.controls.audio
+      }
       $rootScope.$broadcast('al-mode-change', mode)
       return
 
@@ -46,6 +51,10 @@ angular.module('AltexoApp')
         $mdToast.show($mdToast.simple()
           .textContent("#{user.name} entered this room."))
       # TODO: why $rootScope ?
+      mode = {
+        video: if $scope.controls.video then AL_VIDEO_CONST.DEPTH_VIDEO else AL_VIDEO_CONST.NO_VIDEO
+        audio: $scope.controls.audio
+      }
       $rootScope.$broadcast('al-mode-change', mode)
       return
 

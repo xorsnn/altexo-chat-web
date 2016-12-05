@@ -12,13 +12,12 @@ getLocalTrack = (webRtcPeer, type) ->
 
 angular.module('AltexoApp')
 
-.directive 'altexoWebRtcView', (WebRtcPeer) -> {
+.directive 'altexoWebRtcView', ($q, WebRtcPeer, ScreenSharingExtension) -> {
   restrict: 'E'
   # template: '<ng-transclude/>'
   # transclude: true
   link: ($scope, $element, attrs) ->
     chat = $scope.$eval(attrs.chat)
-    # shareScreen = $scope.$eval(attrs.shareScreen || 'false')
     shareScreen = chat.rpc.mode.video == 'sharedscreen'
 
     startWebRtc = ->
@@ -35,6 +34,7 @@ angular.module('AltexoApp')
       localVideo = $element.find('video.local').get(0)
       remoteVideo = $element.find('video.remote').get(0)
 
+      console.info '>> altexo-web-rtc-view: start screen sharing'
       ScreenSharingExtension.getStream()
       .then (videoStream) ->
         # toggle back when "Stop sharing" button is pressed
@@ -44,12 +44,12 @@ angular.module('AltexoApp')
         WebRtcPeer.WebRtcPeerSendrecv { videoStream, localVideo, remoteVideo }
         .then null, (error) ->
           WebRtcPeer.WebRtcPeerRecvonly { videoStream, remoteVideo }
-      .catch (error) ->
+      .then null, (error) ->
         if error == 'cancel'
           chat.toggleShareScreen(false)
+        return $q.reject(error)
 
-    (if shareScreen then startScreenSharing()
-      else startWebRtc())
+    (if shareScreen then startScreenSharing() else startWebRtc())
     .then (webRtcPeer) ->
 
       # Exchange candidates.
@@ -76,6 +76,9 @@ angular.module('AltexoApp')
       $scope.$on '$destroy', ->
         endReceivePeerCandidates()
         webRtcPeer.dispose()
+
+      # Notify model about ready state.
+      chat.signalWebRtcReady()
 
       # Connect with peer.
       unless chat.isWaiter()

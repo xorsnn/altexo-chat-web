@@ -11,7 +11,8 @@ angular.module('AltexoApp')
   class AltexoRpc extends JsonRpc
 
     # NOTE: read-only access is suggested
-    mode: null
+    # mode: null
+    mode: {}
 
     onAttach: ->
       this.mode = {
@@ -29,7 +30,15 @@ angular.module('AltexoApp')
           this.mode[prop] = value
         this.notify('user/mode', [mode])
 
+    confirmRestart: ->
+      this.emit 'confirm-restart', true
+
     rpc: {
+      'restart': ->
+        this.emit 'request-restart'
+        return $q (resolve) =>
+          this.once 'confirm-restart', resolve
+
       'offer': (offerSdp) ->
         this.emit 'offer', offerSdp
         return $q (resolve) =>
@@ -66,6 +75,7 @@ angular.module('AltexoApp')
     id: null
     room: null
     messages: null
+    _webRtcRestarting: false
 
     constructor: ->
       this.ws = new WebSocket("#{AL_CONST.chatEndpoint}/al_chat")
@@ -102,6 +112,14 @@ angular.module('AltexoApp')
 
       this.$on 'mode', ({ id, value }) =>
         this.rpc.emit('mode-changed', value, id)
+
+      this.$on 'request-restart', =>
+        $timeout(0)
+        .then => this._webRtcRestarting = true
+        .then => $timeout(0)
+        .then => this._webRtcRestarting = false
+        .then => this._waitWebRtcReady()
+        .then => this.rpc.confirmRestart()
 
       messageId = 0
       this.messages = []
@@ -143,8 +161,8 @@ angular.module('AltexoApp')
     isConnected: ->
       this.ws.readyState == WebSocket.OPEN
 
-    isReloaded: ->
-      false
+    isRestarting: ->
+      this._webRtcRestarting
 
     authenticate: (token) ->
       this.rpc.request('authenticate', [token])
@@ -163,12 +181,47 @@ angular.module('AltexoApp')
         else { video: 'webcam' }
 
     toggleShareScreen: (value) ->
-      this._reload = true
-      (this.rpc.switchMode \
-        unless value then { video: 'webcam' }
-        else { video: 'sharedscreen' })
-      .then =>
-        this._reload = false
+      unless value?
+        value = not (this.rpc.mode.video == 'sharedscreen')
+
+      # when we are creator in p2p room:
+      # 1. Restart self and change video stream to shared screen
+      # 2. Wait for a call
+      # 3. Request peer to restart
+
+      # when we are companion in p2p room:
+      # 1. Request peer to restart
+      # 2. Restart self
+      # 3. Call
+
+      # when we are not in p2p room:
+      # 1. Restart self
+
+      if this.room.p2p
+        if this.room.creator == this.id
+          $timeout(0).then => this._webRtcRestarting = true
+          .then =>
+            this.rpc.switchMode \
+              unless value then { video: 'webcam' }
+              else { video: 'sharedscreen' }
+          .then => this._webRtcRestarting = false
+          .then => this._waitWebRtcReady()
+          .then => this._restartPeer()
+        else
+          $timeout(0).then => this._restartPeer()
+          .then => this._webRtcRestarting = true
+          .then =>
+            this.rpc.switchMode \
+              unless value then { video: 'webcam' }
+              else { video: 'sharedscreen' }
+          .then => this._webRtcRestarting = false
+      else
+        $timeout(0).then => this._webRtcRestarting = true
+        .then =>
+          this.rpc.switchMode \
+            unless value then { video: 'webcam' }
+            else { video: 'sharedscreen' }
+        .then => this._webRtcRestarting = false
 
     sendMessage: (text) ->
       this.rpc.notify('room/text', [text])
@@ -207,6 +260,15 @@ angular.module('AltexoApp')
 
     sendAnswer: (answerSdp) ->
       this.rpc.sendAnswer(answerSdp)
+
+    signalWebRtcReady: ->
+      this.rpc.emit 'web-rtc-ready', true
+
+    _waitWebRtcReady: ->
+      $q (resolve) => this.$once 'web-rtc-ready', resolve
+
+    _restartPeer: ->
+      this.rpc.request('peer/restart')
 
     # angular-style event subscription
     # use rpc object as internal event emitter
