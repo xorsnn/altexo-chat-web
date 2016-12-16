@@ -2,7 +2,6 @@ _ = require('lodash')
 
 # TODO: take a look later and may be move to 'features'
 require('./web-rtc-view.directive.coffee')
-require('./web-rtc-view-share-screen.directive.coffee')
 
 AL_VIDEO_CONST = require('../../features/video_stream/al-video-stream.const.coffee')
 
@@ -23,11 +22,12 @@ angular.module('AltexoApp')
     return
 
   $scope.chat.ensureConnected()
-  .then (id) ->
+  .then ->
     $scope.chat.setAlias($localStorage.nickname)
-  .then (dt) ->
-    $scope.chat.openRoom($routeParams.room)
-  .then (dt) ->
+  .then ->
+    # $scope.chat.openRoom($routeParams.room, false)
+    $scope.chat.openRoom($routeParams.room, true)
+  .then ->
     # add room to used
     $scope.rememberRoom($routeParams.room)
 

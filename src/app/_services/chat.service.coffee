@@ -130,7 +130,7 @@ angular.module('AltexoApp')
           this.messages.shift()
         return
 
-    openRoom: (name, p2p = true) ->
+    openRoom: (name, p2p=true) ->
       this.enterRoom(name)
       .then null, (error) =>
         unless error.code == RpcError.ROOM_NOT_FOUND
