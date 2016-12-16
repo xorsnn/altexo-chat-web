@@ -39,7 +39,8 @@ angular.module('AltexoApp')
       .then (videoStream) ->
         # toggle back when "Stop sharing" button is pressed
         videoStream.getVideoTracks()[0].onended = ->
-          chat.toggleShareScreen(false)
+          unless chat.isRestarting()
+            chat.toggleShareScreen(false)
         # start WebRtcPeer, fallback to receive only when sendrecv fails
         WebRtcPeer.WebRtcPeerSendrecv { videoStream, localVideo, remoteVideo }
         .then null, (error) ->
