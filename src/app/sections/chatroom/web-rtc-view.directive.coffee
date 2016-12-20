@@ -1,4 +1,5 @@
 require('../../_services/web-rtc-peer.service.coffee')
+require('../../_services/screen-sharing-extension.service.coffee')
 
 getLocalTrack = (webRtcPeer, type) ->
   streams = webRtcPeer.peerConnection.getLocalStreams()
