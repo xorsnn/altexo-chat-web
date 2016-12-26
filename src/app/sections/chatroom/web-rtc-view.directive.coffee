@@ -1,5 +1,6 @@
 require('../../_services/web-rtc-peer.service.coffee')
 require('../../_services/screen-sharing-extension.service.coffee')
+require('../../_constants/video.const.coffee')
 
 getLocalTrack = (webRtcPeer, type) ->
   streams = webRtcPeer.peerConnection.getLocalStreams()
@@ -13,13 +14,14 @@ getLocalTrack = (webRtcPeer, type) ->
 
 angular.module('AltexoApp')
 
-.directive 'altexoWebRtcView', ($q, WebRtcPeer, ScreenSharingExtension) -> {
+.directive 'altexoWebRtcView', \
+($q, WebRtcPeer, ScreenSharingExtension, AL_VIDEO) -> {
   restrict: 'E'
   # template: '<ng-transclude/>'
   # transclude: true
   link: ($scope, $element, attrs) ->
     chat = $scope.$eval(attrs.chat)
-    shareScreen = chat.rpc.mode.video == 'sharedscreen'
+    shareScreen = chat.rpc.mode.video == AL_VIDEO.SHARED_SCREEN_VIDEO
 
     startWebRtc = ->
       localVideo = $element.find('video.local').get(0)
@@ -65,13 +67,13 @@ angular.module('AltexoApp')
       $scope.$watch "#{attrs.chat}.rpc.mode.audio", (value, prev) ->
         unless value == prev
           if track = getLocalTrack(webRtcPeer, 'audio')
-            track.enabled = (value == 'on')
+            track.enabled = (value == true)
         return
 
       $scope.$watch "#{attrs.chat}.rpc.mode.video", (value, prev) ->
         unless value == prev
           if track = getLocalTrack(webRtcPeer, 'video')
-            track.enabled = (value == 'webcam') || (value == 'sharedscreen')
+            track.enabled = (value != AL_VIDEO.NO_VIDEO)
         return
 
       # Clean up.

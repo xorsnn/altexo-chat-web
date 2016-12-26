@@ -3,13 +3,11 @@ _ = require('lodash')
 # TODO: take a look later and may be move to 'features'
 require('./web-rtc-view.directive.coffee')
 
-AL_VIDEO_CONST = require('../../features/video_stream/al-video-stream.const.coffee')
-
 
 angular.module('AltexoApp')
 
 .controller 'StreamCtrl',
-($scope, $location, $routeParams, $localStorage, $mdToast, $mdSidenav, $mdDialog, $window, $log, $rootScope, ScreenSharingExtension, RpcError, AL_VIDEO_VIS) ->
+($scope, $location, $routeParams, $localStorage, $mdToast, $mdSidenav, $mdDialog, $window, ScreenSharingExtension, RpcError) ->
 
   $scope.textMessage = ''
   $scope.controls = {
@@ -34,28 +32,15 @@ angular.module('AltexoApp')
     endChatOpen = $scope.chat.$on 'chat-text', ->
       $mdSidenav('right').open()
 
-    modeChangeToast = $scope.chat.$on 'mode-changed', (users) ->
-      users.forEach (user) ->
-        $mdToast.show($mdToast.simple()
-          .textContent("#{user.name} changed mode."))
-      # TODO: why $rootScope ?
-      mode = {
-        video: if $scope.controls.video then AL_VIDEO_CONST.DEPTH_VIDEO else AL_VIDEO_CONST.NO_VIDEO
-        audio: $scope.controls.audio
-      }
-      $rootScope.$broadcast('al-mode-change', mode)
+    endToastModeChanges = $scope.chat.$on 'mode-changed', (user) ->
+      $mdToast.show($mdToast.simple()
+        .textContent("#{user.name} changed mode."))
       return
 
     endToastAdds = $scope.chat.$on 'add-user', (users) ->
       users.forEach (user) ->
         $mdToast.show($mdToast.simple()
           .textContent("#{user.name} entered this room."))
-      # TODO: why $rootScope ?
-      mode = {
-        video: if $scope.controls.video then AL_VIDEO_CONST.DEPTH_VIDEO else AL_VIDEO_CONST.NO_VIDEO
-        audio: $scope.controls.audio
-      }
-      $rootScope.$broadcast('al-mode-change', mode)
       return
 
     endToastRemoves = $scope.chat.$on 'remove-user', (users) ->
@@ -70,10 +55,10 @@ angular.module('AltexoApp')
 
     # TODO: handle leaving room on closing
     $scope.$on '$destroy', ->
+      endToastModeChanges()
       endToastAdds()
       endToastRemoves()
       endRedirects()
-      modeChangeToast()
       endChatOpen()
       $scope.chat.leaveRoom()
 
@@ -111,6 +96,14 @@ angular.module('AltexoApp')
       })
       $mdDialog.show(alertDialog)
       return
+    # unless (chrome and chrome.app and chrome.app.isInstalled)
+    #   alertDialog = $mdDialog.alert({
+    #     title: 'No extension detected'
+    #     htmlContent: '<button>Add to Chrome</button>'
+    #     ok: 'Ok'
+    #   })
+    #   $mdDialog.show(alertDialog)
+    #   return
     unless ScreenSharingExtension.isInstalled()
       confirmDialog = $mdDialog.confirm({
         title: 'No extension detected'

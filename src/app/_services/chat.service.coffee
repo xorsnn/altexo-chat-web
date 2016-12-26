@@ -2,11 +2,13 @@ _ = require('lodash')
 
 require('./json-rpc.service.coffee')
 require('../_constants/al.const.coffee')
+require('../_constants/video.const.coffee')
+
 
 angular.module('AltexoApp')
 
 .factory 'AltexoChat',
-($q, $timeout, JsonRpc, RpcError, AL_CONST) ->
+($q, $timeout, JsonRpc, RpcError, AL_CONST, AL_VIDEO) ->
 
   class AltexoRpc extends JsonRpc
 
@@ -16,8 +18,8 @@ angular.module('AltexoApp')
 
     onAttach: ->
       this.mode = {
-        audio: 'on' # on|off|muted|<null>
-        video: 'webcam' # webcam|sharedscreen|screensaver|<null>
+        audio: true
+        video: AL_VIDEO.RGB_VIDEO
       }
       this.emit 'connected', true
 
@@ -28,7 +30,7 @@ angular.module('AltexoApp')
       $timeout(0).then =>
         for own prop, value of mode
           this.mode[prop] = value
-        this.notify('user/mode', [mode])
+        this.notify('user/mode', [this.mode])
 
     confirmRestart: ->
       this.emit 'confirm-restart', true
@@ -43,8 +45,6 @@ angular.module('AltexoApp')
         this.emit 'offer', offerSdp
         return $q (resolve) =>
           this.once 'answer', resolve
-
-      'mode': -> this.mode
     }
 
     rpcNotify: {
@@ -62,10 +62,6 @@ angular.module('AltexoApp')
       'room/destroy': ->
         $timeout(0).then =>
           this.emit 'room-destroyed'
-
-      'user/mode': (uid, mode) ->
-        $timeout(0).then =>
-          this.emit 'mode', { uid, mode }
     }
 
 
@@ -87,14 +83,14 @@ angular.module('AltexoApp')
       this.ws.addEventListener 'close', =>
         this.rpc.detach()
 
+      ##
+      # Handle contact list updates.
+      # Emit events for user adds, user leaves and user mode changes.
+      #
       this.$on 'contact-list', (contacts) =>
         if this.room
           prevContacts = this.room.contacts
           this.room.contacts = contacts
-
-          # modeChanged = _.differenceBy(contacts, prevContacts, 'mode')
-          # if modeChanged.length
-          #   this.rpc.emit('mode-changed', modeChanged)
 
           added = _.differenceBy(contacts, prevContacts, 'id')
           if added.length
@@ -108,11 +104,17 @@ angular.module('AltexoApp')
               # peer quit, restart room for waiting offer from next peer
               this.restartRoom()
 
+          _(contacts).each (contact) =>
+            prev = _(prevContacts).find { id: contact.id }
+            unless prev and _.isEqual(prev.mode, contact.mode)
+              this.rpc.emit('mode-changed', contact)
+
         return
 
-      this.$on 'mode', ({ id, value }) =>
-        this.rpc.emit('mode-changed', value, id)
-
+      ##
+      # Handle requests for WebRTC restart.
+      # Restart is confirmed when WebRTC component is ready for new connection.
+      #
       this.$on 'request-restart', =>
         $timeout(0)
         .then => this._webRtcRestarting = true
@@ -121,6 +123,11 @@ angular.module('AltexoApp')
         .then => this._waitWebRtcReady()
         .then => this.rpc.confirmRestart()
 
+      ##
+      # Handle chat messages.
+      # Assign each message unique id and add it to message history.
+      # Only 10 last messages are kept.
+      #
       messageId = 0
       this.messages = []
       this.$on 'chat-text', (message) =>
@@ -129,6 +136,8 @@ angular.module('AltexoApp')
         if this.messages.length > 10
           this.messages.shift()
         return
+
+      return
 
     openRoom: (name, p2p=true) ->
       this.enterRoom(name)
@@ -172,17 +181,17 @@ angular.module('AltexoApp')
 
     toggleAudio: (value) ->
       this.rpc.switchMode \
-        unless value then { audio: 'muted' }
-        else { audio: 'on' }
+        unless value then { audio: false }
+        else { audio: true }
 
     toggleVideo: (value) ->
       this.rpc.switchMode \
-        unless value then { video: 'screensaver' }
-        else { video: 'webcam' }
+        unless value then { video: AL_VIDEO.NO_VIDEO }
+        else { video: AL_VIDEO.RGB_VIDEO }
 
     toggleShareScreen: (value) ->
       unless value?
-        value = not (this.rpc.mode.video == 'sharedscreen')
+        value = not (this.rpc.mode.video == AL_VIDEO.SHARED_SCREEN_VIDEO)
 
       # when we are creator in p2p room:
       # 1. Restart self and change video stream to shared screen
@@ -202,8 +211,8 @@ angular.module('AltexoApp')
           $timeout(0).then => this._webRtcRestarting = true
           .then =>
             this.rpc.switchMode \
-              unless value then { video: 'webcam' }
-              else { video: 'sharedscreen' }
+              unless value then { video: AL_VIDEO.RGB_VIDEO }
+              else { video: AL_VIDEO.SHARED_SCREEN_VIDEO }
           .then => this._webRtcRestarting = false
           .then => this._waitWebRtcReady()
           .then => this._restartPeer()
@@ -212,15 +221,15 @@ angular.module('AltexoApp')
           .then => this._webRtcRestarting = true
           .then =>
             this.rpc.switchMode \
-              unless value then { video: 'webcam' }
-              else { video: 'sharedscreen' }
+              unless value then { video: AL_VIDEO.RGB_VIDEO }
+              else { video: AL_VIDEO.SHARED_SCREEN_VIDEO }
           .then => this._webRtcRestarting = false
       else
         $timeout(0).then => this._webRtcRestarting = true
         .then =>
           this.rpc.switchMode \
-            unless value then { video: 'webcam' }
-            else { video: 'sharedscreen' }
+            unless value then { video: AL_VIDEO.RGB_VIDEO }
+            else { video: AL_VIDEO.SHARED_SCREEN_VIDEO }
         .then => this._webRtcRestarting = false
 
     sendMessage: (text) ->

@@ -12,6 +12,7 @@ AL_VIDEO_CONST = {
   RGB_VIDEO: '2d'
   # DEPTH_VIDEO: 2
   DEPTH_VIDEO: '3d'
+  SHARED_SCREEN_VIDEO: 'sharedscreen'
 }
 
 module.exports = AL_VIDEO_CONST

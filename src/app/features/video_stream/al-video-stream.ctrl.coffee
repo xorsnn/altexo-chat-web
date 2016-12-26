@@ -172,15 +172,18 @@ class AlVideoStreamController
         @animate()
       , 0
 
-    $scope.$on '$destroy', () =>
-      cancelAnimationFrame(@reqAnimFrame)
-      return
-
-    $rootScope.$on 'al-mode-change', (event, data) =>
-      @remoteRendererData.streamMode = if !!data.remote then data.remote else @remoteRendererData.streamMode
-      @localRendererData.streamMode = if !!data.local then data.local else @localRendererData.streamMode
+    endWatchMode = $scope.chat.$on 'mode-changed', (user) =>
+      if user.id == $scope.chat.id
+        @localRendererData.streamMode.mode = user.mode
+      else
+        @remoteRendererData.streamMode.mode = user.mode
       @_updateMode()
       @_updateNicks()
+      return
+
+    $scope.$on '$destroy', () =>
+      endWatchMode()
+      cancelAnimationFrame(@reqAnimFrame)
       return
 
     return
