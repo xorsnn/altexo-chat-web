@@ -112,6 +112,6 @@ angular.module('AltexoApp')
       .then ->
         # TODO: popup is blocked, because 'ok' button handler is called with nextTick.
         # $window.open('https://chrome.google.com/webstore/category/extensions', '_blank')
-        $window.location.href = 'https://chrome.google.com/webstore/category/extensions'
+        $window.location.href = "#{AL_WEBSTORE_APP_LINK}"
       return
     $scope.chat.toggleShareScreen()
