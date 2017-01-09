@@ -1,8 +1,5 @@
 _ = require('lodash')
 
-# TODO: take a look later and may be move to 'features'
-require('./web-rtc-view.directive.coffee')
-
 
 angular.module('AltexoApp')
 

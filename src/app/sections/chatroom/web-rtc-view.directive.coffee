@@ -1,6 +1,3 @@
-require('../../_services/web-rtc-peer.service.coffee')
-require('../../_services/screen-sharing-extension.service.coffee')
-require('../../_constants/video.const.coffee')
 
 getLocalTrack = (webRtcPeer, type) ->
   streams = webRtcPeer.peerConnection.getLocalStreams()
@@ -11,6 +8,7 @@ getLocalTrack = (webRtcPeer, type) ->
           else []).length
       return tracks[0]
   return null
+
 
 angular.module('AltexoApp')
 

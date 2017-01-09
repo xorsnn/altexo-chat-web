@@ -1,13 +1,4 @@
 
-require('./sections/chatroom/start-stream.ctrl.coffee')
-require('./sections/chatroom/start.pug')
-
-require('./sections/chatroom/stream.ctrl.coffee')
-require('./sections/chatroom/stream.pug')
-require('./sections/chatroom/stream.scss')
-
-require('./features/modernizr/_not_supported.pug')
-
 angular.module('AltexoApp')
 .config ($httpProvider, $routeProvider, $locationProvider, $mdThemingProvider) ->
   $httpProvider.interceptors.push 'httpRequestInterceptor'

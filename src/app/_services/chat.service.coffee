@@ -1,10 +1,5 @@
 _ = require('lodash')
 
-require('./json-rpc.service.coffee')
-require('../_constants/al.const.coffee')
-require('../_constants/video.const.coffee')
-
-
 angular.module('AltexoApp')
 
 .factory 'AltexoChat',
