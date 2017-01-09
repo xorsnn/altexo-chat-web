@@ -16,6 +16,12 @@ customRequire.keys().forEach(function(key) {
   }
 });
 
+// load resources
+var resourceRequire = require.context('..', true, /\.(pug|scss)$/);
+resourceRequire.keys().forEach(function(key) {
+  resourceRequire(key);
+});
+
 // replaces ng-app="appName"
 angular.element(document).ready(function () {
   angular.bootstrap(document, [appModule.name], {
