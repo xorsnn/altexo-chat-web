@@ -1,4 +1,4 @@
-require('../_constants/clean_webgl/al-flow.const.coffee')
+# require('../_constants/clean_webgl/al-flow.const.coffee')
 
 angular.module('AltexoApp')
 .factory 'Helper',

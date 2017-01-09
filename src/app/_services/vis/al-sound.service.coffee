@@ -1,4 +1,4 @@
-angular.module('altexoApp')
+angular.module('AltexoApp')
 .factory 'AlSoundVis',
 () ->
   class AlSoundVis

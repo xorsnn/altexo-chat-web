@@ -1,4 +1,4 @@
-angular.module('altexoApp')
+angular.module('AltexoApp')
 .factory 'AlHologramVis',
 () ->
   class AlHologramVis

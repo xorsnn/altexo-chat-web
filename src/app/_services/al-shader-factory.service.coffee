@@ -1,4 +1,4 @@
-require('../_constants/clean_webgl/al-flow-shaders.const.coffee')
+# require('../_constants/clean_webgl/al-flow-shaders.const.coffee')
 
 angular.module('AltexoApp')
 .factory 'AlShaderFactory',
