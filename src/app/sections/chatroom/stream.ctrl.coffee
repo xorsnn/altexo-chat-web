@@ -20,30 +20,26 @@ angular.module('AltexoApp')
   .then ->
     $scope.chat.setAlias($localStorage.nickname)
   .then ->
-    # $scope.chat.openRoom($routeParams.room, false)
     $scope.chat.openRoom($routeParams.room, true)
+    # $scope.chat.openRoom($routeParams.room, false)
   .then ->
     # add room to used
     $scope.rememberRoom($routeParams.room)
 
+    endToastAdds = $scope.chat.room.$on 'add', (contact) ->
+      $mdToast.show($mdToast.simple()
+        .textContent("#{contact.name} entered this room."))
+
+    endToastRemoves = $scope.chat.room.$on 'remove', (contact) ->
+      $mdToast.show($mdToast.simple()
+        .textContent("#{contact.name} leaved this room."))
+
+    endToastUpdates = $scope.chat.room.$on 'update', (contact) ->
+      $mdToast.show($mdToast.simple()
+        .textContent("#{contact.name} changed mode."))
+
     endChatOpen = $scope.chat.$on 'chat-text', ->
       $mdSidenav('right').open()
-
-    endToastModeChanges = $scope.chat.$on 'mode-changed', (user) ->
-      $mdToast.show($mdToast.simple()
-        .textContent("#{user.name} changed mode."))
-      return
-
-    endToastAdds = $scope.chat.$on 'add-user', (users) ->
-      users.forEach (user) ->
-        $mdToast.show($mdToast.simple()
-          .textContent("#{user.name} entered this room."))
-      return
-
-    endToastRemoves = $scope.chat.$on 'remove-user', (users) ->
-      users.forEach (user) ->
-        $mdToast.show($mdToast.simple()
-          .textContent("#{user.name} leaved this room."))
 
     endRedirects = $scope.chat.$on 'room-destroyed', ->
       $mdToast.show($mdToast.simple()
@@ -52,7 +48,7 @@ angular.module('AltexoApp')
 
     # TODO: handle leaving room on closing
     $scope.$on '$destroy', ->
-      endToastModeChanges()
+      endToastUpdates()
       endToastAdds()
       endToastRemoves()
       endRedirects()

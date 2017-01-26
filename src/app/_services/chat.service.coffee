@@ -1,9 +1,7 @@
-_ = require('lodash')
-
 angular.module('AltexoApp')
 
 .factory 'AltexoChat',
-($q, $timeout, JsonRpc, RpcError, AL_CONST, AL_VIDEO) ->
+($q, $timeout, JsonRpc, RpcError, ChatRoom, AL_CONST, AL_VIDEO) ->
 
   class AltexoRpc extends JsonRpc
 
@@ -84,27 +82,7 @@ angular.module('AltexoApp')
       #
       this.$on 'contact-list', (contacts) =>
         if this.room
-          prevContacts = this.room.contacts
-          this.room.contacts = contacts
-
-          added = _.differenceBy(contacts, prevContacts, 'id')
-          if added.length
-            this.rpc.emit('add-user', added)
-
-          removed = _.differenceBy(prevContacts, contacts, 'id')
-          if removed.length
-            this.rpc.emit('remove-user', removed)
-
-            if this.room.p2p and this.room.creator == this.id
-              # peer quit, restart room for waiting offer from next peer
-              this.restartRoom()
-
-          _(contacts).each (contact) =>
-            prev = _(prevContacts).find { id: contact.id }
-            unless prev and _.isEqual(prev.mode, contact.mode)
-              this.rpc.emit('mode-changed', contact)
-
-        return
+          this.room.updateContacts(contacts)
 
       ##
       # Handle requests for WebRTC restart.
@@ -139,12 +117,6 @@ angular.module('AltexoApp')
       .then null, (error) =>
         unless error.code == RpcError.ROOM_NOT_FOUND
           return $q.reject(error)
-        this.createRoom(name, p2p)
-
-    restartRoom: ->
-      { name, p2p } = this.room
-      this.room = null
-      this.destroyRoom().then =>
         this.createRoom(name, p2p)
 
     ensureConnected: ->
@@ -232,22 +204,31 @@ angular.module('AltexoApp')
 
     createRoom: (name, p2p) ->
       this.rpc.request('room/open', [name, p2p])
-      .then (@room) => this.room
+      .then ({ name, p2p, creator, contacts }) =>
+        this.room = new ChatRoom(name, p2p, creator)
+        this.room.updateContacts(contacts)
 
     destroyRoom: ->
       this.rpc.request('room/close')
       .then => this.room = null
 
+    restartRoom: ->
+      # Keep original room object alive, but remove
+      # the reference until the room is restarted.
+      room = this.room
+      this.room = null
+      this.destroyRoom()
+      .then =>
+        this.rpc.request('room/open', [room.name, room.p2p])
+      .then ({ contacts }) =>
+        this.room = room
+        this.room.updateContacts(contacts)
+
     enterRoom: (name) ->
       this.rpc.request('room/enter', [name])
-      .then (@room) => this.room
-
-      # # TODO: ugly solutions to notify creator about modes
-      # this.rpc.request('room/enter', [name])
-      # .then (@room) =>
-      #   $timeout(0).then =>
-      #     this.rpc.emit('mode-changed', this.room.contacts)
-      #   this.room
+      .then ({ name, p2p, creator, contacts }) =>
+        this.room = new ChatRoom(name, p2p, creator)
+        this.room.updateContacts(contacts)
 
     leaveRoom: ->
       this.rpc.request('room/leave')

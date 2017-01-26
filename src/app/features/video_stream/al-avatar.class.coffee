@@ -40,7 +40,9 @@ class AlAvatar
       height: @video.videoHeight
     }
 
-  updateMode: () =>
+  updateMode: (newMode) =>
+    if newMode?
+      @rendererData.streamMode.mode = newMode
     if @rgbRenderer
       @rgbRenderer.updateVisibility(@rendererData.streamMode.mode.video)
     if @soundRenderer
