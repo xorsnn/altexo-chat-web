@@ -20,8 +20,8 @@ angular.module('AltexoApp')
   .then ->
     $scope.chat.setAlias($localStorage.nickname)
   .then ->
-    $scope.chat.openRoom($routeParams.room, true)
-    # $scope.chat.openRoom($routeParams.room, false)
+    # $scope.chat.openRoom($routeParams.room, true)
+    $scope.chat.openRoom($routeParams.room, false)
   .then ->
     # add room to used
     $scope.rememberRoom($routeParams.room)

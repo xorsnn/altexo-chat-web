@@ -77,6 +77,23 @@ angular.module('AltexoApp')
         this.rpc.detach()
 
       ##
+      # Create video elements to handle video data.
+      # These elements are not considered to be part of DOM tree.
+      #
+      this.localVideo = document.createElement('video', {
+        autoplay: 'true'
+        muted: 'true'
+        width: '320px'
+        height: '240px'
+      })
+
+      this.remoteVideo = document.createElement('video', {
+        autoplay: 'true'
+        width: '320px'
+        height: '240px'
+      })
+
+      ##
       # Handle contact list updates.
       # Emit events for user adds, user leaves and user mode changes.
       #
@@ -204,9 +221,7 @@ angular.module('AltexoApp')
 
     createRoom: (name, p2p) ->
       this.rpc.request('room/open', [name, p2p])
-      .then ({ name, p2p, creator, contacts }) =>
-        this.room = new ChatRoom(name, p2p, creator)
-        this.room.updateContacts(contacts)
+      .then (data) => this._createRoom(data)
 
     destroyRoom: ->
       this.rpc.request('room/close')
@@ -221,14 +236,11 @@ angular.module('AltexoApp')
       .then =>
         this.rpc.request('room/open', [room.name, room.p2p])
       .then ({ contacts }) =>
-        this.room = room
-        this.room.updateContacts(contacts)
+        this.room = room.updateContacts(contacts)
 
     enterRoom: (name) ->
       this.rpc.request('room/enter', [name])
-      .then ({ name, p2p, creator, contacts }) =>
-        this.room = new ChatRoom(name, p2p, creator)
-        this.room.updateContacts(contacts)
+      .then (data) => this._createRoom(data)
 
     leaveRoom: ->
       this.rpc.request('room/leave')
@@ -248,6 +260,10 @@ angular.module('AltexoApp')
 
     signalWebRtcReady: ->
       this.rpc.emit 'web-rtc-ready', true
+
+    _createRoom: (roomData) ->
+      this.room = new ChatRoom(this).updateInfo(roomData)
+      this.room.updateContacts(roomData.contacts)
 
     _waitWebRtcReady: ->
       $q (resolve) => this.$once 'web-rtc-ready', resolve

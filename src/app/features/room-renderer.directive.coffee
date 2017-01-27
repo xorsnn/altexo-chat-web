@@ -1,5 +1,19 @@
 AlAvatar = require './video_stream/al-avatar.class.coffee'
 
+getXoffset = (k) ->
+  switch k
+    when 0 then 320
+    when 1 then -320
+    else 0
+
+getYOffset = (k) ->
+  -240
+
+getRotationAngle = (k) ->
+  switch k
+    when 0 then - Math.PI / 6
+    when 1 then Math.PI / 6
+    else 0
 
 angular.module('AltexoApp')
 
@@ -34,27 +48,21 @@ angular.module('AltexoApp')
     raycaster = new THREE.Raycaster()
     mouse = new THREE.Vector2()
 
-    ##
-    # TODO: refactor: use list of avatar renderers instead of hardcoded couple
+    avatars = new Map()
 
-    localRendererData = RendererHelper.buildRendererData(false)
-    localAvatar = new AlAvatar(localRendererData, scene, document.getElementById( 'localVideo' ), camera)
+    createAvatar = (contact) ->
+      rendererData = RendererHelper.buildRendererData(avatars.size)
+      video = chatRoom.selectVideoElement(contact)
+      avatar = new AlAvatar(rendererData, scene, video, camera)
+      avatar.updateLabel(contact.name)
+      avatar.updateMode(contact.mode)
+      avatars.set(contact.id, avatar)
 
-    remoteRendererData = RendererHelper.buildRendererData(true)
-    remoteAvatar = new AlAvatar(remoteRendererData, scene, document.getElementById( 'remoteVideo' ), camera)
+    removeAvatar = (contact) ->
+      # TODO: remove avatar's meshes from scene
+      avatars.delete(contact.id)
 
-    getAvatar = (contact) ->
-      if contact.id == chatRoom.creator
-        return localAvatar
-      return remoteAvatar
-
-    avatars = [localAvatar, remoteAvatar]
-
-    chatRoom.contacts.forEach (contact) ->
-      getAvatar(contact).updateLabel(contact.name)
-      getAvatar(contact).updateMode(contact.mode)
-
-    ##  /refactor
+    chatRoom.contacts.forEach(createAvatar)
 
     RendererHelper.addParticleGrid(scene)
 
@@ -65,11 +73,10 @@ angular.module('AltexoApp')
 
       # FIXME: define if analyze is needed
       spectrum = fft.analyze()
-
-      for avatar in avatars
+      avatars.forEach (avatar) ->
         avatar.setSpectrum(spectrum)
 
-      for avatar in avatars
+      avatars.forEach (avatar) ->
         avatar.animate()
 
       renderer.render(scene, camera)
@@ -79,6 +86,14 @@ angular.module('AltexoApp')
 
       animate = $scope.$runAnimation(render)
       animate()  # start animation
+
+    $scope.$listenObject(chatRoom, 'add', createAvatar)
+
+    $scope.$listenObject(chatRoom, 'remove', removeAvatar)
+
+    $scope.$listenObject chatRoom, 'update', (contact) ->
+      avatars.get(contact.id).updateLabel(contact.name)
+      avatars.get(contact.id).updateMode(contact.mode)
 
     $scope.$listenWindow 'resize', (ev) ->
       windowHalfX = element.offsetWidth / 2
@@ -99,24 +114,13 @@ angular.module('AltexoApp')
       raycaster.setFromCamera(mouse, camera)
       intersects = raycaster.intersectObjects(scene.children)
       if intersects.length > 0
-        for avatar in avatars
+        avatars.forEach (avatar) ->
           avatar.objectsClicked(intersects)
       return
-
-    $scope.$listenObject chatRoom, 'add', (contact) ->
-      getAvatar(contact).updateLabel(contact.name)
-      getAvatar(contact).updateMode(contact.mode)
-
-    # $scope.$listenObject chatRoom, 'remove', (contact) ->
-    #   console.log '>> CHAT REMOVE USER', contact
-
-    $scope.$listenObject chatRoom, 'update', (contact) ->
-      getAvatar(contact).updateLabel(contact.name)
-      getAvatar(contact).updateMode(contact.mode)
 }
 
 .service 'RendererHelper', (AL_VIDEO_VIS) -> {
-  buildRendererData: (leftSide) -> {
+  buildRendererData: (avatarCount) -> {
     video: null
     image: null
     imageContext: null
@@ -132,12 +136,14 @@ angular.module('AltexoApp')
     modification: {
       rotation: {
         x: 0
-        y: Math.PI / 6 * (if leftSide then 1 else -1)
+        y: getRotationAngle(avatarCount)
         z: 0
       }
       position: {
-        x: 320 * (if leftSide then -1 else 1)
-        y: - 240
+        # x: 320 * (if leftSide then -1 else 1)
+        # y: - 240
+        x: getXoffset(avatarCount)
+        y: getYOffset(avatarCount)
         z: 0
       }
     }
@@ -162,7 +168,8 @@ angular.module('AltexoApp')
           z: 0
         }
         position: {
-          x: 320 * (if leftSide then -1 else 1)
+          x: getXoffset(avatarCount)
+          # y: getYOffset(avatarCount)
           y: AL_VIDEO_VIS.ICOSAHEDRON_RADIUS + (AL_VIDEO_VIS.ICOSAHEDRON_RADIUS * AL_VIDEO_VIS.SURFACE_DISTANCE_KOEFFICIENT) # surface coordinate - 120
           z: 0
         }
@@ -217,14 +224,3 @@ angular.module('AltexoApp')
       render()
 
   return
-
-.component 'altexoComponentWebRtc', {
-  transclude: true
-  template: '''
-  <video class="local" /> <video class="remote" /> 
-  '''
-  template: '<p>HEY <h2>huba huba {{:: $ctrl.value }}</h2><div ng-transclude /></p>'
-  controller: ->
-    console.log '>> COMPONENT IS UP'
-    @value = 123
-}

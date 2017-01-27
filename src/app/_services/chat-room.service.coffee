@@ -12,12 +12,23 @@ angular.module('AltexoApp')
     p2p: null
     contacts: null
 
-    constructor: (name, p2p, creator) ->
+    _chat: null
+
+    constructor: (chat) ->
+      this._chat = chat
+      this.contacts = new Map()
+      super()
+
+    selectVideoElement: (contact) ->
+      if contact.id == this.creator
+        return this._chat.localVideo
+      return this._chat.remoteVideo
+
+    updateInfo: ({ name, creator, p2p }) ->
       this.name = name
       this.p2p = p2p
       this.creator = creator
-      this.contacts = new Map()
-      super()
+      return this
 
     updateContacts: (contactList) ->
       contacts = new Map(contactList.map (contact) -> [contact.id, contact])
@@ -53,7 +64,10 @@ angular.module('AltexoApp')
       for contact in updated
         this.emit('update', contact)
 
-      return
+      if this.p2p and removed.length
+        this._chat.restartRoom()
+
+      return this
 
     # angular-style event subscription
     $on: (eventName, handler) ->

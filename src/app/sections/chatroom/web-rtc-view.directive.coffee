@@ -22,8 +22,7 @@ angular.module('AltexoApp')
     shareScreen = chat.rpc.mode.video == AL_VIDEO.SHARED_SCREEN_VIDEO
 
     startWebRtc = ->
-      localVideo = $element.find('video.local').get(0)
-      remoteVideo = $element.find('video.remote').get(0)
+      { localVideo, remoteVideo } = chat
 
       console.info '>> altexo-web-rtc-view: start sendrecv'
       WebRtcPeer.WebRtcPeerSendrecv { localVideo, remoteVideo }
@@ -32,8 +31,7 @@ angular.module('AltexoApp')
         WebRtcPeer.WebRtcPeerRecvonly { remoteVideo }
 
     startScreenSharing = ->
-      localVideo = $element.find('video.local').get(0)
-      remoteVideo = $element.find('video.remote').get(0)
+      { localVideo, remoteVideo } = chat
 
       console.info '>> altexo-web-rtc-view: start screen sharing'
       ScreenSharingExtension.getStream()
