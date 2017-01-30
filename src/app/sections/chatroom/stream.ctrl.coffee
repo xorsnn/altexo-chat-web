@@ -20,8 +20,12 @@ angular.module('AltexoApp')
   .then ->
     $scope.chat.setAlias($localStorage.nickname)
   .then ->
-    # $scope.chat.openRoom($routeParams.room, true)
-    $scope.chat.openRoom($routeParams.room, false)
+    if $location.search().kurento
+      console.log '>> OPENING KURENTO ROOM'
+      $scope.chat.openRoom($routeParams.room, false)
+    else
+      console.log '>> OPENING P2P ROOM'
+      $scope.chat.openRoom($routeParams.room, true)
   .then ->
     # add room to used
     $scope.rememberRoom($routeParams.room)

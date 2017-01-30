@@ -18,6 +18,9 @@ class AlAvatar
   streaming: false
   view: 'regular'
 
+  seat: null
+  source: null
+
   rendererData: null
 
   Seat = {
@@ -44,6 +47,18 @@ class AlAvatar
       video.addEventListener('canplaythrough', _once)
 
   constructor: ->
+    this.seat = {
+      place: 0
+      total: 0
+    }
+
+    this.source = {
+      dx: 0
+      dy: 0
+      width: 0
+      height: 0
+    }
+
     this.rendererData = {
       video: null
       image: null
@@ -134,7 +149,7 @@ class AlAvatar
 
       @rgbRenderer = new AlRgbRenderer(this, @camera)
       @hologramRenderer = new AlHologramRenderer(@rendererData, @scene)
-      @setView(@view)
+      @setView(@view).setSource(@seat)
 
     @
 
@@ -157,13 +172,44 @@ class AlAvatar
     if @streaming
       if @view == 'regular' or @view == 'hologram'
         if ( @video.readyState == @video.HAVE_ENOUGH_DATA )
-          @rendererData.imageContext.drawImage( @video, 0, 0 )
+          # @rendererData.imageContext.fillRect(0, 0, @video.videoWidth, @video.videoHeight)
+          @rendererData.imageContext.drawImage( @video,
+            @source.dx, @source.dy, @source.width, @source.height,
+            0, 0, @video.videoWidth, @video.videoHeight )
           if ( @rendererData.texture )
             @rendererData.texture.needsUpdate = true
         if @view == 'regular'
           @rgbRenderer.animate()
       else if @video == 'icosahedron'
         @soundRenderer.animate()
+    @
+
+  setSource: ({ place, total }) ->
+    @seat.place = place
+    @seat.total = total
+    if total == 1
+      @source = {
+        dx: 0
+        dy: 0
+        width: @video.videoWidth
+        height: @video.videoHeight
+      }
+    else if total == 2
+      @source = {
+        dx: place * (@video.videoWidth >> 1)
+        dy: (@video.videoHeight >> 2)
+        width: (@video.videoWidth >> 1)
+        height: (@video.videoHeight >> 1)
+      }
+    else if total == 3 or total == 4
+      m = place % 2 # column
+      n = (place - m) / 2 # row
+      @source = {
+        dx: m * (@video.videoWidth >> 1)
+        dy: n * (@video.videoHeight >> 1)
+        width: (@video.videoWidth >> 1)
+        height: (@video.videoHeight >> 1)
+      }
     @
 
   setSeat: (n) ->

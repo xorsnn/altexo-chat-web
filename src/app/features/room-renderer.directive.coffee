@@ -36,6 +36,19 @@ angular.module('AltexoApp')
 
     avatars = new Map()
 
+    shuffle = ->
+      if not chatRoom.p2p
+        n = 0
+        avatars.forEach (avatar) ->
+          avatar.setSource {
+            place: n
+            total: avatars.size
+          }
+          n = n + 1
+      else
+        avatars.forEach (avatar) ->
+          avatar.setSource { place: 1, total: 1 }
+
     createAvatar = (contact) ->
       avatar = new AltexoAvatar().setSeat(avatars.size).bind {
         video: chatRoom.selectVideoElement(contact)
@@ -46,10 +59,13 @@ angular.module('AltexoApp')
         avatar.setLabel(contact.name)
         .setMode(contact.mode))
 
+      shuffle()
+
     removeAvatar = (contact) ->
       avatars.get(contact.id).unbind()
       avatars.delete(contact.id)
 
+      shuffle()
 
     chatRoom.contacts.forEach(createAvatar)
 
