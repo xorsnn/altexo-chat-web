@@ -98,15 +98,22 @@ class AlHologramRenderer
 
   updateVisibility: (mode) =>
     if mode == AL_VIDEO_CONST.DEPTH_VIDEO
-      unless @scene.getObjectById(@rendererData.hologram.mesh.id)
-        @scene.add(@rendererData.hologram.mesh)
-      unless @scene.getObjectById(@rendererData.hologram.reflectionMesh.id)
-        @scene.add(@rendererData.hologram.reflectionMesh)
+      @bind()
     else
-      if @scene.getObjectById(@rendererData.hologram.mesh.id)
-        @scene.remove(@rendererData.hologram.mesh)
-      if @scene.getObjectById(@rendererData.hologram.reflectionMesh.id)
-        @scene.remove(@rendererData.hologram.reflectionMesh)
+      @unbind()
     return
+
+  bind: ->
+    unless @scene.getObjectById(@rendererData.hologram.mesh.id)
+      @scene.add(@rendererData.hologram.mesh)
+    unless @scene.getObjectById(@rendererData.hologram.reflectionMesh.id)
+      @scene.add(@rendererData.hologram.reflectionMesh)
+
+  unbind: ->
+    if @scene.getObjectById(@rendererData.hologram.mesh.id)
+      @scene.remove(@rendererData.hologram.mesh)
+    if @scene.getObjectById(@rendererData.hologram.reflectionMesh.id)
+      @scene.remove(@rendererData.hologram.reflectionMesh)
+
 
 module.exports = AlHologramRenderer

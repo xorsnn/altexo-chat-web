@@ -137,11 +137,18 @@ class AlAvatar
     @
 
   unbind: ->
-    console.log '>> UNBIND!!!'
-    console.log '>> ', this.rgbRenderer
-    console.log '>> ', this.hologramRenderer
-    console.log '>> ', this.soundRenderer
-    console.log '>> ', this.labelRenderer
+    @labelRenderer.unbind()
+    @labelRenderer = null
+
+    @soundRenderer.unbind()
+    @soundRenderer = null
+
+    @rgbRenderer?.unbind()
+    @rgbRenderer = null
+
+    @hologramRenderer?.unbind()
+    @hologramRenderer = null
+
     @
 
   render: ->

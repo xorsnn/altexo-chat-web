@@ -29,12 +29,18 @@ class AlLabel
   showLabel: (show = true) =>
     if @label
       if show
-        unless @scene.getObjectById(@label.id)
-          @scene.add(@label)
+        @bind()
       else
-        if @scene.getObjectById(@label.id)
-          @scene.remove(@label)
+        @unbind()
     return
+
+  bind: ->
+    unless @scene.getObjectById(@label.id)
+      @scene.add(@label)
+
+  unbind: ->
+    if @scene.getObjectById(@label.id)
+      @scene.remove(@label)
 
   _createText: () =>
     textGeo = new THREE.TextGeometry(@labelText, {

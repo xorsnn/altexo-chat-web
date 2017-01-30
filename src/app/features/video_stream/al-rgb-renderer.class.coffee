@@ -94,14 +94,19 @@ class AlRgbRenderer
         @avatar.scene.remove(@avatar.rendererData.mesh.reflection)
     return
 
+  bind: ->
+    @_showOriginal(true)
+    @_showReflection(true)
+
+  unbind: ->
+    @_showOriginal(false)
+    @_showReflection(false)
 
   updateVisibility: (mode) =>
     if mode == AL_VIDEO_CONST.RGB_VIDEO
-      @_showOriginal(true)
-      @_showReflection(true)
+      @bind()
     else
-      @_showOriginal(false)
-      @_showReflection(false)
+      @unbind()
     return
 
 module.exports = AlRgbRenderer

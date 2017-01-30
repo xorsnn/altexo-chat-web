@@ -84,16 +84,22 @@ class AlSoundRenderer
 
   updateVisibility: (mode) =>
     if mode == AL_VIDEO_CONST.NO_VIDEO
-      unless @scene.getObjectById(@rendererData.mesh.soundViz.id)
-        @scene.add(@rendererData.mesh.soundViz)
-      unless @scene.getObjectById(@rendererData.mesh.soundVizReflection.id)
-        @scene.add(@rendererData.mesh.soundVizReflection)
+      @bind()
     else
-      if @scene.getObjectById(@rendererData.mesh.soundViz.id)
-        @scene.remove(@rendererData.mesh.soundViz)
-      if @scene.getObjectById(@rendererData.mesh.soundVizReflection.id)
-        @scene.remove(@rendererData.mesh.soundVizReflection)
+      @unbind()
     return
+
+  bind: ->
+    unless @scene.getObjectById(@rendererData.mesh.soundViz.id)
+      @scene.add(@rendererData.mesh.soundViz)
+    unless @scene.getObjectById(@rendererData.mesh.soundVizReflection.id)
+      @scene.add(@rendererData.mesh.soundVizReflection)
+
+  unbind: ->
+    if @scene.getObjectById(@rendererData.mesh.soundViz.id)
+      @scene.remove(@rendererData.mesh.soundViz)
+    if @scene.getObjectById(@rendererData.mesh.soundVizReflection.id)
+      @scene.remove(@rendererData.mesh.soundVizReflection)
 
   setSpectrum: (spec) =>
     @visualisatorMaterial.uniforms.spectrum.value = spec
