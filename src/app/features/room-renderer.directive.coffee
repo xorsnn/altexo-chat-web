@@ -1,19 +1,5 @@
-AlAvatar = require './video_stream/al-avatar.class.coffee'
+AltexoAvatar = require './video_stream/al-avatar.class.coffee'
 
-getXoffset = (k) ->
-  switch k
-    when 0 then 320
-    when 1 then -320
-    else 0
-
-getYOffset = (k) ->
-  -240
-
-getRotationAngle = (k) ->
-  switch k
-    when 0 then - Math.PI / 6
-    when 1 then Math.PI / 6
-    else 0
 
 angular.module('AltexoApp')
 
@@ -51,16 +37,19 @@ angular.module('AltexoApp')
     avatars = new Map()
 
     createAvatar = (contact) ->
-      rendererData = RendererHelper.buildRendererData(avatars.size)
-      video = chatRoom.selectVideoElement(contact)
-      avatar = new AlAvatar(rendererData, scene, video, camera)
-      avatar.updateLabel(contact.name)
-      avatar.updateMode(contact.mode)
-      avatars.set(contact.id, avatar)
+      avatar = new AltexoAvatar().setSeat(avatars.size).bind {
+        video: chatRoom.selectVideoElement(contact)
+        scene, camera
+      }
+      
+      avatars.set(contact.id,
+        avatar.setLabel(contact.name)
+        .setView(contact.mode))
 
     removeAvatar = (contact) ->
-      # TODO: remove avatar's meshes from scene
+      avatars.get(contact.id).unbind()
       avatars.delete(contact.id)
+
 
     chatRoom.contacts.forEach(createAvatar)
 
@@ -77,7 +66,7 @@ angular.module('AltexoApp')
         avatar.setSpectrum(spectrum)
 
       avatars.forEach (avatar) ->
-        avatar.animate()
+        avatar.render()
 
       renderer.render(scene, camera)
 
@@ -119,64 +108,7 @@ angular.module('AltexoApp')
       return
 }
 
-.service 'RendererHelper', (AL_VIDEO_VIS) -> {
-  buildRendererData: (avatarCount) -> {
-    video: null
-    image: null
-    imageContext: null
-    imageReflection: null
-    imageReflectionContext: null
-    imageReflectionGradient: null
-    texture: null
-    textureReflection: null
-    streamSize: {
-      width: 0
-      height: 0
-    }
-    modification: {
-      rotation: {
-        x: 0
-        y: getRotationAngle(avatarCount)
-        z: 0
-      }
-      position: {
-        # x: 320 * (if leftSide then -1 else 1)
-        # y: - 240
-        x: getXoffset(avatarCount)
-        y: getYOffset(avatarCount)
-        z: 0
-      }
-    }
-    mesh: {
-      original: null
-      reflection: null
-      soundViz: null
-      soundVizReflection: null
-    }
-    # FIXME: default values store in localStorage
-    streamMode: {
-      mode: {
-        video: AL_VIDEO_VIS.RGB_VIDEO
-        audio: true
-      }
-    }
-    sound: {
-      modification: {
-        rotation: {
-          x: 0
-          y: - Math.PI / 6
-          z: 0
-        }
-        position: {
-          x: getXoffset(avatarCount)
-          # y: getYOffset(avatarCount)
-          y: AL_VIDEO_VIS.ICOSAHEDRON_RADIUS + (AL_VIDEO_VIS.ICOSAHEDRON_RADIUS * AL_VIDEO_VIS.SURFACE_DISTANCE_KOEFFICIENT) # surface coordinate - 120
-          z: 0
-        }
-      }
-    }
-  }
-
+.service 'RendererHelper', -> {
   addParticleGrid: (scene) ->
     separation = 150
     amountx = 10
