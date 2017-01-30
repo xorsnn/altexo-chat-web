@@ -16,10 +16,10 @@ angular.module('AltexoApp')
     mouseX = 0
     mouseY = 0
 
-    mic = new p5.AudioIn()
-    mic.start()
-    fft = new p5.FFT(0.8, 16)
-    fft.setInput(mic)
+    # mic = new p5.AudioIn()
+    # mic.start()
+    # fft = new p5.FFT(0.8, 16)
+    # fft.setInput(mic)
 
     renderer = new THREE.WebGLRenderer({ antialias: true })
     renderer.setClearColor(0xf0f0f0)
@@ -41,10 +41,10 @@ angular.module('AltexoApp')
         video: chatRoom.selectVideoElement(contact)
         scene, camera
       }
-      
+
       avatars.set(contact.id,
         avatar.setLabel(contact.name)
-        .setView(contact.mode))
+        .setMode(contact.mode))
 
     removeAvatar = (contact) ->
       avatars.get(contact.id).unbind()
@@ -60,10 +60,10 @@ angular.module('AltexoApp')
       camera.position.y += ( - mouseY - camera.position.y ) * 0.05
       camera.lookAt( scene.position )
 
-      # FIXME: define if analyze is needed
-      spectrum = fft.analyze()
-      avatars.forEach (avatar) ->
-        avatar.setSpectrum(spectrum)
+      # # FIXME: define if analyze is needed
+      # spectrum = fft.analyze()
+      # avatars.forEach (avatar) ->
+      #   avatar.setSpectrum(spectrum)
 
       avatars.forEach (avatar) ->
         avatar.render()
@@ -81,8 +81,8 @@ angular.module('AltexoApp')
     $scope.$listenObject(chatRoom, 'remove', removeAvatar)
 
     $scope.$listenObject chatRoom, 'update', (contact) ->
-      avatars.get(contact.id).updateLabel(contact.name)
-      avatars.get(contact.id).updateMode(contact.mode)
+      avatars.get(contact.id).setLabel(contact.name)
+      avatars.get(contact.id).setMode(contact.mode)
 
     $scope.$listenWindow 'resize', (ev) ->
       windowHalfX = element.offsetWidth / 2

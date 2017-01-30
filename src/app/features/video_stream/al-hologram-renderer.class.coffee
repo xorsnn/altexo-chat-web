@@ -96,13 +96,6 @@ class AlHologramRenderer
 
     return
 
-  updateVisibility: (mode) =>
-    if mode == AL_VIDEO_CONST.DEPTH_VIDEO
-      @bind()
-    else
-      @unbind()
-    return
-
   bind: ->
     unless @scene.getObjectById(@rendererData.hologram.mesh.id)
       @scene.add(@rendererData.hologram.mesh)

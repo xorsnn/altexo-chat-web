@@ -4,7 +4,9 @@ AlSoundRenderer = require './al-sound-renderer.class.coffee'
 AlHologramRenderer = require './al-hologram-renderer.class.coffee'
 AlLabel = require './al-label.class.coffee'
 
-AL_VIDEO_VIS = require './al-video-stream.const.coffee'
+{ NO_VIDEO, DEPTH_VIDEO, RGB_VIDEO,
+  ICOSAHEDRON_RADIUS,
+  SURFACE_DISTANCE_KOEFFICIENT } = require './al-video-stream.const.coffee'
 
 
 class AlAvatar
@@ -14,6 +16,7 @@ class AlAvatar
   labelRenderer: null
 
   streaming: false
+  view: 'regular'
 
   rendererData: null
 
@@ -75,7 +78,7 @@ class AlAvatar
       # FIXME: default values store in localStorage
       streamMode: {
         mode: {
-          video: AL_VIDEO_VIS.RGB_VIDEO
+          video: RGB_VIDEO
           audio: true
         }
       }
@@ -89,8 +92,7 @@ class AlAvatar
           position: {
             x: Seat.getXOffset(0)
             # surface coordinate - 120
-            y: (AL_VIDEO_VIS.ICOSAHEDRON_RADIUS +
-              (AL_VIDEO_VIS.ICOSAHEDRON_RADIUS * AL_VIDEO_VIS.SURFACE_DISTANCE_KOEFFICIENT))
+            y: ICOSAHEDRON_RADIUS + ICOSAHEDRON_RADIUS * SURFACE_DISTANCE_KOEFFICIENT
             z: 0
           }
         }
@@ -132,7 +134,7 @@ class AlAvatar
 
       @rgbRenderer = new AlRgbRenderer(this, @camera)
       @hologramRenderer = new AlHologramRenderer(@rendererData, @scene)
-      @setView()
+      @setView(@view)
 
     @
 
@@ -153,16 +155,14 @@ class AlAvatar
 
   render: ->
     if @streaming
-      videoMode = @rendererData.streamMode.mode.video
-
-      if ( videoMode == AL_VIDEO_CONST.RGB_VIDEO ||
-          videoMode == AL_VIDEO_CONST.DEPTH_VIDEO )
+      if @view == 'regular' or @view == 'hologram'
         if ( @video.readyState == @video.HAVE_ENOUGH_DATA )
           @rendererData.imageContext.drawImage( @video, 0, 0 )
           if ( @rendererData.texture )
             @rendererData.texture.needsUpdate = true
-        @rgbRenderer.animate()
-      else if videoMode == AL_VIDEO_CONST.NO_VIDEO
+        if @view == 'regular'
+          @rgbRenderer.animate()
+      else if @video == 'icosahedron'
         @soundRenderer.animate()
     @
 
@@ -183,17 +183,29 @@ class AlAvatar
       @labelRenderer.updateText(newLabel)
     @
 
-  # rgb|hologram|icosahedron
-  #setView: (name) ->
-  setView: (newMode) ->
-    if newMode?
-      @rendererData.streamMode.mode = newMode
-    if @rgbRenderer
-      @rgbRenderer.updateVisibility(@rendererData.streamMode.mode.video)
-    if @soundRenderer
-      @soundRenderer.updateVisibility(@rendererData.streamMode.mode.video)
-    if @hologramRenderer
-      @hologramRenderer.updateVisibility(@rendererData.streamMode.mode.video)
+  setMode: ({ video }) ->
+    if video == RGB_VIDEO
+      @setView('regular')
+    else if video == DEPTH_VIDEO
+      @setView('hologram')
+    else if video == NO_VIDEO
+      @setView('icosahedron')
+
+  setView: (name) ->
+    @view = name
+    switch name
+      when 'regular'
+        @soundRenderer.unbind()
+        @hologramRenderer?.unbind()
+        @rgbRenderer?.bind()
+      when 'hologram'
+        @soundRenderer.unbind()
+        @rgbRenderer?.unbind()
+        @hologramRenderer?.bind()
+      when 'icosahedron'
+        @rgbRenderer?.unbind()
+        @hologramRenderer?.unbind()
+        @soundRenderer.bind()
     @
 
   objectsClicked: (intersects) ->

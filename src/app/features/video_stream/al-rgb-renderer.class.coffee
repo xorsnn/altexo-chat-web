@@ -102,11 +102,5 @@ class AlRgbRenderer
     @_showOriginal(false)
     @_showReflection(false)
 
-  updateVisibility: (mode) =>
-    if mode == AL_VIDEO_CONST.RGB_VIDEO
-      @bind()
-    else
-      @unbind()
-    return
 
 module.exports = AlRgbRenderer

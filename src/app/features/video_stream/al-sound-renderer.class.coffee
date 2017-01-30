@@ -82,13 +82,6 @@ class AlSoundRenderer
 
     return
 
-  updateVisibility: (mode) =>
-    if mode == AL_VIDEO_CONST.NO_VIDEO
-      @bind()
-    else
-      @unbind()
-    return
-
   bind: ->
     unless @scene.getObjectById(@rendererData.mesh.soundViz.id)
       @scene.add(@rendererData.mesh.soundViz)
