@@ -78,19 +78,17 @@ angular.module('AltexoApp')
 
       ##
       # Create video elements to handle video data.
-      # These elements are not considered to be part of DOM tree.
+      # These elements are not considered to be part of DOM tree,
+      # BUT
+      # we should keep them hidden in real DOM because
+      # without that no sound will be played.
       #
-      this.localVideo = document.createElement('video', {
-        autoplay: 'true'
-        muted: 'true'
-        width: '320px'
-        height: '240px'
+      Object.defineProperty(this, 'localVideo', {
+        get: -> document.getElementById('localVideo')
       })
 
-      this.remoteVideo = document.createElement('video', {
-        autoplay: 'true'
-        width: '320px'
-        height: '240px'
+      Object.defineProperty(this, 'remoteVideo', {
+        get: -> document.getElementById('remoteVideo')
       })
 
       ##

@@ -15,25 +15,23 @@ angular.module('AltexoApp')
 .directive 'altexoWebRtcView', \
 ($q, WebRtcPeer, ScreenSharingExtension, AL_VIDEO) -> {
   restrict: 'E'
-  # template: '<ng-transclude/>'
-  # transclude: true
   link: ($scope, $element, attrs) ->
     chat = $scope.$eval(attrs.chat)
     shareScreen = chat.rpc.mode.video == AL_VIDEO.SHARED_SCREEN_VIDEO
 
     startWebRtc = ->
-      { localVideo, remoteVideo } = chat
-
       console.info '>> altexo-web-rtc-view: start sendrecv'
+      {localVideo} = chat
+      {remoteVideo} = chat
       WebRtcPeer.WebRtcPeerSendrecv { localVideo, remoteVideo }
       .then null, (error) ->
         console.info '>> altexo-web-rtc-view: fallback to recvonly mode'
         WebRtcPeer.WebRtcPeerRecvonly { remoteVideo }
 
     startScreenSharing = ->
-      { localVideo, remoteVideo } = chat
-
       console.info '>> altexo-web-rtc-view: start screen sharing'
+      {localVideo} = chat
+      {remoteVideo} = chat
       ScreenSharingExtension.getStream()
       .then (videoStream) ->
         # toggle back when "Stop sharing" button is pressed
