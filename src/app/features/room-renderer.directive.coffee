@@ -8,7 +8,7 @@ angular.module('AltexoApp')
   link: ($scope, $element, { altexoRoomRenderer }) ->
     chatRoom = $scope.$eval(altexoRoomRenderer)
 
-    element = $element.get(0)
+    element = $element[0]
 
     windowHalfX = $window.innerWidth / 2
     windowHalfY = $window.innerHeight / 2
