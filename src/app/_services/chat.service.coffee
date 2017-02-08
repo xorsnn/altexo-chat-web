@@ -186,28 +186,22 @@ angular.module('AltexoApp')
       # 3. Call
 
       # when we are not in p2p room:
-      # 1. Restart self
+      # 1. Restart peer
+      # 2. Restart self
+      # 3. Call
 
-      if this.room.p2p
-        if this.room.creator == this.id
-          $timeout(0).then => this._webRtcRestarting = true
-          .then =>
-            this.rpc.switchMode \
-              unless value then { video: AL_VIDEO.RGB_VIDEO }
-              else { video: AL_VIDEO.SHARED_SCREEN_VIDEO }
-          .then => this._webRtcRestarting = false
-          .then => this._waitWebRtcReady()
-          .then => this._restartPeer()
-        else
-          $timeout(0).then => this._restartPeer()
-          .then => this._webRtcRestarting = true
-          .then =>
-            this.rpc.switchMode \
-              unless value then { video: AL_VIDEO.RGB_VIDEO }
-              else { video: AL_VIDEO.SHARED_SCREEN_VIDEO }
-          .then => this._webRtcRestarting = false
-      else
+      if this.room.p2p and this.room.creator == this.id
         $timeout(0).then => this._webRtcRestarting = true
+        .then =>
+          this.rpc.switchMode \
+            unless value then { video: AL_VIDEO.RGB_VIDEO }
+            else { video: AL_VIDEO.SHARED_SCREEN_VIDEO }
+        .then => this._webRtcRestarting = false
+        .then => this._waitWebRtcReady()
+        .then => this._restartPeer()
+      else
+        $timeout(0).then => this._restartPeer()
+        .then => this._webRtcRestarting = true
         .then =>
           this.rpc.switchMode \
             unless value then { video: AL_VIDEO.RGB_VIDEO }
