@@ -1,6 +1,5 @@
 AltexoAvatar = require './video_stream/al-avatar.class.coffee'
 
-
 angular.module('AltexoApp')
 
 .directive 'altexoRoomRenderer', ($window, RendererHelper) -> {
@@ -146,29 +145,3 @@ angular.module('AltexoApp')
 
     return
 }
-
-.run ($rootScope, $window, $document) ->
-  $rootScope.$listenObject = (obj, name, handler) ->
-    endListener = obj.$on(name, handler)
-    this.$on('$destroy', endListener)
-
-  $rootScope.$listenDocument = (name, handler) ->
-    this.$on '$destroy', ->
-      $document.off(name, handler)
-    $document.on(name, handler)
-
-  $rootScope.$listenWindow = (name, handler) ->
-    this.$on '$destroy', ->
-      $window.removeEventListener(name, handler)
-    $window.addEventListener(name, handler, false)
-
-  $rootScope.$runAnimation = (render) ->
-    _rafid = null
-    this.$on '$destroy', ->
-      unless _rafid == null
-        cancelAnimationFrame(_rafid)
-    animate = ->
-      _rafid = requestAnimationFrame(animate)
-      render()
-
-  return

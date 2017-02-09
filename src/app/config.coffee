@@ -1,5 +1,6 @@
 
 angular.module('AltexoApp')
+
 .config ($httpProvider, $routeProvider, $locationProvider, $mdThemingProvider) ->
   $httpProvider.interceptors.push 'httpRequestInterceptor'
 
@@ -18,7 +19,7 @@ angular.module('AltexoApp')
     controllerAs: 'AlNotSupportedCtrl'
   }
 
-  #  enable html5Mode for pushstate ('#'-less URLs)
+  # Enable html5Mode for pushstate ('#'-less URLs)
   unless DEBUG == 'true'
     $locationProvider.html5Mode(true)
     $locationProvider.hashPrefix('!')
@@ -29,12 +30,5 @@ angular.module('AltexoApp')
 
   $httpProvider.defaults.xsrfCookieName = 'csrftoken'
   $httpProvider.defaults.xsrfHeaderName = 'X-CSRFToken'
-  return
 
-.run ($rootScope, $location, AlModernizrService) ->
-  $rootScope.$on '$routeChangeStart', (event, next, current) ->
-    unless next.$$route.originalPath == '/not-supported'
-      unless AlModernizrService.check()
-        event.preventDefault()
-        $location.path('/not-supported')
-    return
+  return
