@@ -1,62 +1,8 @@
+
 angular.module('AltexoApp')
 
 .factory 'AltexoChat',
-($q, $timeout, JsonRpc, RpcError, ChatRoom, AL_CONST, AL_VIDEO) ->
-
-  class AltexoRpc extends JsonRpc
-
-    # NOTE: read-only access is suggested
-    # mode: null
-    mode: {}
-
-    onAttach: ->
-      this.mode = {
-        audio: true
-        video: AL_VIDEO.RGB_VIDEO
-      }
-      this.emit 'connected', true
-
-    sendAnswer: (answerSdp) ->
-      this.emit 'answer', answerSdp
-
-    switchMode: (mode) ->
-      $timeout(0).then =>
-        for own prop, value of mode
-          this.mode[prop] = value
-        this.notify('user/mode', [this.mode])
-
-    confirmRestart: ->
-      this.emit 'confirm-restart', true
-
-    rpc: {
-      'restart': ->
-        this.emit 'request-restart'
-        return $q (resolve) =>
-          this.once 'confirm-restart', resolve
-
-      'offer': (offerSdp) ->
-        this.emit 'offer', offerSdp
-        return $q (resolve) =>
-          this.once 'answer', resolve
-    }
-
-    rpcNotify: {
-      'ice-candidate': (candidate) ->
-        this.emit 'ice-candidate', candidate
-
-      'room/contacts': (data) ->
-        $timeout(0).then =>
-          this.emit 'contact-list', data
-
-      'room/text': (text, contact) ->
-        $timeout(0).then =>
-          this.emit 'chat-text', { text, contact }
-
-      'room/destroy': ->
-        $timeout(0).then =>
-          this.emit 'room-destroyed'
-    }
-
+($q, $timeout, $websocket, AltexoRpc, RpcError, ChatRoom, AL_VIDEO) ->
 
   class AltexoChat
 
@@ -67,13 +13,12 @@ angular.module('AltexoApp')
     _webRtcRestarting: false
 
     constructor: ->
-      this.ws = new WebSocket("#{AL_CONST.chatEndpoint}/al_chat")
       this.rpc = new AltexoRpc()
 
-      this.ws.addEventListener 'open', =>
-        this.rpc.attach(this.ws)
+      $websocket.addEventListener 'open', =>
+        this.rpc.attach($websocket)
 
-      this.ws.addEventListener 'close', =>
+      $websocket.addEventListener 'close', =>
         this.rpc.detach()
 
       ##
@@ -150,7 +95,7 @@ angular.module('AltexoApp')
       !!(this.room and this.room.p2p and this.room.creator == this.id)
 
     isConnected: ->
-      this.ws.readyState == WebSocket.OPEN
+      $websocket.readyState == WebSocket.OPEN
 
     isRestarting: ->
       this._webRtcRestarting
@@ -175,22 +120,17 @@ angular.module('AltexoApp')
       unless value?
         value = not (this.rpc.mode.video == AL_VIDEO.SHARED_SCREEN_VIDEO)
 
-      # when we are creator in p2p room:
+      # If we are waiting for offer:
       # 1. Restart self and change video stream to shared screen
-      # 2. Wait for a call
+      # 2. Wait for an offer
       # 3. Request peer to restart
 
-      # when we are companion in p2p room:
+      # If we are sending offer:
       # 1. Request peer to restart
-      # 2. Restart self
-      # 3. Call
+      # 2. Restart self and change video stream to shared screen
+      # 3. Send offer
 
-      # when we are not in p2p room:
-      # 1. Restart peer
-      # 2. Restart self
-      # 3. Call
-
-      if this.room.p2p and this.room.creator == this.id
+      if this.isWaiter()
         $timeout(0).then => this._webRtcRestarting = true
         .then =>
           this.rpc.switchMode \
