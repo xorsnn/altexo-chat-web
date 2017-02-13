@@ -1,4 +1,4 @@
-
+THREE = require('three')
 
 class AlRgbRenderer
 

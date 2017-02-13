@@ -1,3 +1,4 @@
+THREE = require('three')
 
 class AlLabel
   label: null

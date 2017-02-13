@@ -1,4 +1,5 @@
-
+THREE = require('three')
+AL_VIDEO_CONST = require('./al-video-stream.const.coffee')
 
 class AlSoundRenderer
   @visualisatorMaterial: null

@@ -1,4 +1,19 @@
+THREE = require('three')
+if DEBUG == 'true'
+  Stats = require 'three/examples/js/libs/stats.min'
+# require('three/examples/js/Detector')
+# require('three/examples/js/Projector')
+
+p5 = require('p5')
+require('p5/lib/addons/p5.dom')
+require('p5/lib/addons/p5.sound')
+
+# sylvester = require('sylvester')
+# for attrname in Object.keys(sylvester)
+#   global[attrname] = sylvester[attrname]
+
 AltexoAvatar = require './video_stream/al-avatar.class.coffee'
+
 
 angular.module('AltexoApp')
 
@@ -14,6 +29,10 @@ angular.module('AltexoApp')
 
     mouseX = 0
     mouseY = 0
+
+    stats = null
+    if DEBUG == 'true'
+      stats = new Stats()
 
     # mic = new p5.AudioIn()
     # mic.start()
@@ -86,9 +105,19 @@ angular.module('AltexoApp')
       renderer.render(scene, camera)
 
     $element.ready ->
+      if DEBUG == 'true'
+        element.appendChild(RendererHelper.createInfoDiv())
+
       element.appendChild(renderer.domElement)
 
-      animate = $scope.$runAnimation(render)
+      if DEBUG == 'true'
+        animate = $scope.$runAnimation ->
+          render()
+          stats.update()
+        element.appendChild(stats.dom)
+      else
+        animate = $scope.$runAnimation(render)
+
       animate()  # start animation
 
     $scope.$listenObject(chatRoom, 'add', createAvatar)
@@ -144,4 +173,14 @@ angular.module('AltexoApp')
         scene.add(particle)
 
     return
+
+  createInfoDiv: ->
+    info = document.createElement( 'div' )
+    info.style.position = 'absolute'
+    info.style.top = '10px'
+    info.style.width = '100%'
+    info.style.textAlign = 'center'
+    info.innerHTML = '<a href="https://altexo.com" target="_blank">Altexo</a> demo'
+
+    return info
 }
