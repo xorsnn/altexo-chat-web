@@ -2,12 +2,21 @@
 angular.module('AltexoApp')
 
 .config ($httpProvider, $routeProvider, $locationProvider, $mdThemingProvider) ->
-  $httpProvider.interceptors.push 'httpRequestInterceptor'
+  auth = ['User', (User) -> User.authenticate()]
 
   $routeProvider
   .when '/', {
     templateUrl: 'sections/chatroom/start.pug'
     controller: 'StartStreamCtrl'
+  }
+  .when '/login', {
+    templateUrl: 'sections/profile/login.pug'
+    controller: 'LoginCtrl'
+  }
+  .when '/logout', {
+    resolve: { auth }
+    templateUrl: 'sections/profile/logout.pug'
+    controller: 'LogoutCtrl'
   }
   .when '/room/:room', {
     templateUrl: 'sections/chatroom/stream.pug'

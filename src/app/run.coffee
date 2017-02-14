@@ -1,18 +1,35 @@
 
 angular.module('AltexoApp')
 
+.run ($rootScope, $location, User) ->
+  $rootScope.$user = User
+
+  $rootScope.$on '$routeChangeError', (ev, cur, prev, reason) ->
+    if reason == User.NOT_AUTHENTICATED
+      $location.path('/login')
+    return
+
+  return
+
 .run (ScreenSharingExtension) ->
   # NOTE: require ScreenSharingExtension to receive
   # pings from extension just as app starts.
+
   return
 
 .run ($rootScope, $location, AlModernizrService) ->
-  $rootScope.$on '$routeChangeStart', (event, next, current) ->
-    unless next.$$route.originalPath == '/not-supported'
-      unless AlModernizrService.check()
-        event.preventDefault()
-        $location.path('/not-supported')
+  # Run Modernizr check before entering route.
+  # If check successfully passes do it only once.
+  # Redirect to /not-supported page if check fails.
+
+  endCheck = $rootScope.$on '$routeChangeStart', (ev, next) ->
+    if AlModernizrService.check()
+      return endCheck()
+    unless '/not-supported' == next.$$route.originalPath
+      ev.preventDefault()
+      $location.path('/not-supported')
     return
+
   return
 
 .run ($rootScope, $window, $document) ->
@@ -51,6 +68,8 @@ angular.module('AltexoApp')
   
   if DEBUG == 'true'
 
+    # <Alt+Key Up> : show stash
+    # <Alt+Key Down> : hide stash
     $document.bind {
       keydown: (ev) ->
         if ev.altKey and ev.keyCode in [38, 40]

@@ -22,7 +22,7 @@ html(lang='en')
     base(href='/')
 
   body(layout='row', ng-cloak='', ng-controller='RootCtrl')
-    ng-view(layout='column', flex='grow', style='overflow-y:hidden;overflow-x:hidden;position:relative')
+    ng-view(layout='column', flex='grow', ng-if='::$user.isReady')
 
     //- SEO
     if AL_SERVER_MODE == 'production'

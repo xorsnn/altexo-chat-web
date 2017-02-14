@@ -1,0 +1,13 @@
+
+section.md-padding(layout='row', flex='', layout-align='center center')
+  md-whiteframe.md-whiteframe-z1(layout='column', flex='30', layout-padding='')
+    h3 Authentication Required
+    form(layout='column', ng-submit='login(formData)')
+      md-input-container
+        label Login
+        input(ng-model='formData.username', required='')
+      md-input-container
+        label Password
+        input(ng-model='formData.password', required='', type='password')
+      md-input-container(layout='row', layout-align='center center')
+        button.md-button.md-raised(type='submit') Sign In

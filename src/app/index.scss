@@ -11,3 +11,9 @@ altexo-web-rtc-view {
 al-used-rooms {
   display: flex;
 }
+
+ng-view {
+  overflow-y: hidden;
+  overflow-x: hidden;
+  position: relative;
+}

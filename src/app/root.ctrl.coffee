@@ -6,6 +6,7 @@ angular.module('AltexoApp')
 ($scope, $localStorage, AltexoChat) ->
 
   $scope.$storage = $localStorage.$default {
+    token: null
     nickname: 'Anonymous'
     usedRooms: []
   }

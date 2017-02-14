@@ -61,6 +61,7 @@
     "raven-js": "3.5.1",
     "roboto-fontface": "0.6.0",
     "sylvester": "0.0.21",
-    "three": "0.80.1"
+    "three": "0.80.1",
+    "whatwg-fetch": "^2.0.2"
   }
 }
