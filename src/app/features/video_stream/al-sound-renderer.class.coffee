@@ -1,8 +1,6 @@
 THREE = require('three')
-{
-  SURFACE_DISTANCE_KOEFFICIENT,
-  ICOSAHEDRON_RADIUS, SURFACE_Y
-} = require('./al-video-stream.const.coffee')
+{ SURFACE_DISTANCE_KOEFFICIENT,
+  ICOSAHEDRON_RADIUS, SURFACE_Y } = require('./al-video-stream.const.coffee')
 
 class AlSoundRenderer
   @visualisatorMaterial: null
