@@ -19,7 +19,6 @@ module.exports = function () {
     global[attrname] = adapter[attrname];
   }
 
-  global.THREE = require('../../../bower_components/three.js/build/three.js');
   global.kurentoUtils = require('../../../bower_components/kurento-utils/dist/kurento-utils.js');
   require('../../../bower_components/angular-promisify/dist/denodeify.js');
 

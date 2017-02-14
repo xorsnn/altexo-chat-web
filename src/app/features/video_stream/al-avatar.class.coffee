@@ -1,3 +1,4 @@
+THREE = require('three')
 
 AlRgbRenderer = require './al-rgb-renderer.class.coffee'
 AlSoundRenderer = require './al-sound-renderer.class.coffee'

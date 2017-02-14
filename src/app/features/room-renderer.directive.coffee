@@ -1,19 +1,13 @@
 THREE = require('three')
+
 if DEBUG == 'true'
-  Stats = require 'three/examples/js/libs/stats.min'
-# require('three/examples/js/Detector')
-# require('three/examples/js/Projector')
+  Stats = require('three/examples/js/libs/stats.min')
 
-p5 = require('p5')
-require('p5/lib/addons/p5.dom')
-require('p5/lib/addons/p5.sound')
-
-# sylvester = require('sylvester')
-# for attrname in Object.keys(sylvester)
-#   global[attrname] = sylvester[attrname]
+# p5 = require('p5')
+# require('p5/lib/addons/p5.dom')
+# require('p5/lib/addons/p5.sound')
 
 AltexoAvatar = require './video_stream/al-avatar.class.coffee'
-
 
 angular.module('AltexoApp')
 
