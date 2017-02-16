@@ -47,7 +47,7 @@ md-content.stream(layout='row', flex)
         md-button.md-fab.md-mini.md-primary(ng-click="toggleShareScreen()", aria-label="Share screen")
           md-icon(md-svg-src="${require('../../../img/icons/ic_picture_in_picture_white_24px.svg')}")
 
-        md-button.md-fab.md-mini.md-primary(ng-click="toggleChat()", aria-label="Open/close chat")
+        md-button.md-fab.md-mini.md-primary(ng-click="rightSidenav.toggle()", aria-label="Open/close chat")
           md-icon(md-svg-src="${require('../../../img/icons/ic_chat_bubble_black_24px.svg')}")
 
     if DEBUG == 'true'
@@ -58,7 +58,7 @@ md-content.stream(layout='row', flex)
 md-sidenav.md-sidenav-right.md-whiteframe-4dp(md-component-id='right',
     md-disable-backdrop, layout='column')
   md-toolbar.md-theme-light(layout='row', layout-align='end center')
-    md-button.md-icon-button.launch(ng-click='toggleChat()')
+    md-button.md-icon-button.launch(ng-click='rightSidenav.toggle()')
       md-icon(md-svg-icon="${require('../../../img/icons/ic_clear_black_24px.svg')}")
   md-content(layout-padding, layout='column', flex='grow')
     div(flex)

@@ -12,12 +12,8 @@ angular.module('AltexoApp')
       video: true
     }
 
-    $scope.toggleChat = ->
-      $mdSidenav('right').toggle()
-      return
-
-    $scope.chat.ensureConnected()
-    .then -> $timeout(500)  # wait until sidenav is closed
+    $timeout(500)  # wait until sidenav is closed
+    .then -> $scope.chat.ensureConnected()
     .then ->
       $scope.chat.setAlias($localStorage.nickname)
     .then ->

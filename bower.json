@@ -30,8 +30,7 @@
     "three.js": "threejs#r72",
     "sylvester": "0.1.3",
     "kurento-utils": "git@github.com:pryzm0/kurento-utils-js.git#54eae58548b089d318d8c7f5423b27752e9d2040",
-    "webrtc-adapter": "adapter.js#0.2.9",
-    "angular-promisify": "*"
+    "webrtc-adapter": "adapter.js#0.2.9"
   },
   "resolutions": {
     "webrtc-adapter": "0.2.9"

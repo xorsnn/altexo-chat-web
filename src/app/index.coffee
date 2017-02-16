@@ -13,5 +13,4 @@ module.exports = angular.module 'AltexoApp', [
   'ngRaven'
   'ngSanitize'
   'ngStorage'
-  'denodeify'
 ]

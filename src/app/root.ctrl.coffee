@@ -13,8 +13,15 @@ angular.module('AltexoApp')
 
   $scope.chat = new AltexoChat()
 
-  Object.defineProperty $scope, 'leftSidenav', {
-    get: -> $mdSidenav('left')
+  Object.defineProperties $scope, {
+    rightSidenav: { get: -> $mdSidenav('right') }
+    leftSidenav: { get: -> $mdSidenav('left') }
+    leftSidenavLocked: {
+      get: ->
+        unless $route.current?.controller == 'StreamCtrl'
+          return $mdMedia('gt-sm')
+        return false
+    }
   }
 
   $scope.rememberRoom = (name) ->
@@ -25,11 +32,5 @@ angular.module('AltexoApp')
     unless usedRooms.length <= MAXROOMS
       usedRooms.pop()
     return
-
-  $scope.desktopMode = ->
-    if $route.current
-      if $route.current.controller == 'StreamCtrl'
-        return false
-    return $mdMedia('gt-sm')
 
   return

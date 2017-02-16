@@ -1,6 +1,7 @@
+denodeify = require('denodeify')
+{WebRtcPeer} = require('../../../bower_components/kurento-utils/lib')
 
-
-_nodeStyleMethods = [
+nodeStyleMethods = [
   'addIceCandidate'
   'generateOffer'
   'processAnswer'
@@ -9,31 +10,31 @@ _nodeStyleMethods = [
 
 angular.module('AltexoApp')
 
-.service 'WebRtcPeer', ($q, denodeify) -> {
+.service 'WebRtcPeer', ($q) -> {
   WebRtcPeerSendrecv: (options) ->
     $q (resolve, reject) ->
-      webRtcPeer = new kurentoUtils.WebRtcPeer.WebRtcPeerSendrecv options, (error) ->
+      webRtcPeer = new WebRtcPeer.WebRtcPeerSendrecv options, (error) ->
         if error
           return reject(error)
-        for method in _nodeStyleMethods
+        for method in nodeStyleMethods
           webRtcPeer[method] = denodeify(webRtcPeer[method])
         resolve(webRtcPeer)
 
   WebRtcPeerSendonly: (options) ->
     $q (resolve, reject) ->
-      webRtcPeer = new kurentoUtils.WebRtcPeer.WebRtcPeerSendonly options, (error) ->
+      webRtcPeer = new WebRtcPeer.WebRtcPeerSendonly options, (error) ->
         if error
           return reject(error)
-        for method in _nodeStyleMethods
+        for method in nodeStyleMethods
           webRtcPeer[method] = denodeify(webRtcPeer[method])
         resolve(webRtcPeer)
 
   WebRtcPeerRecvonly: (options) ->
     $q (resolve, reject) ->
-      webRtcPeer = new kurentoUtils.WebRtcPeer.WebRtcPeerRecvonly options, (error) ->
+      webRtcPeer = new WebRtcPeer.WebRtcPeerRecvonly options, (error) ->
         if error
           return reject(error)
-        for method in _nodeStyleMethods
+        for method in nodeStyleMethods
           webRtcPeer[method] = denodeify(webRtcPeer[method])
         resolve(webRtcPeer)
 }
