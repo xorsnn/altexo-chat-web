@@ -35,11 +35,6 @@ angular.module('AltexoApp')
       return true
 
   Object.defineProperties(UserService, {
-    'isReady': {
-      get: ->
-        unless ready
-          return  # *undefined*
-        return true
-    }
-    'profile': { get: -> profile }
+    'isReady': { get: -> true if ready }
+    'profile': { get: -> profile ? {} }
   })
