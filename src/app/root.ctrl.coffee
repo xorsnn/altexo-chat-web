@@ -3,7 +3,7 @@ MAXROOMS = 6
 angular.module('AltexoApp')
 
 .controller 'RootCtrl',
-($scope, $localStorage, AltexoChat) ->
+($scope, $localStorage, $mdSidenav, $route, $mdMedia, AltexoChat) ->
 
   $scope.$storage = $localStorage.$default {
     token: null
@@ -13,6 +13,10 @@ angular.module('AltexoApp')
 
   $scope.chat = new AltexoChat()
 
+  Object.defineProperty $scope, 'leftSidenav', {
+    get: -> $mdSidenav('left')
+  }
+
   $scope.rememberRoom = (name) ->
     { usedRooms } = $scope.$storage
     unless (j = usedRooms.indexOf(name)) == -1
@@ -21,5 +25,11 @@ angular.module('AltexoApp')
     unless usedRooms.length <= MAXROOMS
       usedRooms.pop()
     return
+
+  $scope.desktopMode = ->
+    if $route.current
+      if $route.current.controller == 'StreamCtrl'
+        return false
+    return $mdMedia('gt-sm')
 
   return

@@ -27,6 +27,9 @@ angular.module('AltexoApp')
     stats = null
     if DEBUG == 'true'
       stats = new Stats()
+      angular.element(stats.dom).css({
+        top: '50px', right: '16px', left: ''
+      })
 
     # mic = new p5.AudioIn()
     # mic.start()
@@ -99,8 +102,8 @@ angular.module('AltexoApp')
       renderer.render(scene, camera)
 
     $element.ready ->
-      if DEBUG == 'true'
-        element.appendChild(RendererHelper.createInfoDiv())
+      # if DEBUG == 'true'
+      #   element.appendChild(RendererHelper.createInfoDiv())
 
       element.appendChild(renderer.domElement)
 

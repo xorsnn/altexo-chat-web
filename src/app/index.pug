@@ -22,6 +22,9 @@ html(lang='en')
     base(href='/')
 
   body(layout='row', ng-cloak='', ng-controller='RootCtrl')
+    md-sidenav.md-sidenav-left(altexo-sidenav='', md-component-id='left',
+      md-is-locked-open='desktopMode()', md-whiteframe='4')
+
     ng-view(layout='column', flex='grow', ng-if='::$user.isReady')
 
     //- SEO

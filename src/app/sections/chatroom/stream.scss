@@ -10,6 +10,17 @@
   }
 }
 
+.altexo-toolbar {
+  md-input-container {
+    input {
+      color: white;
+    }
+    .md-errors-spacer {
+      min-height: 0px !important;
+    }
+  }
+}
+
 .stream {
   .logo_dark {
     position: fixed;

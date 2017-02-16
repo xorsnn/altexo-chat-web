@@ -1,10 +1,9 @@
 _ = require('lodash')
 
-
 angular.module('AltexoApp')
 
 .controller 'StreamCtrl',
-($scope, $location, $routeParams, $localStorage, $mdToast, $mdSidenav, $mdDialog, $window, ScreenSharingExtension, RpcError) ->
+($scope, $location, $routeParams, $localStorage, $mdToast, $mdSidenav, $mdDialog, $timeout, $window, ScreenSharingExtension, RpcError) ->
 
   $scope.textMessage = ''
   $scope.controls = {
@@ -17,6 +16,7 @@ angular.module('AltexoApp')
     return
 
   $scope.chat.ensureConnected()
+  .then -> $timeout(500)  # wait until sidenav is closed
   .then ->
     $scope.chat.setAlias($localStorage.nickname)
   .then ->
@@ -70,9 +70,9 @@ angular.module('AltexoApp')
     $location.absUrl().replace(/([^:\/])\/.+/,
       "$1/room/#{$routeParams.room}")
 
-  $scope.onLogoClick = ->
-    $location.path('/')
-    return
+  # $scope.onLogoClick = ->
+  #   $location.path('/')
+  #   return
 
   $scope.setChatAlias = (value) ->
     $scope.chat.setAlias(value)
