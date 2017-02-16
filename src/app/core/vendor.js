@@ -19,7 +19,7 @@ module.exports = function () {
     global[attrname] = adapter[attrname];
   }
 
-  global.kurentoUtils = require('../../../bower_components/kurento-utils/dist/kurento-utils.js');
+  global.kurentoUtils = require('../../../bower_components/kurento-utils/lib');
   require('../../../bower_components/angular-promisify/dist/denodeify.js');
 
   global.Raven = require('raven-js');

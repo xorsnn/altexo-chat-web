@@ -65,10 +65,12 @@ class AlLabel
     textGeo.computeBoundingBox()
 
     @label = new THREE.Mesh( textGeo, material )
-    @label.position.x = @rendererData.modification.position.x - (textGeo.boundingBox.max.x - textGeo.boundingBox.min.x) / 2
+    @label.position.x = (@rendererData.modification.position.x -
+      (textGeo.boundingBox.max.x - textGeo.boundingBox.min.x) / 2)
     @label.position.y = 180
     @label.rotation.y = @rendererData.modification.rotation.y
-    @label.position.z = ((textGeo.boundingBox.max.x - textGeo.boundingBox.min.x) * Math.sin(@rendererData.modification.rotation.y)) / 2
+    @label.position.z = (((textGeo.boundingBox.max.x - textGeo.boundingBox.min.x) *
+      Math.sin(@rendererData.modification.rotation.y)) / 2)
     return
 
 module.exports = AlLabel

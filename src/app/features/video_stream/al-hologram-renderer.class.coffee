@@ -93,7 +93,8 @@ class AlHologramRenderer
       side: THREE.DoubleSide
       transparent: true
     } )
-    @rendererData.hologram.reflectionMesh = new THREE.LineSegments( geometry, @rendererData.hologram.hologramReflectionMaterial)
+    @rendererData.hologram.reflectionMesh = \
+      new THREE.LineSegments( geometry, @rendererData.hologram.hologramReflectionMaterial)
 
     return
 

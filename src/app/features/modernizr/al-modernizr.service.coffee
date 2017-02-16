@@ -6,7 +6,7 @@
 angular.module('AltexoApp')
 .constant 'AlModernizrConst',
   # set via environment
-  excludeRequirements: unless AL_EXCLUDED_MODERNIZR_REQUIREMENTS then [] else AL_EXCLUDED_MODERNIZR_REQUIREMENTS.split(',')
+  excludeRequirements: AL_EXCLUDED_MODERNIZR_REQUIREMENTS.split(',')
 
   # features ids
   REQUESTANIMATIONFRAME: 0

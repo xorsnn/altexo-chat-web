@@ -51,7 +51,7 @@ angular.module('AltexoApp')
       this.$on 'request-restart', =>
         $timeout(0)
         .then => this._webRtcRestarting = true
-        .then => $timeout(0)
+        .then -> $timeout(0)
         .then => this._webRtcRestarting = false
         .then => this._waitWebRtcReady()
         .then => this.rpc.confirmRestart()

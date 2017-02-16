@@ -2,10 +2,11 @@
 getLocalTrack = (webRtcPeer, type) ->
   streams = webRtcPeer.peerConnection.getLocalStreams()
   if streams.length
-    if (tracks = switch type
-          when 'audio' then streams[0].getAudioTracks()
-          when 'video' then streams[0].getVideoTracks()
-          else []).length
+    tracks = switch type
+      when 'audio' then streams[0].getAudioTracks()
+      when 'video' then streams[0].getVideoTracks()
+      else []
+    if tracks.length
       return tracks[0]
   return null
 
