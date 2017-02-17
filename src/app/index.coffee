@@ -9,6 +9,7 @@
 
 module.exports = angular.module 'AltexoApp', [
   'ngMaterial'
+  'ngMessages'
   'ngRoute'
   'ngRaven'
   'ngSanitize'

@@ -9,6 +9,10 @@ angular.module('AltexoApp')
     templateUrl: 'sections/chatroom/start.pug'
     controller: 'StartStreamCtrl'
   }
+  .when '/room/:room', {
+    templateUrl: 'sections/chatroom/stream.pug'
+    controller: 'StreamCtrl'
+  }
   .when '/login', {
     templateUrl: 'sections/profile/login.pug'
     controller: 'LoginCtrl'
@@ -18,9 +22,13 @@ angular.module('AltexoApp')
     templateUrl: 'sections/profile/logout.pug'
     controller: 'LogoutCtrl'
   }
-  .when '/room/:room', {
-    templateUrl: 'sections/chatroom/stream.pug'
-    controller: 'StreamCtrl'
+  .when '/register', {
+    templateUrl: 'sections/profile/register.pug'
+    controller: 'RegisterCtrl'
+  }
+  .when '/register/activate/:uid/:token', {
+    templateUrl: 'sections/profile/activate.pug'
+    controller: 'ActivateCtrl'
   }
   .when '/not-supported', {
     templateUrl: 'features/modernizr/_not_supported.pug'

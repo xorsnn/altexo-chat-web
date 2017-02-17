@@ -22,8 +22,27 @@ html(lang='en')
     base(href='/')
 
   body(layout='row', ng-cloak='', ng-controller='RootCtrl')
-    md-sidenav.md-sidenav-left(altexo-sidenav='', md-component-id='left',
-      md-is-locked-open='leftSidenavLocked', md-whiteframe='4')
+    //- SIDENAV for authenticated users.
+    md-sidenav.md-sidenav-left(ng-if='$user.profile.id', md-component-id='left', md-is-locked-open='leftSidenavLocked', md-whiteframe='4')
+      md-toolbar.md-theme-indigo(layout='row', layout-align='left center')
+        img(ng-src=require('../img/logo_white.svg'), height=50, style='margin-left:16px')
+      div(layout='column', layout-padding)
+        p
+          | Logged in as #[strong {{ ::$user.profile.username }}]
+          br
+          br
+          | Email: {{ ::$user.profile.email }} (#[a(href='/profile'): em change])
+        md-button(ng-click='$user.logout()') Sign out
+      md-divider
+      al-used-rooms
+
+    //- SIDENAV for anonymous users.
+    md-sidenav.md-sidenav-left(ng-if='!$user.profile.id', md-component-id='left', md-is-locked-open='leftSidenavLocked', md-whiteframe='4')
+      md-toolbar.md-theme-indigo(layout='row', layout-align='left center')
+        img(ng-src=require('../img/logo_white.svg'), height=50, style='margin-left:16px')
+      md-button.md-primary(ng-click='showLoginDialog($event)') Sign in
+      md-divider
+      al-used-rooms
 
     ng-view(layout='column', flex='grow', ng-if='::$user.isReady')
 

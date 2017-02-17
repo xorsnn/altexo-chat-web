@@ -1,0 +1,39 @@
+md-toolbar.md-hue-2(hide-gt-sm='')
+  .md-toolbar-tools
+    md-button.md-icon-button(aria-label='Settings', ng-click='leftSidenav.toggle()')
+      md-icon(md-svg-icon="${require('../../../img/icons/ic_menu_black_24px.svg')}")
+    h2(flex='', md-truncate='') Sign Up
+
+md-content.md-padding(layout='row', flex='', layout-align='center center')
+  md-whiteframe.md-whiteframe-z1(ng-if='!formSent', layout='column', flex='30', layout-padding='')
+    h3 Account registration
+    form(layout='column', ng-submit='submit($event, formData)')
+      md-input-container(md-is-error='formError.email.$error')
+        label Email
+        input(ng-model='formData.email', required='', type='email')
+        div(ng-messages='formError.email.$error')
+          div(ng-message='required') This field is required.
+          div(ng-message='unique') This email address is already used by someone else.
+      md-input-container(md-is-error='formError.username.$error')
+        label Login
+        input(ng-model='formData.username', required='')
+        div(ng-messages='formError.username.$error')
+          div(ng-message='required') This field is required.
+          div(ng-message='unique') This name is already used by someone else.
+      md-input-container(md-is-error='formError.password.$error')
+        label Password
+        input(ng-model='formData.password', required='', type='password')
+        div(ng-messages='formError.password.$error')
+          div(ng-message='required') This field is required.
+      md-input-container(md-is-error='formError.password2.$error')
+        label Repeat password
+        input(ng-model='formData.password2', required='', type='password')
+        div(ng-messages='formError.password2.$error')
+          div(ng-message='required') This field is required.
+          div(ng-message='verify') Passwords do not match.
+      md-input-container(layout='row', layout-align='center center')
+        button.md-button.md-raised(type='submit') Sign Up
+
+  md-whiteframe.md-whiteframe-z1(ng-if='formSent', layout='column', flex='30', layout-padding='')
+    h3 Account registration
+    p Hooray! Check your email to confirm account registration.

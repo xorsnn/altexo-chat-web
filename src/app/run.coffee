@@ -1,13 +1,21 @@
 
 angular.module('AltexoApp')
 
-.run ($rootScope, $location, User) ->
+.run ($rootScope, $location, $mdDialog, User) ->
   $rootScope.$user = User
 
   $rootScope.$on '$routeChangeError', (ev, cur, prev, reason) ->
     if reason == User.NOT_AUTHENTICATED
       $location.path('/login')
     return
+
+  $rootScope.showLoginDialog = (ev) ->
+    $mdDialog.show {
+      templateUrl: 'features/dialogs/login.pug'
+      controller: 'LoginDialogCtrl'
+      targetEvent: ev
+      clickOutsideToClose: true
+    }
 
   return
 

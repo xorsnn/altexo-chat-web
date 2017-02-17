@@ -2,16 +2,18 @@
 angular.module('AltexoApp')
 
 .controller 'LoginCtrl',
-($scope, $location, User) ->
-  if User.profile
-    $location.path('/')
+($scope, $location, $django, User) ->
+  redirect = ->
+    $location.path("/#{$location.search().redirect ? ''}")
+  if User.profile.id
+    redirect()
   else
-    $scope.formData = {
-      username: null
-      password: null
-    }
+    $scope.formError = null
+    $scope.formData = {}
     $scope.login = ({ username, password }) ->
       User.login(username, password)
-      .then -> $location.path('/')
-      return
+      .then(redirect)
+      .catch (reason) ->
+        $scope.formError = $django.errorToAngularMessages(reason)
+        console.log '>> ERROR', $scope.formError
   return

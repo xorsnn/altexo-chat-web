@@ -1,0 +1,21 @@
+md-toolbar.md-hue-2(hide-gt-sm='')
+  .md-toolbar-tools
+    md-button.md-icon-button(aria-label='Settings', ng-click='leftSidenav.toggle()')
+      md-icon(md-svg-icon="${require('../../../img/icons/ic_menu_black_24px.svg')}")
+    h2(flex='', md-truncate='') Activate account
+
+md-content.md-padding(layout='row', flex='', layout-align='center center')
+  md-whiteframe.md-whiteframe-z1(ng-if='!confirmed', layout='column', flex='30', layout-padding='')
+    h3 Email confirmation
+    p Wait a moment until your account is activated.
+
+  md-whiteframe.md-whiteframe-z1(ng-if='confirmed == "yes"' , layout='column', flex='30', layout-padding='')
+    h3 Email confirmation
+    p
+      | Hooray! Your account is activated now.
+      br
+      | #[a(href='/login') Log in] to proceed.
+
+  md-whiteframe.md-whiteframe-z1(ng-if='confirmed == "no"' , layout='column', flex='30', layout-padding='')
+    h3 Email confirmation
+    p Seems that this token is outdated. Try filling the #[a(href='/register') registration form] again.

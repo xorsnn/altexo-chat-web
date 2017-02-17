@@ -1,12 +1,8 @@
-md-toolbar.md-hue-2(hide-gt-sm='')
-  .md-toolbar-tools
-    md-button.md-icon-button(aria-label='Settings', ng-click='leftSidenav.toggle()')
-      md-icon(md-svg-icon="${require('../../../img/icons/ic_menu_black_24px.svg')}")
-    h2(flex='', md-truncate='') Sign In
-
-md-content.md-padding(layout='row', flex='', layout-align='center center')
-  md-whiteframe.md-whiteframe-z1(layout='column', flex='30', layout-padding='')
-    h3 Authentication Required
+md-dialog(aria-label='Login', style={'width':'21em', 'max-width':'80vw'})
+  md-toolbar
+    .md-toolbar-tools
+      h5 Authenticate
+  md-dialog-content.md-dialog-content(layout='column', layout-padding)
     form(layout='column', ng-submit='login(formData)')
       md-input-container(md-is-error='formError.non_field_errors.$error')
         label Login
@@ -20,5 +16,5 @@ md-content.md-padding(layout='row', flex='', layout-align='center center')
         | Don't have an account?
         br
         | #[a(href='/register', ng-click='cancel()') Sign up] now.
-      md-input-container(layout='row', layout-align='center center')
-        button.md-button.md-raised(type='submit') Sign In
+      //- Add hidden SUBMIT button to make things work nice.
+      button.md-button(type='submit', hide) Sign in
