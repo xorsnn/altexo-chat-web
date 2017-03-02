@@ -5,7 +5,7 @@ md-toolbar.md-hue-2(hide-gt-sm='')
     h2(flex='', md-truncate='') Create room
 
 md-content(layout='column', layout-padding='', layout-align='center center', flex='grow')
-  form
+  form(ng-submit='createRoom(chat, room, $event.preventDefault())')
     md-card(layout='column', md-whiteframe='4')
       md-card-header
         md-card-header-text
@@ -21,4 +21,4 @@ md-content(layout='column', layout-padding='', layout-align='center center', fle
         //- md-checkbox(ng-model='room.kurento', ng-change="kurentoClick(room.kurento)")
         //-   | Kurento
       md-card-footer(layout='row', layout-align='end center')
-        md-button.md-raised(ng-click='createRoom(chat, room)', style='height: 36px;') Create
+        button.md-button.md-raised(type='submit', style={height:'36px'}) Create
