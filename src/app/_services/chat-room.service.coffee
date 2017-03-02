@@ -20,10 +20,8 @@ angular.module('AltexoApp')
       super()
 
     selectVideoElement: (contact) ->
-      if this.p2p
-        if contact.id == this.creator
-          return this._chat.localVideo
-        return this._chat.remoteVideo
+      if this.p2p and contact.id == this._chat.id
+        return this._chat.localVideo
       return this._chat.remoteVideo
 
     updateInfo: ({ name, creator, p2p }) ->
