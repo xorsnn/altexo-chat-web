@@ -11,10 +11,8 @@ md-toolbar.md-hue-2.altexo-toolbar
       md-icon(md-svg-icon="${require('../../../img/icons/ic_menu_black_24px.svg')}")
     h2(flex='', md-truncate='') Chat
     md-input-container.md-block(flex='50', flex-gt-sm='20')
-      //- label.md-headline Nickname:
-      input(type='text',
+      input(type='text', aria-label='Your nickname', md-autofocus,
              ng-model='$storage.nickname',
-             md-autofocus,
              ng-change='setChatAlias($storage.nickname)')
 
 md-content.stream(layout='row', flex)
@@ -31,7 +29,8 @@ md-content.stream(layout='row', flex)
           span.md-title Invite by sharing the link
       md-card-content(layout='column')
         md-input-container(flex, style={margin:0})
-          input(type='text', value='{{ ::viewLink() }}', ng-readonly='')
+          input(type='text', value='{{ ::viewLink() }}', ng-readonly,
+            aria-label='Share this URL to invite friends')
 
     .control-panel(layout='row', flex)
       div(flex)
