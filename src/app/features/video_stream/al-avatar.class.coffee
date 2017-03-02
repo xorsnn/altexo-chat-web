@@ -9,7 +9,6 @@ AlLabel = require './al-label.class.coffee'
   ICOSAHEDRON_RADIUS,
   SURFACE_DISTANCE_KOEFFICIENT } = require './al-video-stream.const.coffee'
 
-
 class AlAvatar
   rgbRenderer: null
   hologramRenderer: null
@@ -19,10 +18,13 @@ class AlAvatar
   streaming: false
   view: 'regular'
 
+  rendererData: null
   seat: null
   source: null
 
-  rendererData: null
+  scene: null
+  camera: null
+  video: null
 
   Seat = {
     getXOffset: (k) ->
@@ -44,23 +46,23 @@ class AlAvatar
     return new Promise (resolve) ->
       _once = ->
         video.removeEventListener('canplaythrough', _once)
-        resolve()
+        resolve(true)
       video.addEventListener('canplaythrough', _once)
 
   constructor: ->
-    this.seat = {
+    @seat = {
       place: 0
       total: 0
     }
 
-    this.source = {
+    @source = {
       dx: 0
       dy: 0
       width: 0
       height: 0
     }
 
-    this.rendererData = {
+    @rendererData = {
       video: null
       image: null
       imageContext: null
@@ -169,21 +171,41 @@ class AlAvatar
 
     @
 
-  render: ->
-    if @streaming
-      if @view == 'regular' or @view == 'hologram'
-        if ( @video.readyState == @video.HAVE_ENOUGH_DATA )
-          # @rendererData.imageContext.fillRect(0, 0, @video.videoWidth, @video.videoHeight)
-          @rendererData.imageContext.drawImage( @video,
-            @source.dx, @source.dy, @source.width, @source.height,
-            0, 0, @video.videoWidth, @video.videoHeight )
-          if ( @rendererData.texture )
-            @rendererData.texture.needsUpdate = true
-        if @view == 'regular'
-          @rgbRenderer.animate()
-      else if @video == 'icosahedron'
-        @soundRenderer.animate()
+  _renderRegular: ->
+    if ( @video.readyState == @video.HAVE_ENOUGH_DATA )
+      # @rendererData.imageContext.fillRect(0, 0, @video.videoWidth, @video.videoHeight)
+      @rendererData.imageContext.drawImage( @video,
+        @source.dx, @source.dy, @source.width, @source.height,
+        0, 0, @video.videoWidth, @video.videoHeight )
+      if ( @rendererData.texture )
+        @rendererData.texture.needsUpdate = true
+    @rgbRenderer.animate()
     @
+
+  _renderHologram: ->
+    if ( @video.readyState == @video.HAVE_ENOUGH_DATA )
+      # @rendererData.imageContext.fillRect(0, 0, @video.videoWidth, @video.videoHeight)
+      @rendererData.imageContext.drawImage( @video,
+        @source.dx, @source.dy, @source.width, @source.height,
+        0, 0, @video.videoWidth, @video.videoHeight )
+      if ( @rendererData.texture )
+        @rendererData.texture.needsUpdate = true
+    @
+
+  _renderIcosahedron: ->
+    @soundRenderer.animate()
+    @
+
+  render: ->
+    unless @streaming
+      return @
+    switch @view
+      when 'regular'
+        @_renderRegular()
+      when 'hologram'
+        @_renderHologram()
+      when 'icosahedron'
+        @_renderIcosahedron()
 
   setSource: ({ place, total }) ->
     @seat.place = place
