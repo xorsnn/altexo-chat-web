@@ -52,6 +52,7 @@ angular.module('AltexoApp')
     avatars = new Map()
 
     shuffle = ->
+      console.debug '>> SHUFFLE', '!!!'
       if not chatRoom.p2p
         n = 0
         avatars.forEach (avatar) ->
@@ -65,6 +66,8 @@ angular.module('AltexoApp')
           avatar.setSource { place: 1, total: 1 }
 
     createAvatar = (contact) ->
+      console.debug '>> CREATE AVATAR', contact, '(CURRENTLY:', avatars.size, ')'
+
       avatar = new AltexoAvatar().setSeat(avatars.size).bind {
         video: chatRoom.selectVideoElement(contact)
         scene, camera
@@ -82,6 +85,7 @@ angular.module('AltexoApp')
 
       shuffle()
 
+    console.debug '>> INIT RENDERER', chatRoom, chatRoom.contacts.size
     chatRoom.contacts.forEach(createAvatar)
 
     RendererHelper.addParticleGrid(scene)

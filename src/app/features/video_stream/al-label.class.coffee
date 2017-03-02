@@ -13,6 +13,7 @@ class AlLabel
     loader = new THREE.FontLoader()
     fileL = require('../../../fonts/Roboto_Regular.json')
     loader.load fileL, ( response ) =>
+      console.debug '>> LABEL: _init'
       @font = response
       unless @labelText == ''
         @updateText(@labelText)
@@ -20,6 +21,7 @@ class AlLabel
     return
 
   updateText: (newText) =>
+    console.debug '>> LABEL: updateText', newText
     @labelText = newText
     if @font
       @showLabel(false)

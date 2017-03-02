@@ -21,7 +21,9 @@ angular.module('AltexoApp')
 
     selectVideoElement: (contact) ->
       if this.p2p and contact.id == this._chat.id
+        console.debug '>> SELECT VIDEO', contact, '**LOCAL**'
         return this._chat.localVideo
+      console.debug '>> SELECT VIDEO', contact, '**REMOTE**'
       return this._chat.remoteVideo
 
     updateInfo: ({ name, creator, p2p }) ->

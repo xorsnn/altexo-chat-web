@@ -40,16 +40,35 @@ class AlAvatar
         else 0
   }
 
-  videoReady = (video) ->
-    if video.readyState == HTMLMediaElement.HAVE_ENOUGH_DATA
-      return Promise.resolve(true)
-    return new Promise (resolve) ->
-      _once = ->
-        video.removeEventListener('canplaythrough', _once)
+  videoReady = (video) -> new Promise (resolve) ->
+    checkResolve = ->
+      console.debug '>> WAIT VIDEO', video, video.readyState
+      if video.readyState == HTMLMediaElement.HAVE_ENOUGH_DATA
         resolve(true)
-      video.addEventListener('canplaythrough', _once)
+      else
+        setTimeout(checkResolve, 1000)
+      return
+    return checkResolve()
+
+  # videoReady = (video) ->
+  #   console.debug '>> WAIT VIDEO', video, video.readyState
+  #   if video.readyState == HTMLMediaElement.HAVE_ENOUGH_DATA
+  #     return Promise.resolve(true)
+  #   return new Promise (resolve) ->
+  #     _once = ->
+  #       console.debug '>> canplaythrough', video
+  #       video.removeEventListener('canplaythrough', _once)
+  #       resolve(true)
+  #     video.addEventListener('canplaythrough', _once)
+
+  IDENT_NAMES = (require 'lodash').shuffle ['Cheech', 'Chong', 'Goofy', 'Psyduck', 'Crabs']
 
   constructor: ->
+    IDENT = IDENT_NAMES.shift() ? "#{Math.floor(Math.random()*1e3)}"
+    Object.defineProperty @, 'IDENT', {
+      get: => "** #{IDENT.toUpperCase()} [#{@labelRenderer?.labelText}] **"
+    }
+
     @seat = {
       place: 0
       total: 0
@@ -118,11 +137,15 @@ class AlAvatar
     }
 
   bind: ({ @scene, @camera, @video }) ->
+    console.debug '>> BIND AVATAR', @IDENT, this
+
     @soundRenderer = new AlSoundRenderer(@rendererData, @scene)
     @labelRenderer = new AlLabel(@rendererData, @scene)
     @labelRenderer.showLabel(false)
 
     videoReady(this.video).then =>
+      console.debug '>> BIND.THEN', @IDENT, this
+
       videoSize = {
         width: @video.videoWidth
         height: @video.videoHeight
@@ -157,6 +180,8 @@ class AlAvatar
     @
 
   unbind: ->
+    console.debug '>> UNBIND', this
+
     @labelRenderer.unbind()
     @labelRenderer = null
 
@@ -198,6 +223,7 @@ class AlAvatar
 
   render: ->
     unless @streaming
+      # console.debug '>> still not streaming...'
       return @
     switch @view
       when 'regular'
@@ -208,6 +234,8 @@ class AlAvatar
         @_renderIcosahedron()
 
   setSource: ({ place, total }) ->
+    console.debug '>> SOURCE', @IDENT, place, total
+
     @seat.place = place
     @seat.total = total
     if total == 1
@@ -236,6 +264,8 @@ class AlAvatar
     @
 
   setSeat: (n) ->
+    console.debug '>> SEAT', @IDENT, n
+
     this.rendererData.modification.rotation.y = Seat.getRotationAngle(n)
     this.rendererData.modification.position.x = Seat.getXOffset(n)
     this.rendererData.modification.position.y = Seat.getYOffset(n)
@@ -248,11 +278,15 @@ class AlAvatar
     @
 
   setLabel: (newLabel) ->
+    console.debug '>> LABEL', @IDENT, newLabel
+
     if @labelRenderer
       @labelRenderer.updateText(newLabel)
     @
 
   setMode: ({ video }) ->
+    console.debug '>> MODE', @IDENT, video
+
     if video == RGB_VIDEO
       @setView('regular')
     else if video == DEPTH_VIDEO
@@ -261,6 +295,8 @@ class AlAvatar
       @setView('icosahedron')
 
   setView: (name) ->
+    console.debug '>> VIEW', @IDENT, name
+
     @view = name
     switch name
       when 'regular'
