@@ -1,0 +1,8 @@
+altexo_frontend_chat_run:
+  image: nginx:1.11.10
+  container_name: altexo-frontend-chat-run
+  volumes:
+    - ./build:/usr/share/nginx/html:ro
+  environment:
+    - VIRTUAL_HOST=localhost
+    - VIRTUAL_PORT=80
