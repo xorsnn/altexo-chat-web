@@ -8,8 +8,8 @@
     "build-staging": "webpack",
     "build-dev": "webpack",
     "build-virtual": "webpack",
-    "build-docker-local": "webpack"
-    "build-docker-testing:wq": "webpack"
+    "build-docker-local": "webpack",
+    "build-docker-testing": "webpack"
   },
   "devDependencies": {
     "clean-webpack-plugin": "^0.1.14",
