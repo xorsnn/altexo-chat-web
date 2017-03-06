@@ -4,3 +4,4 @@ build/
 *.pyc
 npm-debug.log
 .env
+docker-compose-run.yml
