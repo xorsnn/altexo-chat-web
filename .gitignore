@@ -3,4 +3,4 @@ bower_components/
 build/
 *.pyc
 npm-debug.log
-
+.env
