@@ -3,7 +3,7 @@ altexo_frontend_chat_run:
   container_name: altexo-frontend-chat-run
   volumes:
     - ./build:/usr/share/nginx/html:ro
-    - ./scripts/config/nginx-locations-dev-docker.conf:/etc/nginx/nginx.conf:ro
+    - ./scripts/config/nginx-locations-dev-docker.conf:/etc/nginx/conf.d/nginx-locations-dev-docker.conf:ro
     - /etc/ssl/altexo.com/altexo.com.crt:/etc/ssl/altexo.com/altexo.com.crt:ro
     - /etc/ssl/altexo.com/altexo.com.key:/etc/ssl/altexo.com/altexo.com.key:ro
   environment:
