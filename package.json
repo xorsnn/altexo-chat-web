@@ -9,6 +9,7 @@
     "build-dev": "webpack",
     "build-virtual": "webpack",
     "build-docker-local": "webpack"
+    "build-docker-testing:wq": "webpack"
   },
   "devDependencies": {
     "clean-webpack-plugin": "^0.1.14",

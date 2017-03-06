@@ -1,6 +1,5 @@
 altexo_frontend_chat_build:
   build: .
-  # image: node:7.7.1
   container_name: altexo-frontend-chat-build
   volumes:
     - .:/code
