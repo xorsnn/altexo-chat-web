@@ -1,6 +1,5 @@
 altexo_frontend_chat_build:
   build: .
   container_name: altexo-frontend-chat-build
-  dockerfile: Dockerfile-build
   volumes:
     - .:/code
