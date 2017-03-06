@@ -3,6 +3,7 @@ altexo_frontend_chat_run:
   container_name: altexo-frontend-chat-run
   volumes:
     - ./build:/usr/share/nginx/html:ro
+    - ./some/nginx.conf:/etc/nginx/nginx.conf:ro
   environment:
     - VIRTUAL_HOST=${VIRTUAL_HOST}
     - VIRTUAL_PORT=${VIRTUAL_PORT}
