@@ -1,4 +1,5 @@
-//- #videostash(style={display:'block'})
+
+//- #videostash(style={display:'block','z-index':'1000'})
 #videostash(style={display:'none'})
   div(style={top:'30px', right:'50px'})
     video#localVideo(autoplay='true', width='320px', height='240px', muted='true')
@@ -32,22 +33,24 @@ md-content.stream(layout='row', flex)
           input(type='text', value='{{ ::viewLink() }}', ng-readonly,
             aria-label='Share this URL to invite friends')
 
-    .control-panel(layout='row', flex)
+    .control-panel(layout='column', flex)
       div(flex)
-      div
-        md-button.md-fab.md-primary(ng-click="chat.toggleVideo(controls.video = !controls.video)", aria-label="Turn off video")
-          md-icon(ng-if="controls.video", md-svg-src="${require('../../../img/icons/ic_videocam_black_24px.svg')}")
-          md-icon(ng-if="!controls.video", md-svg-src="${require('../../../img/icons/ic_videocam_off_black_24px.svg')}")
-        md-button.md-fab.md-primary(ng-click="chat.toggleAudio(controls.audio = !controls.audio)", aria-label="Turn off audio")
-          md-icon(ng-if="controls.audio", md-svg-src="${require('../../../img/icons/ic_mic_black_24px.svg')}")
-          md-icon(ng-if="!controls.audio", md-svg-src="${require('../../../img/icons/ic_mic_off_black_24px.svg')}")
-      div(flex)
-      div
-        md-button.md-fab.md-mini.md-primary(ng-click="toggleShareScreen()", aria-label="Share screen")
-          md-icon(md-svg-src="${require('../../../img/icons/ic_picture_in_picture_white_24px.svg')}")
+      div(flex, layout='row')
+        div(flex)
+        div(flex, layout='row', layout-align='center center')
+          md-button.md-fab.md-primary(ng-click="chat.toggleVideo(controls.video = !controls.video)", aria-label="Turn off video")
+            md-icon(ng-if="controls.video", md-svg-src="${require('../../../img/icons/ic_videocam_black_24px.svg')}")
+            md-icon(ng-if="!controls.video", md-svg-src="${require('../../../img/icons/ic_videocam_off_black_24px.svg')}")
+          md-button.md-fab.md-primary(ng-click="chat.toggleAudio(controls.audio = !controls.audio)", aria-label="Turn off audio")
+            md-icon(ng-if="controls.audio", md-svg-src="${require('../../../img/icons/ic_mic_black_24px.svg')}")
+            md-icon(ng-if="!controls.audio", md-svg-src="${require('../../../img/icons/ic_mic_off_black_24px.svg')}")
+        div(flex)
+        div(flex, layout='row', layout-align='center center')
+          md-button.md-fab.md-mini.md-primary(ng-click="toggleShareScreen()", aria-label="Share screen")
+            md-icon(md-svg-src="${require('../../../img/icons/ic_picture_in_picture_white_24px.svg')}")
 
-        md-button.md-fab.md-mini.md-primary(ng-click="rightSidenav.toggle()", aria-label="Open/close chat")
-          md-icon(md-svg-src="${require('../../../img/icons/ic_chat_bubble_black_24px.svg')}")
+          md-button.md-fab.md-mini.md-primary(ng-click="rightSidenav.toggle()", aria-label="Open/close chat")
+            md-icon(md-svg-src="${require('../../../img/icons/ic_chat_bubble_black_24px.svg')}")
 
     if DEBUG == 'true'
       div
