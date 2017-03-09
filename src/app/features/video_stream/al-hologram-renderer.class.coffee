@@ -27,7 +27,11 @@ class AlHologramRenderer
     for y in [0...height] by height / yAmount
       row = []
       for x in [0...width] by width / xAmount
-        row.push([(x - width / 2) * COORD_MULTIPLIER , (y - height / 2) * COORD_MULTIPLIER, 0])
+        row.push([
+          (x - width / 2) * COORD_MULTIPLIER,
+          (y - height / 2) * COORD_MULTIPLIER,
+          0
+        ])
       points.push(row)
     return points
 
@@ -71,11 +75,18 @@ class AlHologramRenderer
     geometry.addAttribute( 'position', new THREE.BufferAttribute( vertices, 3 ) )
     geometry.addAttribute( 'vUv', new THREE.BufferAttribute( vUv, 2 ) )
 
+
     @rendererData.hologram.hologramMaterial = new THREE.ShaderMaterial({
       uniforms:
         textureMap: {type: 't', value: @rendererData.texture}
         wAmount: {type: 'f', value: @HOLOGRAM_W}
         hAmount: {type: 'f', value: @HOLOGRAM_H}
+        modificationPosX: {type: 'f', value: @rendererData.modification.position.x}
+        # modificationPosY: {type: 'f', value: @rendererData.modification.position.y}
+        # modificationPosZ: {type: 'f', value: @rendererData.modification.position.z}
+        # modificationRotationX: {type: 'f', value: @rendererData.modification.rotation.x}
+        modificationRotationY: {type: 'f', value: @rendererData.modification.rotation.y}
+        # modificationRotationZ: {type: 'f', value: @rendererData.modification.rotation.z}
       vertexShader: @hologramShaders.vert
       fragmentShader: @hologramShaders.frag
       side: THREE.DoubleSide
@@ -88,6 +99,12 @@ class AlHologramRenderer
         textureMap: {type: 't', value: @rendererData.texture}
         wAmount: {type: 'f', value: @HOLOGRAM_W}
         hAmount: {type: 'f', value: @HOLOGRAM_H}
+        modificationPosX: {type: 'f', value: @rendererData.modification.position.x}
+        # modificationPosY: {type: 'f', value: @rendererData.modification.position.y}
+        # modificationPosZ: {type: 'f', value: @rendererData.modification.position.z}
+        # modificationRotationX: {type: 'f', value: @rendererData.modification.rotation.x}
+        modificationRotationY: {type: 'f', value: @rendererData.modification.rotation.y}
+        # modificationRotationZ: {type: 'f', value: @rendererData.modification.rotation.z}
       vertexShader: @hologramShaders.vertReflection
       fragmentShader: @hologramShaders.fragReflection
       side: THREE.DoubleSide

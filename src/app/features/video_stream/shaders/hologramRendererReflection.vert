@@ -10,8 +10,18 @@ varying float visibility;
 const float minD = 555.0;
 const float maxD = 1005.0;
 
-const float PI = 3.1415926535897932384626433832795;
-const float PI_6 = PI / 6.0;
+// MODIFICATIONS position
+uniform float modificationPosX;
+// uniform float modificationPosY;
+// uniform float modificationPosZ;
+
+// MODIFICATIONS rotation
+// uniform float modificationRotationX;
+uniform float modificationRotationY;
+// uniform float modificationRotationZ;
+
+// const float PI = 3.1415926535897932384626433832795;
+// const float PI_6 = PI / 6.0;
 
 // taken from freenect example
 const float f = 595.0; // devide by wAmoutn to normalize
@@ -84,9 +94,9 @@ void main() {
 
   // NOTE: moving here
   vec3 newPos;
-  newPos.x = pos.x * cos(PI_6) + pos.z * sin(PI_6) - 320.0;
+  newPos.x = pos.x * cos(modificationRotationY) + pos.z * sin(modificationRotationY) + modificationPosX;
   newPos.y = pos.y;
-  newPos.z = -pos.x * sin(PI_6) + pos.z * cos(PI_6);
+  newPos.z = -pos.x * sin(modificationRotationY) + pos.z * cos(modificationRotationY);
 
   // gl_Position = projectionMatrix * modelViewMatrix * vec4(pos.x, pos.y, pos.z, 1.0);
   gl_Position = projectionMatrix * modelViewMatrix * vec4(newPos, 1.0);
