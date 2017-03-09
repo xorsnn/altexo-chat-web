@@ -10,9 +10,11 @@ nodeStyleMethods = [
 
 angular.module('AltexoApp')
 
-.service 'WebRtcPeer', ($q) -> {
+.service 'WebRtcPeer', ($q, AL_RTC) -> {
   WebRtcPeerSendrecv: (options) ->
+    options.configuration ?= AL_RTC.config
     $q (resolve, reject) ->
+      console.debug '>> new WebRtcPeer.SENDRECV', options
       webRtcPeer = new WebRtcPeer.WebRtcPeerSendrecv options, (error) ->
         if error
           return reject(error)
@@ -21,7 +23,9 @@ angular.module('AltexoApp')
         resolve(webRtcPeer)
 
   WebRtcPeerSendonly: (options) ->
+    options.configuration ?= AL_RTC.config
     $q (resolve, reject) ->
+      console.debug '>> new WebRtcPeer.SENDONLY', options
       webRtcPeer = new WebRtcPeer.WebRtcPeerSendonly options, (error) ->
         if error
           return reject(error)
@@ -30,7 +34,9 @@ angular.module('AltexoApp')
         resolve(webRtcPeer)
 
   WebRtcPeerRecvonly: (options) ->
+    options.configuration ?= AL_RTC.config
     $q (resolve, reject) ->
+      console.debug '>> new WebRtcPeer.RECVONLY', options
       webRtcPeer = new WebRtcPeer.WebRtcPeerRecvonly options, (error) ->
         if error
           return reject(error)
