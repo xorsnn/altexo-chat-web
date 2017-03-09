@@ -222,16 +222,17 @@ class AlAvatar
     @
 
   render: ->
-    unless @streaming
-      # console.debug '>> still not streaming...'
-      return @
-    switch @view
-      when 'regular'
-        @_renderRegular()
-      when 'hologram'
-        @_renderHologram()
-      when 'icosahedron'
-        @_renderIcosahedron()
+    if @streaming
+      switch @view
+        when 'regular'
+          @_renderRegular()
+        when 'hologram'
+          @_renderHologram()
+        when 'icosahedron'
+          @_renderIcosahedron()
+    # else
+    #   console.debug '>> still not streaming...'
+    @
 
   setSource: ({ place, total }) ->
     console.debug '>> SOURCE', @IDENT, place, total
@@ -293,6 +294,8 @@ class AlAvatar
       @setView('hologram')
     else if video == NO_VIDEO
       @setView('icosahedron')
+
+    @
 
   setView: (name) ->
     console.debug '>> VIEW', @IDENT, name
