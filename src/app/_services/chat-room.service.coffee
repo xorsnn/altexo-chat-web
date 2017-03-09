@@ -4,13 +4,14 @@ _ = require('lodash')
 
 angular.module('AltexoApp')
 
-.factory 'ChatRoom', ->
+.factory 'ChatRoom', (AL_VIDEO) ->
 
   class ChatRoom extends EventEmitter
 
     name: null
     p2p: null
     contacts: null
+    muted: null
 
     _chat: null
 
@@ -56,6 +57,16 @@ angular.module('AltexoApp')
           this.contacts.set(contact.id, contact)
           updated.push(contact)
         return
+
+      prevMuted = this.muted
+      this.muted = Object.freeze(Array
+        .from(this.contacts.values())
+        .filter (contact) -> contact.mode.video == AL_VIDEO.NO_VIDEO
+        .map (contact) -> contact.id)
+
+      # emit "mute" event when number of muted contacts is changed
+      unless prevMuted and this.muted.length == prevMuted.length
+        this.emit('mute', (this.muted.length > 0))
 
       for contact in removed
         this.emit('remove', contact)

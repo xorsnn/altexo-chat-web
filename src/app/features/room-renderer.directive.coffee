@@ -3,11 +3,12 @@ THREE = require('three')
 if DEBUG == 'true'
   Stats = require('three/examples/js/libs/stats.min')
 
-# p5 = require('p5')
-# require('p5/lib/addons/p5.dom')
-# require('p5/lib/addons/p5.sound')
+p5 = require('p5')
+require('p5/lib/addons/p5.dom')
+require('p5/lib/addons/p5.sound')
 
 AltexoAvatar = require './video_stream/al-avatar.class.coffee'
+
 
 angular.module('AltexoApp')
 
@@ -31,10 +32,9 @@ angular.module('AltexoApp')
         top: '50px', right: '16px', left: ''
       })
 
-    # mic = new p5.AudioIn()
-    # mic.start()
-    # fft = new p5.FFT(0.8, 16)
-    # fft.setInput(mic)
+    mic = new p5.AudioIn()
+    fft = new p5.FFT(0.8, 16)
+    fft.setInput(mic)
 
     renderer = new THREE.WebGLRenderer({ antialias: true })
     renderer.setClearColor(0xf0f0f0)
@@ -51,9 +51,10 @@ angular.module('AltexoApp')
 
     avatars = new Map()
 
+
     shuffle = ->
-      console.debug '>> SHUFFLE', '!!!'
       if not chatRoom.p2p
+        console.debug '>> SHUFFLE', 'kurento case'
         n = 0
         avatars.forEach (avatar) ->
           avatar.setSource {
@@ -62,8 +63,10 @@ angular.module('AltexoApp')
           }
           n = n + 1
       else
+        console.debug '>> SHUFFLE', 'p2p case'
         avatars.forEach (avatar) ->
           avatar.setSource { place: 1, total: 1 }
+      return
 
     createAvatar = (contact) ->
       console.debug '>> CREATE AVATAR', contact, '(CURRENTLY:', avatars.size, ')'
@@ -80,10 +83,32 @@ angular.module('AltexoApp')
       shuffle()
 
     removeAvatar = (contact) ->
+      console.debug '>> REMOVE AVATAR', contact
+
       avatars.get(contact.id).unbind()
       avatars.delete(contact.id)
 
       shuffle()
+
+    updateAvatar = (contact) ->
+      console.debug '>> UPDATE AVATAR', contact
+
+      avatars.get(contact.id).setLabel(contact.name)
+      .setMode(contact.mode)
+
+    startMic = ->
+      console.debug '>> START p5.MICROPHONE'
+      mic.start()
+
+    # REF: https://github.com/processing/p5.js-sound/commit/1d7816b154ea5ccb728742a67d5f55c0cc6ed62e
+    stopMic = ->
+      console.debug '>> STOP p5.MICROPHONE'
+      mic.stream?.getTracks().forEach (track) -> track.stop()
+
+    toggleMic = (value) ->
+      if value then startMic() else stopMic()
+
+    $scope.$on('$destroy', stopMic)
 
     console.debug '>> INIT RENDERER', chatRoom, chatRoom.contacts.size
     chatRoom.contacts.forEach(createAvatar)
@@ -95,10 +120,10 @@ angular.module('AltexoApp')
       camera.position.y += ( - mouseY - camera.position.y ) * 0.05
       camera.lookAt( scene.position )
 
-      # # FIXME: define if analyze is needed
-      # spectrum = fft.analyze()
-      # avatars.forEach (avatar) ->
-      #   avatar.setSpectrum(spectrum)
+      if chatRoom.muted.length
+        spectrum = fft.analyze()
+        chatRoom.muted.forEach (id) ->
+          avatars.get(id).setSpectrum(spectrum)
 
       avatars.forEach (avatar) ->
         avatar.render()
@@ -119,15 +144,13 @@ angular.module('AltexoApp')
       else
         animate = $scope.$runAnimation(render)
 
+      toggleMic(chatRoom.muted.length > 0)
       animate()  # start animation
 
+    $scope.$listenObject(chatRoom, 'mute', toggleMic)
     $scope.$listenObject(chatRoom, 'add', createAvatar)
-
     $scope.$listenObject(chatRoom, 'remove', removeAvatar)
-
-    $scope.$listenObject chatRoom, 'update', (contact) ->
-      avatars.get(contact.id).setLabel(contact.name)
-      avatars.get(contact.id).setMode(contact.mode)
+    $scope.$listenObject(chatRoom, 'update', updateAvatar)
 
     $scope.$listenWindow 'resize', (ev) ->
       windowHalfX = element.offsetWidth / 2
