@@ -2,6 +2,8 @@ THREE = require('three')
 
 class AlHologramRenderer
 
+  HOLOGRAM_TYPE: 'POINT_CLOUD' # 'LINES'
+
   HOLOGRAM_W: 640 / 3
   HOLOGRAM_H: 480 / 3
 
@@ -13,6 +15,7 @@ class AlHologramRenderer
   }
 
   constructor: (@rendererData, @scene) ->
+
     @_init()
     return
 
@@ -34,6 +37,22 @@ class AlHologramRenderer
         ])
       points.push(row)
     return points
+
+  _getPointCloud: (points) ->
+    lineSegmentsPoints = []
+    vUv = []
+    previousPoint = null
+    for i in [0...points.length]
+      for y in [0...points[i].length]
+        vUv.push(y / points[i].length)
+        vUv.push(i / points.length)
+        lineSegmentsPoints.push(points[i][y][0])
+        lineSegmentsPoints.push(points[i][y][1])
+        lineSegmentsPoints.push(points[i][y][2])
+    return {
+    lineSegmentsPoints: lineSegmentsPoints,
+    vUv: vUv
+    }
 
   # translate points coordinates to LinesSegments acceptable format
   _getLineSegments: (points) ->
@@ -66,8 +85,12 @@ class AlHologramRenderer
     geometry = new THREE.BufferGeometry()
     geometryReflection = new THREE.BufferGeometry()
 
-    lineSegmentsDt = @_getLineSegments(@_getArrayOfPoints())
-    lineSegmentsReflectionDt = @_getLineSegments(@_getArrayOfPoints())
+    if @HOLOGRAM_TYPE == 'LINES'
+      lineSegmentsDt = @_getLineSegments(@_getArrayOfPoints())
+      lineSegmentsReflectionDt = @_getLineSegments(@_getArrayOfPoints())
+    else
+      lineSegmentsDt = @_getPointCloud(@_getArrayOfPoints())
+      lineSegmentsReflectionDt = @_getPointCloud(@_getArrayOfPoints())
 
     vertices = new Float32Array(lineSegmentsDt.lineSegmentsPoints)
     vUv = new Float32Array(lineSegmentsDt.vUv)
@@ -92,7 +115,14 @@ class AlHologramRenderer
       side: THREE.DoubleSide
       transparent: true
     } )
-    @rendererData.hologram.mesh = new THREE.LineSegments( geometry, @rendererData.hologram.hologramMaterial )
+
+
+    if @HOLOGRAM_TYPE == 'LINES'
+      @rendererData.hologram.mesh = \
+        new THREE.LineSegments( geometry, @rendererData.hologram.hologramMaterial )
+    else
+      @rendererData.hologram.mesh = \
+        new THREE.PointCloud( geometry, @rendererData.hologram.hologramMaterial )
 
     @rendererData.hologram.hologramReflectionMaterial = new THREE.ShaderMaterial({
       uniforms:
@@ -110,8 +140,13 @@ class AlHologramRenderer
       side: THREE.DoubleSide
       transparent: true
     } )
-    @rendererData.hologram.reflectionMesh = \
-      new THREE.LineSegments( geometry, @rendererData.hologram.hologramReflectionMaterial)
+
+    if @HOLOGRAM_TYPE == 'LINES'
+      @rendererData.hologram.reflectionMesh = \
+        new THREE.LineSegments( geometry, @rendererData.hologram.hologramReflectionMaterial)
+    else
+      @rendererData.hologram.reflectionMesh = \
+        new THREE.PointCloud( geometry, @rendererData.hologram.hologramReflectionMaterial )
 
     return
 
