@@ -70,9 +70,9 @@ angular.module('AltexoApp')
       $location.absUrl().replace(/([^:\/])\/.+/,
         "$1/room/#{$routeParams.room}")
 
-    # $scope.onLogoClick = ->
-    #   $location.path('/')
-    #   return
+    $scope.quitRoom = ->
+      $location.path('/')
+      return
 
     $scope.setChatAlias = (value) ->
       $scope.chat.setAlias(value)

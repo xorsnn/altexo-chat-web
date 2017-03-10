@@ -8,9 +8,12 @@
 
 md-toolbar.md-hue-2.altexo-toolbar
   .md-toolbar-tools
-    md-button.md-icon-button(aria-label='Settings', ng-click='leftSidenav.toggle()')
-      md-icon(md-svg-icon="${require('../../../img/icons/ic_menu_black_24px.svg')}")
-    h2(flex='', md-truncate='') Chat
+    //- md-button.md-icon-button(aria-label='Settings', ng-click='leftSidenav.toggle()')
+    //-   md-icon(md-svg-icon="${require('../../../img/icons/ic_menu_black_24px.svg')}")
+    md-button.md-icon-button(aria-label='Stop streaming', ng-click='quitRoom()')
+      md-icon(md-svg-icon="${require('../../../img/icons/ic_close_black_24px.svg')}")
+    h2(flex='', md-truncate='')
+      | {{ chat.room.name || 'Chat' }}
     md-input-container.md-block(flex='50', flex-gt-sm='20')
       input(type='text', aria-label='Your nickname', md-autofocus,
              ng-model='$storage.nickname',
