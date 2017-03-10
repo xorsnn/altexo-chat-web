@@ -100,10 +100,10 @@ void main() {
 
   // gl_Position = projectionMatrix * modelViewMatrix * vec4(pos.x, pos.y, pos.z, 1.0);
   gl_Position = projectionMatrix * modelViewMatrix * vec4(newPos, 1.0);
+  gl_PointSize = 2.5;
 
   vec4 modelMat = modelMatrix * vec4(pos, 1.0);
   if (modelMat.y > -120.0) {
     visibility = 0.0;
   }
-  // gl_PointSize = 2.0;
 }
