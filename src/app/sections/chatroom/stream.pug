@@ -60,8 +60,7 @@ md-content.stream(layout='row', flex)
         p Candidates sent: {{ iceSent }}
         p Candidates received: {{ iceReceived }}
 
-md-sidenav.md-sidenav-right.md-whiteframe-4dp(md-component-id='right',
-    md-disable-backdrop, layout='column')
+md-sidenav.md-sidenav-right.md-whiteframe-4dp(md-component-id='right', md-disable-backdrop, layout='column')
   md-toolbar.md-theme-light(layout='row', layout-align='end center')
     md-button.md-icon-button.launch(ng-click='rightSidenav.toggle()')
       md-icon(md-svg-icon="${require('../../../img/icons/ic_clear_black_24px.svg')}")
@@ -69,7 +68,7 @@ md-sidenav.md-sidenav-right.md-whiteframe-4dp(md-component-id='right',
     div(flex)
       div(ng-repeat='msg in chat.messages track by msg.id')
         strong {{ ::msg.contact.name }}: &nbsp;
-        span(ng-bind-html='::msg.text|linky')
+        span(ng-bind-html="::msg.text|linky:'_blank'")
     form
       div(layout='row')
         md-input-container.md-block(md-no-float)
