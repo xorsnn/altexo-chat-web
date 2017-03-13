@@ -18,12 +18,13 @@ html(lang='en')
     meta(property="og:site_name", content="altexo.com")
 
     link(rel='icon',type='image/png', href='/img/favicon.png')
+    link(rel='stylesheet', href='/css/angular-csp.css')
     link(rel='chrome-webstore-item', href=AL_WEBSTORE_APP_LINK)
     base(href='/')
 
-  body(layout='row', ng-cloak='', ng-controller='RootCtrl')
+  body(layout='row', ng-controller='RootCtrl')
     //- SIDENAV for authenticated users.
-    md-sidenav.md-sidenav-left(ng-if='$user.profile.id', md-component-id='left', md-is-locked-open='leftSidenavLocked', md-whiteframe='4')
+    md-sidenav.md-sidenav-left.ng-cloak(ng-if='$user.profile.id', md-component-id='left', md-is-locked-open='leftSidenavLocked', md-whiteframe='4')
       md-toolbar.md-theme-indigo(layout='row', layout-align='left center')
         img(ng-src=require('../img/logo_white.svg'), height=50, style='margin-left:16px')
       div(layout='column', layout-padding)
@@ -37,14 +38,14 @@ html(lang='en')
       al-used-rooms
 
     //- SIDENAV for anonymous users.
-    md-sidenav.md-sidenav-left(ng-if='!$user.profile.id', md-component-id='left', md-is-locked-open='leftSidenavLocked', md-whiteframe='4')
+    md-sidenav.md-sidenav-left.ng-cloak(ng-if='!$user.profile.id', md-component-id='left', md-is-locked-open='leftSidenavLocked', md-whiteframe='4')
       md-toolbar.md-theme-indigo(layout='row', layout-align='left center')
         img(ng-src=require('../img/logo_white.svg'), height=50, style='margin-left:16px')
       md-button.md-primary(ng-click='showLoginDialog($event)') Sign in
       md-divider
       al-used-rooms
 
-    ng-view(layout='column', flex='grow', ng-if='::$user.isReady')
+    ng-view.ng-cloak(layout='column', flex='grow', ng-if='::$user.isReady')
 
     //- SEO
     if AL_SERVER_MODE == 'production'
