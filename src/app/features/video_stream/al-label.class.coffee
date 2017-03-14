@@ -1,3 +1,4 @@
+THREE = require('three')
 
 class AlLabel
   label: null
@@ -12,6 +13,7 @@ class AlLabel
     loader = new THREE.FontLoader()
     fileL = require('../../../fonts/Roboto_Regular.json')
     loader.load fileL, ( response ) =>
+      console.debug '>> LABEL: _init'
       @font = response
       unless @labelText == ''
         @updateText(@labelText)
@@ -19,6 +21,7 @@ class AlLabel
     return
 
   updateText: (newText) =>
+    console.debug '>> LABEL: updateText', newText
     @labelText = newText
     if @font
       @showLabel(false)
@@ -29,12 +32,18 @@ class AlLabel
   showLabel: (show = true) =>
     if @label
       if show
-        unless @scene.getObjectById(@label.id)
-          @scene.add(@label)
+        @bind()
       else
-        if @scene.getObjectById(@label.id)
-          @scene.remove(@label)
+        @unbind()
     return
+
+  bind: ->
+    unless @scene.getObjectById(@label.id)
+      @scene.add(@label)
+
+  unbind: ->
+    if @scene.getObjectById(@label.id)
+      @scene.remove(@label)
 
   _createText: () =>
     textGeo = new THREE.TextGeometry(@labelText, {
@@ -58,10 +67,12 @@ class AlLabel
     textGeo.computeBoundingBox()
 
     @label = new THREE.Mesh( textGeo, material )
-    @label.position.x = @rendererData.modification.position.x - (textGeo.boundingBox.max.x - textGeo.boundingBox.min.x) / 2
+    @label.position.x = (@rendererData.modification.position.x -
+      (textGeo.boundingBox.max.x - textGeo.boundingBox.min.x) / 2)
     @label.position.y = 180
     @label.rotation.y = @rendererData.modification.rotation.y
-    @label.position.z = ((textGeo.boundingBox.max.x - textGeo.boundingBox.min.x) * Math.sin(@rendererData.modification.rotation.y)) / 2
+    @label.position.z = (((textGeo.boundingBox.max.x - textGeo.boundingBox.min.x) *
+      Math.sin(@rendererData.modification.rotation.y)) / 2)
     return
 
 module.exports = AlLabel

@@ -2,10 +2,11 @@
 getLocalTrack = (webRtcPeer, type) ->
   streams = webRtcPeer.peerConnection.getLocalStreams()
   if streams.length
-    if (tracks = switch type
-          when 'audio' then streams[0].getAudioTracks()
-          when 'video' then streams[0].getVideoTracks()
-          else []).length
+    tracks = switch type
+      when 'audio' then streams[0].getAudioTracks()
+      when 'video' then streams[0].getVideoTracks()
+      else []
+    if tracks.length
       return tracks[0]
   return null
 
@@ -15,27 +16,23 @@ angular.module('AltexoApp')
 .directive 'altexoWebRtcView', \
 ($q, WebRtcPeer, ScreenSharingExtension, AL_VIDEO) -> {
   restrict: 'E'
-  # template: '<ng-transclude/>'
-  # transclude: true
   link: ($scope, $element, attrs) ->
     chat = $scope.$eval(attrs.chat)
     shareScreen = chat.rpc.mode.video == AL_VIDEO.SHARED_SCREEN_VIDEO
 
     startWebRtc = ->
-      localVideo = $element.find('video.local').get(0)
-      remoteVideo = $element.find('video.remote').get(0)
-
       console.info '>> altexo-web-rtc-view: start sendrecv'
+      {localVideo} = chat
+      {remoteVideo} = chat
       WebRtcPeer.WebRtcPeerSendrecv { localVideo, remoteVideo }
       .then null, (error) ->
         console.info '>> altexo-web-rtc-view: fallback to recvonly mode'
         WebRtcPeer.WebRtcPeerRecvonly { remoteVideo }
 
     startScreenSharing = ->
-      localVideo = $element.find('video.local').get(0)
-      remoteVideo = $element.find('video.remote').get(0)
-
       console.info '>> altexo-web-rtc-view: start screen sharing'
+      {localVideo} = chat
+      {remoteVideo} = chat
       ScreenSharingExtension.getStream()
       .then (videoStream) ->
         # toggle back when "Stop sharing" button is pressed

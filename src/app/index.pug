@@ -18,11 +18,34 @@ html(lang='en')
     meta(property="og:site_name", content="altexo.com")
 
     link(rel='icon',type='image/png', href='/img/favicon.png')
-    link(rel='chrome-webstore-item', href=`${AL_WEBSTORE_APP_LINK}`)
+    link(rel='stylesheet', href='/css/angular-csp.css')
+    link(rel='chrome-webstore-item', href=AL_WEBSTORE_APP_LINK)
     base(href='/')
 
-  body(layout='row', ng-cloak='', ng-controller='RootCtrl')
-    ng-view(layout='column', flex='grow', style='overflow-y:hidden;overflow-x:hidden;position:relative')
+  body(layout='row', ng-controller='RootCtrl')
+    //- SIDENAV for authenticated users.
+    md-sidenav.md-sidenav-left.ng-cloak(ng-if='$user.profile.id', md-component-id='left', md-is-locked-open='leftSidenavLocked', md-whiteframe='4')
+      md-toolbar.md-theme-indigo(layout='row', layout-align='left center')
+        img(ng-src=require('../img/logo_white.svg'), height=50, style='margin-left:16px')
+      div(layout='column', layout-padding)
+        p
+          | Logged in as #[strong {{ ::$user.profile.username }}]
+          br
+          br
+          | Email: {{ ::$user.profile.email }} (#[a(href='/profile'): em change])
+        md-button(ng-click='$user.logout()') Sign out
+      md-divider
+      al-used-rooms
+
+    //- SIDENAV for anonymous users.
+    md-sidenav.md-sidenav-left.ng-cloak(ng-if='!$user.profile.id', md-component-id='left', md-is-locked-open='leftSidenavLocked', md-whiteframe='4')
+      md-toolbar.md-theme-indigo(layout='row', layout-align='left center')
+        img(ng-src=require('../img/logo_white.svg'), height=50, style='margin-left:16px')
+      md-button.md-primary(ng-click='showLoginDialog($event)') Sign in
+      md-divider
+      al-used-rooms
+
+    ng-view.ng-cloak(layout='column', flex='grow', ng-if='::$user.isReady')
 
     //- SEO
     if AL_SERVER_MODE == 'production'

@@ -1,4 +1,4 @@
-
+THREE = require('three')
 
 class AlRgbRenderer
 
@@ -94,14 +94,13 @@ class AlRgbRenderer
         @avatar.scene.remove(@avatar.rendererData.mesh.reflection)
     return
 
+  bind: ->
+    @_showOriginal(true)
+    @_showReflection(true)
 
-  updateVisibility: (mode) =>
-    if mode == AL_VIDEO_CONST.RGB_VIDEO
-      @_showOriginal(true)
-      @_showReflection(true)
-    else
-      @_showOriginal(false)
-      @_showReflection(false)
-    return
+  unbind: ->
+    @_showOriginal(false)
+    @_showReflection(false)
+
 
 module.exports = AlRgbRenderer

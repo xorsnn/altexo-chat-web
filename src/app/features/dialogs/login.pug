@@ -1,0 +1,20 @@
+md-dialog(aria-label='Login', style={'width':'21em', 'max-width':'80vw'})
+  md-toolbar
+    .md-toolbar-tools
+      h5 Authenticate
+  md-dialog-content.md-dialog-content(layout='column', layout-padding)
+    form(layout='column', ng-submit='login(formData)')
+      md-input-container(md-is-error='formError.non_field_errors.$error')
+        label Login
+        input(ng-model='formData.username', required='', md-autofocus)
+        div(ng-messages='formError.non_field_errors.$error')
+          div(ng-message='other') Unable to login with provided credentials.
+      md-input-container(md-is-error='formError.non_field_errors.$error')
+        label Password
+        input(type='password', ng-model='formData.password', required='')
+      p
+        | Don't have an account?
+        br
+        | #[a(href='/register', ng-click='cancel()') Sign up] now.
+      //- Add hidden SUBMIT button to make things work nice.
+      button.md-button(type='submit', hide) Sign in

@@ -9,13 +9,13 @@ angular.module('AltexoApp')
 
       @program = @gl.createProgram()
       if (@program == 0)
-        alert("glCreateProgram() failed. GLES20 error: " + @gl.glGetError())
+        alert("glCreateProgram() failed. GLES20 error: #{@gl.glGetError()}")
 
       @gl.attachShader(@program, vertexShader)
       @gl.attachShader(@program, fragmentShader)
       @gl.linkProgram(@program)
       if (!@gl.getProgramParameter(@program, @gl.LINK_STATUS))
-        alert("Unable to initialize the shader program: " + @gl.getProgramInfoLog(@program));
+        alert("Unable to initialize the shader program: #{@gl.getProgramInfoLog(@program)}")
 
       @gl.deleteShader(vertexShader)
       @gl.deleteShader(fragmentShader)
@@ -24,23 +24,23 @@ angular.module('AltexoApp')
     _compileShader: (shaderType, source) ->
       shader = @gl.createShader(shaderType)
       if shader == 0
-        alert "glCreateShader() failed. GLES20 error: " + @gl.glGetError()
+        alert "glCreateShader() failed. GLES20 error: #{@gl.glGetError()}"
       @gl.shaderSource(shader, source)
       @gl.compileShader(shader)
 
       # See if it compiled successfully
       if (!@gl.getShaderParameter(shader, @gl.COMPILE_STATUS))
-        alert("An error occurred compiling the shaders: " + @gl.getShaderInfoLog(shader));
-        return null;
+        alert("An error occurred compiling the shaders: #{@gl.getShaderInfoLog(shader)}")
+        return null
 
       return shader
 
     getAttribLocation: (label) ->
       if (@program == -1)
-        alert("The program has been released")
+        alert('The program has been released')
       location = @gl.getAttribLocation(@program, label)
       if (location < 0)
-        alert("Could not locate '" + label + "' in program")
+        alert("Could not locate '#{label}' in program")
       return location
 
     ##
@@ -49,22 +49,22 @@ angular.module('AltexoApp')
     #
     setVertexAttribArray: (label, dimension, buffer) ->
       if (@program == -1)
-        alert("The program has been released")
+        alert('The program has been released')
       location = @getAttribLocation(label)
       @gl.enableVertexAttribArray(location)
       @gl.vertexAttribPointer(location, dimension, GLES20.GL_FLOAT, false, 0, buffer)
 
     getUniformLocation: (label) ->
       if (@program == -1)
-        alert("The program has been released")
+        alert('The program has been released')
       location = @gl.getUniformLocation(@program, label)
       if (location < 0)
-        alert("Could not locate uniform '" + label + "' in program")
+        alert("Could not locate uniform '#{label}' in program")
       return location
 
     useProgram: ->
       if (@program == -1)
-        alert("The program has been released")
+        alert('The program has been released')
       @gl.useProgram(@program)
 
     release: () ->

@@ -3,11 +3,13 @@
   "version": "0.0.1",
   "description": "altexo site",
   "scripts": {
-    "start": ". ./scripts/config/env_local_dev.sh && node node_modules/.bin/webpack-dev-server --content-base src/app --hot",
+    "start": ". ./scripts/config/env_local_dev.sh && node node_modules/.bin/webpack-dev-server --host 0.0.0.0 --port 3000 --content-base src/app --hot",
     "build": "webpack",
     "build-staging": "webpack",
     "build-dev": "webpack",
-    "build-virtual": "webpack"
+    "build-virtual": "webpack",
+    "build-docker-local": "webpack",
+    "build-docker-testing": "webpack"
   },
   "devDependencies": {
     "clean-webpack-plugin": "^0.1.14",
@@ -54,13 +56,20 @@
     "angular-sanitize": "1.5.8",
     "denodeify": "1.2.1",
     "eventemitter": "0.3.3",
+    "freeice": "2.1.2",
+    "hark": "1.1.3",
+    "inherits": "2.0.1",
     "jquery": "3.1.0",
     "lodash": "4.15.0",
+    "merge": "1.2.0",
     "ngstorage": "0.3.11",
     "p5": "0.5.3",
     "raven-js": "3.5.1",
     "roboto-fontface": "0.6.0",
+    "sdp-translator": "0.1.15",
     "sylvester": "0.0.21",
-    "three": "0.80.1"
+    "three": "0.80.1",
+    "ua-parser-js": "0.7.7",
+    "whatwg-fetch": "2.0.2"
   }
 }

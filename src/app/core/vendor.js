@@ -3,6 +3,7 @@ module.exports = function () {
   require('../index.scss');
   /* JS */
   global.$ = global.jQuery = require('jquery');
+  global.Raven = require('raven-js');
   require('angular');
   require('angular-animate');
   require('angular-aria');
@@ -18,12 +19,6 @@ module.exports = function () {
   for (var attrname in adapter) {
     global[attrname] = adapter[attrname];
   }
-
-  global.THREE = require('../../../bower_components/three.js/build/three.js');
-  global.kurentoUtils = require('../../../bower_components/kurento-utils/dist/kurento-utils.js');
-  require('../../../bower_components/angular-promisify/dist/denodeify.js');
-
-  global.Raven = require('raven-js');
 
   require('../../vendor/modernizr/modernizr-custom.js');
 };

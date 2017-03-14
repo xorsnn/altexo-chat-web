@@ -1,0 +1,24 @@
+md-toolbar.md-hue-2(hide-gt-sm='')
+  .md-toolbar-tools
+    md-button.md-icon-button(aria-label='Settings', ng-click='leftSidenav.toggle()')
+      md-icon(md-svg-icon="${require('../../../img/icons/ic_menu_black_24px.svg')}")
+    h2(flex='', md-truncate='') Sign In
+
+md-content.md-padding(layout='row', flex='', layout-align='center center')
+  md-whiteframe.md-whiteframe-z1(layout='column', flex='30', layout-padding='')
+    h3 Authentication Required
+    form(layout='column', ng-submit='login(formData)')
+      md-input-container(md-is-error='formError.non_field_errors.$error')
+        label Login
+        input(ng-model='formData.username', required='', md-autofocus)
+        div(ng-messages='formError.non_field_errors.$error')
+          div(ng-message='other') Unable to login with provided credentials.
+      md-input-container(md-is-error='formError.non_field_errors.$error')
+        label Password
+        input(type='password', ng-model='formData.password', required='')
+      p
+        | Don't have an account?
+        br
+        | #[a(href='/register', ng-click='cancel()') Sign up] now.
+      md-input-container(layout='row', layout-align='center center')
+        button.md-button.md-raised(type='submit') Sign In

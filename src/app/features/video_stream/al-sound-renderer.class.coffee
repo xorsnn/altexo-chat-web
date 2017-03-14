@@ -1,4 +1,6 @@
-
+THREE = require('three')
+{ SURFACE_DISTANCE_KOEFFICIENT,
+  ICOSAHEDRON_RADIUS, SURFACE_Y } = require('./al-video-stream.const.coffee')
 
 class AlSoundRenderer
   @visualisatorMaterial: null
@@ -19,7 +21,7 @@ class AlSoundRenderer
       @visualisatorMaterial = new THREE.ShaderMaterial({
         uniforms:
           spectrum: { type: 'fv1', value: @spectrum }
-          distanceK: { type: 'f', value: AL_VIDEO_CONST.SURFACE_DISTANCE_KOEFFICIENT}
+          distanceK: { type: 'f', value: SURFACE_DISTANCE_KOEFFICIENT}
         vertexShader: require('raw!./shaders/icosahedron.vert')
         fragmentShader: require('raw!./shaders/icosahedron.frag')
         wireframe: true
@@ -27,7 +29,7 @@ class AlSoundRenderer
         transparent: true
       } )
 
-    geometry = new THREE.IcosahedronGeometry(AL_VIDEO_CONST.ICOSAHEDRON_RADIUS, 0)
+    geometry = new THREE.IcosahedronGeometry(ICOSAHEDRON_RADIUS, 0)
 
     # NOTE: using unindexed vertices
     indexList = []
@@ -55,15 +57,15 @@ class AlSoundRenderer
     )
 
     @rendererData.mesh.soundViz.position.x = @rendererData.sound.modification.position.x
-    @rendererData.mesh.soundViz.position.y = AL_VIDEO_CONST.SURFACE_Y + @rendererData.sound.modification.position.y
+    @rendererData.mesh.soundViz.position.y = SURFACE_Y + @rendererData.sound.modification.position.y
 
     unless @visualisatorReflectionMaterial
       @visualisatorReflectionMaterial = new THREE.ShaderMaterial({
         uniforms:
-          icosahedronRadius: {type: 'f', value: AL_VIDEO_CONST.ICOSAHEDRON_RADIUS}
-          centerY: {type: 'f', value: AL_VIDEO_CONST.SURFACE_Y - @rendererData.sound.modification.position.y}
+          icosahedronRadius: {type: 'f', value: ICOSAHEDRON_RADIUS}
+          centerY: {type: 'f', value: SURFACE_Y - @rendererData.sound.modification.position.y}
           spectrum: { type: 'fv1', value: @spectrum }
-          distanceK: { type: 'f', value: AL_VIDEO_CONST.SURFACE_DISTANCE_KOEFFICIENT}
+          distanceK: { type: 'f', value: SURFACE_DISTANCE_KOEFFICIENT}
         vertexShader: require('raw!./shaders/icosahedron_reflection.vert')
         fragmentShader: require('raw!./shaders/icosahedron_reflection.frag')
         wireframe: true
@@ -77,23 +79,22 @@ class AlSoundRenderer
     )
 
     @rendererData.mesh.soundVizReflection.position.x = @rendererData.sound.modification.position.x
-    @rendererData.mesh.soundVizReflection.position.y = AL_VIDEO_CONST.SURFACE_Y - @rendererData.sound.modification.position.y
+    @rendererData.mesh.soundVizReflection.position.y = SURFACE_Y - @rendererData.sound.modification.position.y
     @rendererData.mesh.soundVizReflection.rotation.x = - Math.PI
 
     return
 
-  updateVisibility: (mode) =>
-    if mode == AL_VIDEO_CONST.NO_VIDEO
-      unless @scene.getObjectById(@rendererData.mesh.soundViz.id)
-        @scene.add(@rendererData.mesh.soundViz)
-      unless @scene.getObjectById(@rendererData.mesh.soundVizReflection.id)
-        @scene.add(@rendererData.mesh.soundVizReflection)
-    else
-      if @scene.getObjectById(@rendererData.mesh.soundViz.id)
-        @scene.remove(@rendererData.mesh.soundViz)
-      if @scene.getObjectById(@rendererData.mesh.soundVizReflection.id)
-        @scene.remove(@rendererData.mesh.soundVizReflection)
-    return
+  bind: ->
+    unless @scene.getObjectById(@rendererData.mesh.soundViz.id)
+      @scene.add(@rendererData.mesh.soundViz)
+    unless @scene.getObjectById(@rendererData.mesh.soundVizReflection.id)
+      @scene.add(@rendererData.mesh.soundVizReflection)
+
+  unbind: ->
+    if @scene.getObjectById(@rendererData.mesh.soundViz.id)
+      @scene.remove(@rendererData.mesh.soundViz)
+    if @scene.getObjectById(@rendererData.mesh.soundVizReflection.id)
+      @scene.remove(@rendererData.mesh.soundVizReflection)
 
   setSpectrum: (spec) =>
     @visualisatorMaterial.uniforms.spectrum.value = spec

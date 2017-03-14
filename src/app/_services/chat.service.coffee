@@ -1,64 +1,8 @@
-_ = require('lodash')
 
 angular.module('AltexoApp')
 
 .factory 'AltexoChat',
-($q, $timeout, JsonRpc, RpcError, AL_CONST, AL_VIDEO) ->
-
-  class AltexoRpc extends JsonRpc
-
-    # NOTE: read-only access is suggested
-    # mode: null
-    mode: {}
-
-    onAttach: ->
-      this.mode = {
-        audio: true
-        video: AL_VIDEO.RGB_VIDEO
-      }
-      this.emit 'connected', true
-
-    sendAnswer: (answerSdp) ->
-      this.emit 'answer', answerSdp
-
-    switchMode: (mode) ->
-      $timeout(0).then =>
-        for own prop, value of mode
-          this.mode[prop] = value
-        this.notify('user/mode', [this.mode])
-
-    confirmRestart: ->
-      this.emit 'confirm-restart', true
-
-    rpc: {
-      'restart': ->
-        this.emit 'request-restart'
-        return $q (resolve) =>
-          this.once 'confirm-restart', resolve
-
-      'offer': (offerSdp) ->
-        this.emit 'offer', offerSdp
-        return $q (resolve) =>
-          this.once 'answer', resolve
-    }
-
-    rpcNotify: {
-      'ice-candidate': (candidate) ->
-        this.emit 'ice-candidate', candidate
-
-      'room/contacts': (data) ->
-        $timeout(0).then =>
-          this.emit 'contact-list', data
-
-      'room/text': (text, contact) ->
-        $timeout(0).then =>
-          this.emit 'chat-text', { text, contact }
-
-      'room/destroy': ->
-        $timeout(0).then =>
-          this.emit 'room-destroyed'
-    }
-
+($q, $timeout, $websocket, AltexoRpc, RpcError, ChatRoom, AL_VIDEO) ->
 
   class AltexoChat
 
@@ -69,14 +13,28 @@ angular.module('AltexoApp')
     _webRtcRestarting: false
 
     constructor: ->
-      this.ws = new WebSocket("#{AL_CONST.chatEndpoint}/al_chat")
       this.rpc = new AltexoRpc()
 
-      this.ws.addEventListener 'open', =>
-        this.rpc.attach(this.ws)
+      $websocket.addEventListener 'open', =>
+        this.rpc.attach($websocket)
 
-      this.ws.addEventListener 'close', =>
+      $websocket.addEventListener 'close', =>
         this.rpc.detach()
+
+      ##
+      # Create video elements to handle video data.
+      # These elements are not considered to be part of DOM tree,
+      # BUT
+      # we should keep them hidden in real DOM because
+      # without that no sound will be played.
+      #
+      Object.defineProperty(this, 'localVideo', {
+        get: -> document.getElementById('localVideo')
+      })
+
+      Object.defineProperty(this, 'remoteVideo', {
+        get: -> document.getElementById('remoteVideo')
+      })
 
       ##
       # Handle contact list updates.
@@ -84,27 +42,7 @@ angular.module('AltexoApp')
       #
       this.$on 'contact-list', (contacts) =>
         if this.room
-          prevContacts = this.room.contacts
-          this.room.contacts = contacts
-
-          added = _.differenceBy(contacts, prevContacts, 'id')
-          if added.length
-            this.rpc.emit('add-user', added)
-
-          removed = _.differenceBy(prevContacts, contacts, 'id')
-          if removed.length
-            this.rpc.emit('remove-user', removed)
-
-            if this.room.p2p and this.room.creator == this.id
-              # peer quit, restart room for waiting offer from next peer
-              this.restartRoom()
-
-          _(contacts).each (contact) =>
-            prev = _(prevContacts).find { id: contact.id }
-            unless prev and _.isEqual(prev.mode, contact.mode)
-              this.rpc.emit('mode-changed', contact)
-
-        return
+          this.room.updateContacts(contacts)
 
       ##
       # Handle requests for WebRTC restart.
@@ -113,7 +51,7 @@ angular.module('AltexoApp')
       this.$on 'request-restart', =>
         $timeout(0)
         .then => this._webRtcRestarting = true
-        .then => $timeout(0)
+        .then -> $timeout(0)
         .then => this._webRtcRestarting = false
         .then => this._waitWebRtcReady()
         .then => this.rpc.confirmRestart()
@@ -141,12 +79,6 @@ angular.module('AltexoApp')
           return $q.reject(error)
         this.createRoom(name, p2p)
 
-    restartRoom: ->
-      { name, p2p } = this.room
-      this.room = null
-      this.destroyRoom().then =>
-        this.createRoom(name, p2p)
-
     ensureConnected: ->
       (if this.isConnected() then $q.resolve(true) \
         else $q (resolve) => this.$once 'connected', resolve)
@@ -163,7 +95,7 @@ angular.module('AltexoApp')
       !!(this.room and this.room.p2p and this.room.creator == this.id)
 
     isConnected: ->
-      this.ws.readyState == WebSocket.OPEN
+      $websocket.readyState == WebSocket.OPEN
 
     isRestarting: ->
       this._webRtcRestarting
@@ -188,39 +120,28 @@ angular.module('AltexoApp')
       unless value?
         value = not (this.rpc.mode.video == AL_VIDEO.SHARED_SCREEN_VIDEO)
 
-      # when we are creator in p2p room:
+      # If we are waiting for offer:
       # 1. Restart self and change video stream to shared screen
-      # 2. Wait for a call
+      # 2. Wait for an offer
       # 3. Request peer to restart
 
-      # when we are companion in p2p room:
+      # If we are sending offer:
       # 1. Request peer to restart
-      # 2. Restart self
-      # 3. Call
+      # 2. Restart self and change video stream to shared screen
+      # 3. Send offer
 
-      # when we are not in p2p room:
-      # 1. Restart self
-
-      if this.room.p2p
-        if this.room.creator == this.id
-          $timeout(0).then => this._webRtcRestarting = true
-          .then =>
-            this.rpc.switchMode \
-              unless value then { video: AL_VIDEO.RGB_VIDEO }
-              else { video: AL_VIDEO.SHARED_SCREEN_VIDEO }
-          .then => this._webRtcRestarting = false
-          .then => this._waitWebRtcReady()
-          .then => this._restartPeer()
-        else
-          $timeout(0).then => this._restartPeer()
-          .then => this._webRtcRestarting = true
-          .then =>
-            this.rpc.switchMode \
-              unless value then { video: AL_VIDEO.RGB_VIDEO }
-              else { video: AL_VIDEO.SHARED_SCREEN_VIDEO }
-          .then => this._webRtcRestarting = false
-      else
+      if this.isWaiter()
         $timeout(0).then => this._webRtcRestarting = true
+        .then =>
+          this.rpc.switchMode \
+            unless value then { video: AL_VIDEO.RGB_VIDEO }
+            else { video: AL_VIDEO.SHARED_SCREEN_VIDEO }
+        .then => this._webRtcRestarting = false
+        .then => this._waitWebRtcReady()
+        .then => this._restartPeer()
+      else
+        $timeout(0).then => this._restartPeer()
+        .then => this._webRtcRestarting = true
         .then =>
           this.rpc.switchMode \
             unless value then { video: AL_VIDEO.RGB_VIDEO }
@@ -232,22 +153,26 @@ angular.module('AltexoApp')
 
     createRoom: (name, p2p) ->
       this.rpc.request('room/open', [name, p2p])
-      .then (@room) => this.room
+      .then (data) => this._createRoom(data)
 
     destroyRoom: ->
       this.rpc.request('room/close')
       .then => this.room = null
 
+    restartRoom: ->
+      # Keep original room object alive, but remove
+      # the reference until the room is restarted.
+      room = this.room
+      this.room = null
+      this.destroyRoom()
+      .then =>
+        this.rpc.request('room/open', [room.name, room.p2p])
+      .then ({ contacts }) =>
+        this.room = room.updateContacts(contacts)
+
     enterRoom: (name) ->
       this.rpc.request('room/enter', [name])
-      .then (@room) => this.room
-
-      # # TODO: ugly solutions to notify creator about modes
-      # this.rpc.request('room/enter', [name])
-      # .then (@room) =>
-      #   $timeout(0).then =>
-      #     this.rpc.emit('mode-changed', this.room.contacts)
-      #   this.room
+      .then (data) => this._createRoom(data)
 
     leaveRoom: ->
       this.rpc.request('room/leave')
@@ -267,6 +192,10 @@ angular.module('AltexoApp')
 
     signalWebRtcReady: ->
       this.rpc.emit 'web-rtc-ready', true
+
+    _createRoom: (roomData) ->
+      this.room = new ChatRoom(this).updateInfo(roomData)
+      this.room.updateContacts(roomData.contacts)
 
     _waitWebRtcReady: ->
       $q (resolve) => this.$once 'web-rtc-ready', resolve

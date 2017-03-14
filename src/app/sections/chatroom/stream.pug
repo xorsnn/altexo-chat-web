@@ -1,38 +1,46 @@
 
-section.stream(layout="row", flex)
+//- #videostash(style={display:'block','z-index':'1000'})
+#videostash(style={display:'none'})
+  div(style={top:'30px', right:'50px'})
+    video#localVideo(autoplay='true', width='320px', height='240px', muted='true')
+  div(style={top:'140px',right:'50px'})
+    video#remoteVideo(autoplay='true', width='320px', height='240px')
 
-  .logo_dark
-    img(ng-src="${require('../../../img/logo_dark.svg')}", height=50, ng-click="onLogoClick()")
-
-  altexo-web-rtc-view(chat='chat', ng-if='!(chat.room == null || chat.isRestarting())')
-    al-video-stream
-    video.local.md-whiteframe-2dp(id='localVideo', autoplay='true', muted='true',
-      width='320px', height='240px', style='display:none')
-    video.remote.md-whiteframe-2dp(id='remoteVideo', autoplay='true',
-      width='320px', height='240px', style='display:none')
-
-  .username
-    md-input-container(md-no-float, class="md-block")
-      label Your login
-      input(type="text",
-             ng-model="$storage.nickname",
-             md-autofocus,
+md-toolbar.md-hue-2.altexo-toolbar
+  .md-toolbar-tools
+    //- md-button.md-icon-button(aria-label='Settings', ng-click='leftSidenav.toggle()')
+    //-   md-icon(md-svg-icon="${require('../../../img/icons/ic_menu_black_24px.svg')}")
+    md-button.md-icon-button(aria-label='Stop streaming', ng-click='quitRoom()')
+      md-icon(md-svg-icon="${require('../../../img/icons/ic_close_black_24px.svg')}")
+    h2(flex='', md-truncate='')
+      | {{ chat.room.name || 'Chat' }}
+    md-input-container.md-block(flex='50', flex-gt-sm='20')
+      input(type='text', aria-label='Your nickname', md-autofocus,
+             ng-model='$storage.nickname',
              ng-change='setChatAlias($storage.nickname)')
 
-  //- div(style="position:fixed;z-index:100;left:20px;bottom:150px", ng-if='chat.room != null')
-  //-   h5 Contacts
-  //-   ul
-  //-     li(ng-repeat='contact in chat.room.contacts track by contact.id')
-  //-       | {{ contact.name }}
+md-content.stream(layout='row', flex)
+  //- .logo_dark
+  //-   img(ng-src="${require('../../../img/logo_dark.svg')}", height=50, ng-click="onLogoClick()")
 
-  .control-panel-wrapper(ng-if='chat.room != null')
-    div(layout='row')
-      div
-        p.invitation-link Invite by sharing the link: &nbsp;
-          span(style="text-decoration: underline;") {{ ::viewLink() }}
-      .control-panel(layout='row', flex)
+  altexo-web-rtc-view(ng-if='!(chat.room == null || chat.isRestarting())',
+    chat='chat', altexo-room-renderer='chat.room')
+
+  .control-panel-wrapper(layout='row', ng-if='chat.room != null')
+    md-card(layout='column', md-whiteframe='4', style={width:'25vw'})
+      md-card-header
+        md-card-header-text
+          span.md-title Invite by sharing the link
+      md-card-content(layout='column')
+        md-input-container(flex, style={margin:0})
+          input(type='text', value='{{ ::viewLink() }}', ng-readonly,
+            aria-label='Share this URL to invite friends')
+
+    .control-panel(layout='column', flex)
+      div(flex)
+      div(flex, layout='row')
         div(flex)
-        div
+        div(flex, layout='row', layout-align='center center')
           md-button.md-fab.md-primary(ng-click="chat.toggleVideo(controls.video = !controls.video)", aria-label="Turn off video")
             md-icon(ng-if="controls.video", md-svg-src="${require('../../../img/icons/ic_videocam_black_24px.svg')}")
             md-icon(ng-if="!controls.video", md-svg-src="${require('../../../img/icons/ic_videocam_off_black_24px.svg')}")
@@ -40,32 +48,32 @@ section.stream(layout="row", flex)
             md-icon(ng-if="controls.audio", md-svg-src="${require('../../../img/icons/ic_mic_black_24px.svg')}")
             md-icon(ng-if="!controls.audio", md-svg-src="${require('../../../img/icons/ic_mic_off_black_24px.svg')}")
         div(flex)
-        div
+        div(flex, layout='row', layout-align='center center')
           md-button.md-fab.md-mini.md-primary(ng-click="toggleShareScreen()", aria-label="Share screen")
             md-icon(md-svg-src="${require('../../../img/icons/ic_picture_in_picture_white_24px.svg')}")
 
-          md-button.md-fab.md-mini.md-primary(ng-click="toggleChat()", aria-label="Open/close chat")
+          md-button.md-fab.md-mini.md-primary(ng-click="rightSidenav.toggle()", aria-label="Open/close chat")
             md-icon(md-svg-src="${require('../../../img/icons/ic_chat_bubble_black_24px.svg')}")
 
     if DEBUG == 'true'
-      p Candidates sent: {{ iceSent }}
-      p Candidates received: {{ iceReceived }}
+      div
+        p Candidates sent: {{ iceSent }}
+        p Candidates received: {{ iceReceived }}
 
-  md-sidenav(class="md-sidenav-right md-whiteframe-4dp",
-    md-component-id="right", md-disable-backdrop, layout='column')
-    md-toolbar(class="md-theme-light", layout='row', layout-align='end center')
-      md-button(class="md-icon-button launch", ng-click="toggleChat()")
-        md-icon(md-svg-icon="${require('../../../img/icons/ic_clear_black_24px.svg')}")
-    md-content(layout-padding, layout='column', flex="grow")
-      div(flex)
-        div(ng-repeat='msg in chat.messages track by msg.id')
-          strong {{ ::msg.contact.name }}: &nbsp;
-          span(ng-bind-html='::msg.text|linky')
-      form
-        div(layout='row')
-          md-input-container.md-block(md-no-float)
-            input#testInput(type="text", md-autofocus, ng-model="textMessage",
-                ng-keypress='$event.keyCode == 13 ? sendMessage(textMessage) : null',
-                placeholder="Type your message")
-          md-button.md-primary(ng-click='sendMessage(textMessage)')
-            | Send
+md-sidenav.md-sidenav-right.md-whiteframe-4dp(md-component-id='right', md-disable-backdrop, layout='column')
+  md-toolbar.md-theme-light(layout='row', layout-align='end center')
+    md-button.md-icon-button.launch(ng-click='rightSidenav.toggle()')
+      md-icon(md-svg-icon="${require('../../../img/icons/ic_clear_black_24px.svg')}")
+  md-content(layout-padding, layout='column', flex='grow')
+    div(flex)
+      div(ng-repeat='msg in chat.messages track by msg.id')
+        strong {{ ::msg.contact.name }}: &nbsp;
+        span(ng-bind-html="::msg.text|linky:'_blank'")
+    form
+      div(layout='row')
+        md-input-container.md-block(md-no-float)
+          input#testInput(type='text', md-autofocus, ng-model='textMessage',
+              ng-keypress='$event.keyCode == 13 ? sendMessage(textMessage) : null',
+              placeholder='Type your message')
+        md-button.md-primary(ng-click='sendMessage(textMessage)')
+          | Send
