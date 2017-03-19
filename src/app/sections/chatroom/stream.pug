@@ -27,7 +27,7 @@ md-content.stream(layout='row', flex)
     chat='chat', altexo-room-renderer='chat.room')
 
   .control-panel-wrapper(layout='row', ng-if='chat.room != null')
-    md-card(layout='column', md-whiteframe='4', style={width:'25vw'})
+    md-card(layout='column', hide-xs='', md-whiteframe='4', style={width:'25vw'})
       md-card-header
         md-card-header-text
           span.md-title Invite by sharing the link
@@ -37,9 +37,9 @@ md-content.stream(layout='row', flex)
             aria-label='Share this URL to invite friends')
 
     .control-panel(layout='column', flex)
-      div(flex)
+      div(flex, hide-xs='')
       div(flex, layout='row')
-        div(flex)
+        div(flex, hide-xs='')
         div(flex, layout='row', layout-align='center center')
           md-button.md-fab.md-primary(ng-click="chat.toggleVideo(controls.video = !controls.video)", aria-label="Turn off video")
             md-icon(ng-if="controls.video", md-svg-src="${require('../../../img/icons/ic_videocam_black_24px.svg')}")
