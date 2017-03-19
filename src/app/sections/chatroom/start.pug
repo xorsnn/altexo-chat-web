@@ -12,8 +12,9 @@ md-content(layout='column', layout-padding='', layout-align='center center', fle
           span.md-title Create chat room and invite your friends
           span.md-subhead(style={'text-align': 'center', 'padding': '1em 0'})
             | Free one-to-one 3D video and holographic calls.
-            | <br>No login required &mdash; no installs.
-      md-card-content(layout-xs='column', layout='row', style={width: '25vw'})
+            br
+            | No login required &mdash; no installs.
+      md-card-content(layout-xs='column', layout='row')
         md-input-container(flex, style={margin:0})
           label Enter room name
           input(ng-model='room.name', required='')
