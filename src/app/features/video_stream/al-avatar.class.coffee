@@ -30,21 +30,9 @@ class AlAvatar
   camera: null
   video: null
 
-  Seat = {
-    getXOffset: (k) ->
-      switch k
-        when 0 then 320
-        when 1 then -320
-        else 0
-    getYOffset: (k) -> -240
-    getRotationAngle: (k) ->
-      switch k
-        when 0 then - Math.PI / 6
-        when 1 then Math.PI / 6
-        else 0
-  }
-
-  IDENT_NAMES = (require 'lodash').shuffle ['Cheech', 'Chong', 'Goofy', 'Psyduck', 'Crabs']
+  IDENT_NAMES = (require 'lodash').shuffle [
+    'Cheech', 'Chong', 'Goofy', 'Psyduck', 'Crabs'
+  ]
 
   constructor: ->
     IDENT = IDENT_NAMES.shift() ? "#{Math.floor(Math.random()*1e3)}"
@@ -76,12 +64,12 @@ class AlAvatar
       modification: {
         rotation: {
           x: 0
-          y: Seat.getRotationAngle(0)
+          y: seat(0, false).angle
           z: 0
         }
         position: {
-          x: Seat.getXOffset(0)
-          y: Seat.getYOffset(0)
+          x: seat(0, false).x
+          y: seat(0, false).y
           z: 0
         }
       }
@@ -106,7 +94,7 @@ class AlAvatar
             z: 0
           }
           position: {
-            x: Seat.getXOffset(0)
+            x: seat(0, false).x
             # surface coordinate - 120
             y: ICOSAHEDRON_RADIUS + ICOSAHEDRON_RADIUS * SURFACE_DISTANCE_KOEFFICIENT
             z: 0
@@ -219,13 +207,16 @@ class AlAvatar
       }
     @
 
-  setSeat: (n) ->
-    console.debug '>> SEAT', @IDENT, n
+  setSeat: (n, xs) ->
+    console.debug '>> SEAT', @IDENT, n, xs
 
-    this.rendererData.modification.rotation.y = Seat.getRotationAngle(n)
-    this.rendererData.modification.position.x = Seat.getXOffset(n)
-    this.rendererData.modification.position.y = Seat.getYOffset(n)
-    this.rendererData.sound.modification.position.x = Seat.getXOffset(n)
+    _seat = seat(n, xs)
+
+    this.rendererData.modification.rotation.y = _seat.angle
+    this.rendererData.modification.position.x = _seat.x
+    this.rendererData.modification.position.y = _seat.y
+    this.rendererData.sound.modification.position.x = _seat.x
+
     @
 
   setSpectrum: (spec) ->
@@ -272,6 +263,15 @@ class AlAvatar
         @renderer.bind()
     @
 
+  setFullscreen: (value) ->
+    if value
+      if @view == 'regular'
+        @setView('fullscreen')
+    else
+      if @view == 'fullscreen'
+        @setView('regular')
+    @
+
   objectsClicked: (intersects) ->
     if @view == 'regular'
       if @renderer.isIntersected(intersects)
@@ -304,5 +304,38 @@ class AlAvatar
         video.removeEventListener('canplaythrough', _once)
         resolve(true)
       video.addEventListener('canplaythrough', _once)
+
+  seat = (k, xs) ->
+    if k == 0
+      if xs
+        return {
+          x: 80
+          y: -240
+          angle: -Math.PI / 6
+        }
+      else
+        return {
+          x: 320
+          y: -240
+          angle: -Math.PI / 6
+        }
+    if k == 1
+      if xs
+        return {
+          x: -80
+          y: -240
+          angle: Math.PI / 6
+        }
+      else
+        return {
+          x: -320
+          y: -240
+          angle: Math.PI / 6
+        }
+    return {
+      x: 0
+      y: -240
+      angle: 0
+    }
 
 module.exports = AlAvatar

@@ -12,7 +12,7 @@ AltexoAvatar = require './video_stream/al-avatar.class.coffee'
 
 angular.module('AltexoApp')
 
-.directive 'altexoRoomRenderer', ($window, RendererHelper) -> {
+.directive 'altexoRoomRenderer', ($window, RendererHelper, $mdMedia) -> {
   restrict: 'A'
   link: ($scope, $element, { altexoRoomRenderer }) ->
     chatRoom = $scope.$eval(altexoRoomRenderer)
@@ -71,14 +71,18 @@ angular.module('AltexoApp')
     createAvatar = (contact) ->
       console.debug '>> CREATE AVATAR', contact, '(CURRENTLY:', avatars.size, ')'
 
-      avatar = new AltexoAvatar().setSeat(avatars.size).bind {
+      seatNumber = chatRoom.getSeat(contact)
+      media = $mdMedia('xs')
+
+      avatar = new AltexoAvatar().setSeat(seatNumber, media).bind {
         video: chatRoom.selectVideoElement(contact)
         scene, camera
       }
 
       avatars.set(contact.id,
         avatar.setLabel(contact.name)
-        .setMode(contact.mode))
+        .setMode(contact.mode)
+        .setFullscreen(chatRoom.isFullscreen(contact)))
 
       shuffle()
 
@@ -193,7 +197,7 @@ angular.module('AltexoApp')
         particle.position.y = - 120
         particle.position.z = iy * separation - ( ( amounty * separation ) / 2 )
         particle.scale.x = particle.scale.y = 2
-        
+
         scene.add(particle)
 
     return

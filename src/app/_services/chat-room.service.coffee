@@ -4,7 +4,7 @@ _ = require('lodash')
 
 angular.module('AltexoApp')
 
-.factory 'ChatRoom', (AL_VIDEO) ->
+.factory 'ChatRoom', (AL_VIDEO, $mdMedia) ->
 
   class ChatRoom extends EventEmitter
 
@@ -26,6 +26,18 @@ angular.module('AltexoApp')
         return this._chat.localVideo
       console.debug '>> SELECT VIDEO', contact, '**REMOTE**'
       return this._chat.remoteVideo
+
+    getSeat: (contact) ->
+      if this.p2p
+        if contact.id == this._chat.id
+          return 0
+        else
+          return 1
+      else
+        return Array.from(this.contact.keys()).indexOf(contact.id)
+
+    isFullscreen: (contact) ->
+      return this.p2p and (contact.id != this._chat.id) and $mdMedia('xs')
 
     updateInfo: ({ name, creator, p2p }) ->
       this.name = name
