@@ -1,106 +1,78 @@
 THREE = require('three')
 
-class AlRgbRenderer
+REFLECTION_FRAG = require('raw!../../../shaders/reflection.frag')
+REFLECTION_VERT = require('raw!../../../shaders/reflection.vert')
 
-  reflectionShader: {
-    frag: require('raw!../../../shaders/reflection.frag')
-    vert: require('raw!../../../shaders/reflection.vert')
-  }
+module.exports =
+  class Renderer
 
-  fullscreenMode: false
+    originalMesh: null
+    reflectionMesh: null
 
-  constructor: (@avatar, @camera) ->
-    @_init()
-    return
+    render: (context) ->
+      context.updateTexture()
+      @
 
-  _init: () =>
+    bind: ({ @scene }) ->
+      @scene.add(@originalMesh)
+      @scene.add(@reflectionMesh)
+      @
 
-    material = new THREE.MeshBasicMaterial( { map: @avatar.rendererData.texture, overdraw: 0.5 } )
+    unbind: ->
+      safeRemove = (obj) =>
+        if @scene.getObjectById(obj.id)
+          @scene.remove(obj)
+      safeRemove(@originalMesh)
+      safeRemove(@reflectionMesh)
+      @scene = null
+      @
 
-    materialReflection = new THREE.ShaderMaterial({
-      uniforms: {
-        'map': { value: @avatar.rendererData.texture }
+    setTexture: (texture) ->
+      @originalMesh = buildOriginalMesh(texture)
+      @reflectionMesh = buildReflectionMesh(texture)
+      @
+
+    setXPosition: (value) ->
+      @originalMesh.position.x = value
+      @reflectionMesh.position.x = value
+      @
+
+    setYPosition: (value) ->
+      @reflectionMesh.position.y = value
+      @
+
+    setYRotation: (value) ->
+      @originalMesh.rotation.y = value
+      @reflectionMesh.rotation.y = value
+      @
+
+    isIntersected: (intersects) ->
+      for intersect in intersects
+        if @originalMesh == intersect.object
+          return true
+      return false
+
+    # private helpers
+    buildReflectionMesh = (texture) ->
+      materialReflection = new THREE.ShaderMaterial {
+        uniforms: { 'map': { value: texture } }
+        vertexShader: REFLECTION_VERT
+        fragmentShader: REFLECTION_FRAG
+        transparent: true
       }
-      vertexShader: @reflectionShader.vert
-      fragmentShader: @reflectionShader.frag
-      transparent: true
-    } )
 
-    #
+      # TODO: move width and height to parameters
+      plane = new THREE.PlaneGeometry( 320, 240, 4, 4 )
 
-    # TODO: move width and height to parameters
-    plane = new THREE.PlaneGeometry( 320, 240, 4, 4 )
+      return new THREE.Mesh( plane, materialReflection )
 
-    @avatar.rendererData.mesh.original = new THREE.Mesh( plane, material )
-    @avatar.rendererData.mesh.original.position.x = @avatar.rendererData.modification.position.x
-    @avatar.rendererData.mesh.original.rotation.y = @avatar.rendererData.modification.rotation.y
+    buildOriginalMesh = (texture) ->
+      material = new THREE.MeshBasicMaterial {
+        map: texture
+        overdraw: 0.5
+      }
 
-    @avatar.rendererData.mesh.reflection = new THREE.Mesh( plane, materialReflection )
-    @avatar.rendererData.mesh.reflection.position.x = @avatar.rendererData.modification.position.x
-    @avatar.rendererData.mesh.reflection.position.y = @avatar.rendererData.modification.position.y
-    @avatar.rendererData.mesh.reflection.rotation.y = @avatar.rendererData.modification.rotation.y
+      # TODO: move width and height to parameters
+      plane = new THREE.PlaneGeometry( 320, 240, 4, 4 )
 
-    return
-
-  _toDefaultPosition: () =>
-    # TODO: implement for reflection also
-    @avatar.rendererData.mesh.original.position.x = @avatar.rendererData.modification.position.x
-    @avatar.rendererData.mesh.original.position.y = 0
-    @avatar.rendererData.mesh.original.position.z = 0
-    @avatar.rendererData.mesh.original.rotation.x = 0
-    @avatar.rendererData.mesh.original.rotation.y = @avatar.rendererData.modification.rotation.y
-    @avatar.rendererData.mesh.original.rotation.z = 0
-
-  toggleFullscreen: () =>
-    @fullscreenMode = ! @fullscreenMode
-    unless @fullscreenMode
-      @_showReflection(true)
-      @_toDefaultPosition()
-    else
-      @_showReflection(false)
-    return
-
-
-  animate: () =>
-    if @fullscreenMode
-      @avatar.rendererData.mesh.original.rotation.x = @camera.rotation.x
-      @avatar.rendererData.mesh.original.rotation.y = @camera.rotation.y
-      @avatar.rendererData.mesh.original.rotation.z = @camera.rotation.z
-
-      l = Math.sqrt(Math.pow(@camera.position.x, 2) + Math.pow(@camera.position.y, 2) + Math.pow(@camera.position.z, 2))
-      l2 = 400
-      k = (l - l2) / l
-
-      @avatar.rendererData.mesh.original.position.x = @camera.position.x * k
-      @avatar.rendererData.mesh.original.position.y = @camera.position.y * k
-      @avatar.rendererData.mesh.original.position.z = @camera.position.z * k
-    return
-
-  _showOriginal:(show=true) =>
-    if show
-      unless @avatar.scene.getObjectById(@avatar.rendererData.mesh.original.id)
-        @avatar.scene.add(@avatar.rendererData.mesh.original)
-    else
-      if @avatar.scene.getObjectById(@avatar.rendererData.mesh.original.id)
-        @avatar.scene.remove(@avatar.rendererData.mesh.original)
-    return
-
-  _showReflection:(show=true) =>
-    if show
-      unless @avatar.scene.getObjectById(@avatar.rendererData.mesh.reflection.id)
-        @avatar.scene.add(@avatar.rendererData.mesh.reflection)
-    else
-      if @avatar.scene.getObjectById(@avatar.rendererData.mesh.reflection.id)
-        @avatar.scene.remove(@avatar.rendererData.mesh.reflection)
-    return
-
-  bind: ->
-    @_showOriginal(true)
-    @_showReflection(true)
-
-  unbind: ->
-    @_showOriginal(false)
-    @_showReflection(false)
-
-
-module.exports = AlRgbRenderer
+      return new THREE.Mesh( plane, material )

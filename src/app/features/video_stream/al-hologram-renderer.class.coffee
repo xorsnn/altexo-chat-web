@@ -162,5 +162,8 @@ class AlHologramRenderer
     if @scene.getObjectById(@rendererData.hologram.reflectionMesh.id)
       @scene.remove(@rendererData.hologram.reflectionMesh)
 
+  render: (context) ->
+    context.updateTexture()
+    @
 
 module.exports = AlHologramRenderer

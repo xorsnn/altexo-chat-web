@@ -4,6 +4,7 @@ AlRgbRenderer = require './al-rgb-renderer.class.coffee'
 AlSoundRenderer = require './al-sound-renderer.class.coffee'
 AlHologramRenderer = require './al-hologram-renderer.class.coffee'
 AlLabel = require './al-label.class.coffee'
+FullscreenRenderer = require './fullscreen-renderer.class.coffee'
 
 { NO_VIDEO, DEPTH_VIDEO, RGB_VIDEO,
   ICOSAHEDRON_RADIUS,
@@ -14,9 +15,12 @@ class AlAvatar
   hologramRenderer: null
   soundRenderer: null
   labelRenderer: null
+  fullscreenRenderer: null
 
   streaming: false
   view: 'regular'
+
+  renderer: null
 
   rendererData: null
   seat: null
@@ -39,27 +43,6 @@ class AlAvatar
         when 1 then Math.PI / 6
         else 0
   }
-
-  videoReady = (video) -> new Promise (resolve) ->
-    checkResolve = ->
-      console.debug '>> WAIT VIDEO', video, video.readyState
-      if video.readyState == HTMLMediaElement.HAVE_ENOUGH_DATA
-        resolve(true)
-      else
-        setTimeout(checkResolve, 1000)
-      return
-    return checkResolve()
-
-  # videoReady = (video) ->
-  #   console.debug '>> WAIT VIDEO', video, video.readyState
-  #   if video.readyState == HTMLMediaElement.HAVE_ENOUGH_DATA
-  #     return Promise.resolve(true)
-  #   return new Promise (resolve) ->
-  #     _once = ->
-  #       console.debug '>> canplaythrough', video
-  #       video.removeEventListener('canplaythrough', _once)
-  #       resolve(true)
-  #     video.addEventListener('canplaythrough', _once)
 
   IDENT_NAMES = (require 'lodash').shuffle ['Cheech', 'Chong', 'Goofy', 'Psyduck', 'Crabs']
 
@@ -90,10 +73,6 @@ class AlAvatar
       imageReflectionGradient: null
       texture: null
       textureReflection: null
-      streamSize: {
-        width: 0
-        height: 0
-      }
       modification: {
         rotation: {
           x: 0
@@ -143,38 +122,42 @@ class AlAvatar
     @labelRenderer = new AlLabel(@rendererData, @scene)
     @labelRenderer.showLabel(false)
 
+    @rgbRenderer = new AlRgbRenderer()
+    @fullscreenRenderer = new FullscreenRenderer()
+
     videoReady(this.video).then =>
       console.debug '>> BIND.THEN', @IDENT, this
 
-      videoSize = {
-        width: @video.videoWidth
-        height: @video.videoHeight
-      }
-
-      if videoSize.width == 0 or videoSize.height == 0
+      { videoWidth, videoHeight } = @video
+      if videoWidth == 0 or videoHeight == 0
         throw new Error('AltexoAvatar: empty input')
 
-      @streaming = true
-
-      @rendererData.streamSize.width = videoSize.width
-      @rendererData.streamSize.height = videoSize.height
       # consider the strem to be started
       @labelRenderer.showLabel(true)
 
       @rendererData.image = document.createElement( 'canvas' )
-      @rendererData.image.width = @rendererData.streamSize.width
-      @rendererData.image.height = @rendererData.streamSize.height
+      @rendererData.image.width = videoWidth
+      @rendererData.image.height = videoHeight
 
       @rendererData.imageContext = @rendererData.image.getContext( '2d' )
       @rendererData.imageContext.fillStyle = '#000000'
-      @rendererData.imageContext.fillRect( 0, 0, @rendererData.streamSize.width, @rendererData.streamSize.height )
+      @rendererData.imageContext.fillRect( 0, 0, videoWidth, videoHeight )
 
       @rendererData.texture = new THREE.Texture( @rendererData.image )
       @rendererData.texture.minFilter = THREE.LinearFilter
       @rendererData.texture.magFilter = THREE.LinearFilter
 
-      @rgbRenderer = new AlRgbRenderer(this, @camera)
+      @rgbRenderer.setTexture(@rendererData.texture)
+      .setXPosition(@rendererData.modification.position.x)
+      .setYPosition(@rendererData.modification.position.y)
+      .setYRotation(@rendererData.modification.rotation.y)
+
       @hologramRenderer = new AlHologramRenderer(@rendererData, @scene)
+
+      @fullscreenRenderer.setTexture(@rendererData.texture)
+
+      # Update view. Set renderer
+      @streaming = true
       @setView(@view).setSource(@seat)
 
     @
@@ -185,53 +168,25 @@ class AlAvatar
     @labelRenderer.unbind()
     @labelRenderer = null
 
-    @soundRenderer.unbind()
+    @renderer?.unbind()
+    @renderer = null
+
     @soundRenderer = null
-
-    @rgbRenderer?.unbind()
+    @fullscreenRenderer = null
     @rgbRenderer = null
-
-    @hologramRenderer?.unbind()
     @hologramRenderer = null
 
     @
 
-  _renderRegular: ->
-    if ( @video.readyState == @video.HAVE_ENOUGH_DATA )
-      # @rendererData.imageContext.fillRect(0, 0, @video.videoWidth, @video.videoHeight)
-      @rendererData.imageContext.drawImage( @video,
-        @source.dx, @source.dy, @source.width, @source.height,
-        0, 0, @video.videoWidth, @video.videoHeight )
-      if ( @rendererData.texture )
-        @rendererData.texture.needsUpdate = true
-    @rgbRenderer.animate()
-    @
-
-  _renderHologram: ->
-    if ( @video.readyState == @video.HAVE_ENOUGH_DATA )
-      # @rendererData.imageContext.fillRect(0, 0, @video.videoWidth, @video.videoHeight)
-      @rendererData.imageContext.drawImage( @video,
-        @source.dx, @source.dy, @source.width, @source.height,
-        0, 0, @video.videoWidth, @video.videoHeight )
-      if ( @rendererData.texture )
-        @rendererData.texture.needsUpdate = true
-    @
-
-  _renderIcosahedron: ->
-    @soundRenderer.animate()
+  updateTexture: ->
+    # @rendererData.imageContext.fillRect(0, 0, @video.videoWidth, @video.videoHeight)
+    @rendererData.imageContext.drawImage(@video, @source.dx, @source.dy,
+      @source.width, @source.height, 0, 0, @video.videoWidth, @video.videoHeight)
+    @rendererData.texture?.needsUpdate = true
     @
 
   render: ->
-    if @streaming
-      switch @view
-        when 'regular'
-          @_renderRegular()
-        when 'hologram'
-          @_renderHologram()
-        when 'icosahedron'
-          @_renderIcosahedron()
-    # else
-    #   console.debug '>> still not streaming...'
+    @renderer?.render(@)
     @
 
   setSource: ({ place, total }) ->
@@ -299,29 +254,55 @@ class AlAvatar
 
   setView: (name) ->
     console.debug '>> VIEW', @IDENT, name
-
     @view = name
+    @renderer?.unbind()
     switch name
       when 'regular'
-        @soundRenderer.unbind()
-        @hologramRenderer?.unbind()
-        @rgbRenderer?.bind()
+        if @streaming
+          @renderer = @rgbRenderer.bind(@)
+      when 'fullscreen'
+        if @streaming
+          @renderer = @fullscreenRenderer.bind(@)
       when 'hologram'
-        @soundRenderer.unbind()
-        @rgbRenderer?.unbind()
-        @hologramRenderer?.bind()
+        if @streaming
+          @renderer = @hologramRenderer
+          @renderer.bind()
       when 'icosahedron'
-        @rgbRenderer?.unbind()
-        @hologramRenderer?.unbind()
-        @soundRenderer.bind()
+        @renderer = @soundRenderer
+        @renderer.bind()
     @
 
   objectsClicked: (intersects) ->
-    if @rgbRenderer
-      for intersect in intersects
-        if @rendererData.mesh.original == intersect.object
-          @rgbRenderer.toggleFullscreen()
+    if @view == 'regular'
+      if @renderer.isIntersected(intersects)
+        console.debug '>> TOGGLE:', 'fullscreen'
+        @setView('fullscreen')
+    if @view == 'fullscreen'
+      if @renderer.isIntersected(intersects)
+        console.debug '>> TOGGLE:', 'regular'
+        @setView('regular')
     @
 
+  # some private methods
+  # videoReady = (video) -> new Promise (resolve) ->
+  #   checkResolve = ->
+  #     console.debug '>> WAIT VIDEO', video, video.readyState
+  #     if video.readyState == HTMLMediaElement.HAVE_ENOUGH_DATA
+  #       resolve(true)
+  #     else
+  #       setTimeout(checkResolve, 1000)
+  #     return
+  #   return checkResolve()
+
+  videoReady = (video) ->
+    console.debug '>> WAIT VIDEO', video, video.readyState
+    if video.readyState == HTMLMediaElement.HAVE_ENOUGH_DATA
+      return Promise.resolve(true)
+    return new Promise (resolve) ->
+      _once = ->
+        console.debug '>> WAIT VIDEO', video, video.readyState
+        video.removeEventListener('canplaythrough', _once)
+        resolve(true)
+      video.addEventListener('canplaythrough', _once)
 
 module.exports = AlAvatar
