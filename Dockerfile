@@ -4,3 +4,4 @@ WORKDIR /code
 ADD . /code/
 RUN npm install -g bower
 RUN npm install -g webpack
+ENV GIT_DIR=/code
