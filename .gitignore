@@ -5,3 +5,4 @@ build/
 npm-debug.log
 .env
 docker-compose-run.yml
+tmp/
