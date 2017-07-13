@@ -22,8 +22,8 @@ class AlSoundRenderer
         uniforms:
           spectrum: { type: 'fv1', value: @spectrum }
           distanceK: { type: 'f', value: SURFACE_DISTANCE_KOEFFICIENT}
-        vertexShader: require('raw!./shaders/icosahedron.vert')
-        fragmentShader: require('raw!./shaders/icosahedron.frag')
+        vertexShader: require('raw-loader!./shaders/icosahedron.vert')
+        fragmentShader: require('raw-loader!./shaders/icosahedron.frag')
         wireframe: true
         side: THREE.DoubleSide
         transparent: true
@@ -66,8 +66,8 @@ class AlSoundRenderer
           centerY: {type: 'f', value: SURFACE_Y - @rendererData.sound.modification.position.y}
           spectrum: { type: 'fv1', value: @spectrum }
           distanceK: { type: 'f', value: SURFACE_DISTANCE_KOEFFICIENT}
-        vertexShader: require('raw!./shaders/icosahedron_reflection.vert')
-        fragmentShader: require('raw!./shaders/icosahedron_reflection.frag')
+        vertexShader: require('raw-loader!./shaders/icosahedron_reflection.vert')
+        fragmentShader: require('raw-loader!./shaders/icosahedron_reflection.frag')
         wireframe: true
         side: THREE.DoubleSide
         transparent: true

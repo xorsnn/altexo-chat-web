@@ -8,10 +8,10 @@ class AlHologramRenderer
   HOLOGRAM_H: 480 / 3
 
   hologramShaders: {
-    frag: require('raw!./shaders/hologramRenderer.frag')
-    vert: require('raw!./shaders/hologramRenderer.vert')
-    fragReflection: require('raw!./shaders/hologramRendererReflection.frag')
-    vertReflection: require('raw!./shaders/hologramRendererReflection.vert')
+    frag: require('raw-loader!./shaders/hologramRenderer.frag')
+    vert: require('raw-loader!./shaders/hologramRenderer.vert')
+    fragReflection: require('raw-loader!./shaders/hologramRendererReflection.frag')
+    vertReflection: require('raw-loader!./shaders/hologramRendererReflection.vert')
   }
 
   constructor: (@rendererData, @scene) ->
