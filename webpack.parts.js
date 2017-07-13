@@ -147,9 +147,6 @@ module.exports = {
   }),
 
   enableHotReloading: () => ({
-    // entry: {
-    //   bundle: ['webpack/hot/dev-server']
-    // },
     plugins: [
       new webpack.HotModuleReplacementPlugin()
     ]

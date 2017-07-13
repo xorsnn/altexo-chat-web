@@ -1,4 +1,5 @@
 THREE = require('three')
+require('three/examples/js/vr/WebVR')
 
 if DEBUG == 'true'
   Stats = require('three/examples/js/libs/stats.min')
@@ -12,10 +13,15 @@ AltexoAvatar = require './video_stream/al-avatar.class.coffee'
 
 angular.module('AltexoApp')
 
-.directive 'altexoRoomRenderer', ($window, RendererHelper, $mdMedia) -> {
+.directive 'altexoRoomRenderer', ($window, RendererHelper, $mdMedia, AlWebVR) -> {
   restrict: 'A'
   link: ($scope, $element, { altexoRoomRenderer }) ->
     chatRoom = $scope.$eval(altexoRoomRenderer)
+
+    webVR = new AlWebVR
+    webVR.checkAvailability().catch ( message ) ->
+      # TODO: style message container
+      document.body.appendChild( webVR.getMessageContainer( message ) )
 
     element = $element[0]
 
@@ -40,6 +46,11 @@ angular.module('AltexoApp')
     renderer.setClearColor(0xf0f0f0)
     renderer.setPixelRatio($window.devicePixelRatio)
     renderer.setSize(element.offsetWidth, element.offsetHeight)
+
+    webVR.getVRDisplay( ( display ) ->
+      renderer.vr.setDevice( display )
+      document.body.appendChild( WEBVR.getButton( display, renderer.domElement ) )
+    )
 
     camera = new THREE.PerspectiveCamera(45, element.offsetWidth / element.offsetHeight, 1, 10000)
     camera.position.z = 1000
@@ -149,7 +160,7 @@ angular.module('AltexoApp')
         animate = $scope.$runAnimation(render)
 
       toggleMic(chatRoom.muted.length > 0)
-      animate()  # start animation
+      animate() # start animation
 
     $scope.$listenObject(chatRoom, 'mute', toggleMic)
     $scope.$listenObject(chatRoom, 'add', createAvatar)
