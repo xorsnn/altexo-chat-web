@@ -1,3 +1,5 @@
+THREE = require('three')
+
 angular.module('AltexoApp')
 .factory 'AlWebVR',
 () ->
