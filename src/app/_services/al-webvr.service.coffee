@@ -23,6 +23,7 @@ angular.module('AltexoApp')
           console.log "got VR display"
           onDisplay( displays[ 0 ] )
         )
+      return
 
     getMessageContainer: ( message ) ->
       container = document.createElement( 'div' )
