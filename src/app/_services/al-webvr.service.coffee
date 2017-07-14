@@ -23,6 +23,8 @@ angular.module('AltexoApp')
           console.log "got VR display"
           onDisplay( displays[ 0 ] )
         )
+      else
+        console.log "check failed"
       return
 
     getMessageContainer: ( message ) ->
