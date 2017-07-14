@@ -1,29 +1,76 @@
 THREE = require('three')
 
 angular.module('AltexoApp')
-.factory 'AlWebVR',
-() ->
-  class AlWebVR
+.service 'AlWebVR', (VR_STATE) ->
+  state = VR_STATE.UNKNOWN_VR_STATE
+  display =  undefined
+  canvas = undefined
+
+  AlWebVR = {
+    init: () ->
+      if ( navigator.getVRDisplays != undefined )
+        navigator.getVRDisplays().then( ( displays ) ->
+          if ( displays.length == 0 )
+            state = VR_STATE.NO_VR_DISPLAY
+          else
+            display = displays[ 0 ]
+            state = VR_STATE.VR_AVALIABLE
+        )
+      else
+        state = VR_STATE.VR_NOT_SUPPORTED
+      return
+
+    isVRAvaliable: () ->
+      state == VR_STATE.VR_AVALIABLE
+
+    getVRDisplay: () ->
+      display
+
+    getVRBtnTooltip: () ->
+      if state == VR_STATE.VR_NOT_SUPPORTED
+        'Your browser does not support WebVR. See https://webvr.info for assistance.'
+      else if state == VR_STATE.NO_VR_DISPLAY
+        'WebVR supported, but no VRDisplays found.'
+      else if state == VR_STATE.VR_AVALIABLE
+        'Switch to VR display'
+      else
+        'Loading...'
+
+    setCanvas: (canvas) ->
+      canvas = canvas
+      return
+
+    switchToVR: () ->
+      if display and canvas
+        if display.isPresenting
+          display.exitPresent()
+        else
+          display.requestPresent( [ { source: canvas } ] )
+      return
+
     checkAvailability: () ->
       return new Promise( ( resolve, reject ) ->
         if ( navigator.getVRDisplays != undefined )
           navigator.getVRDisplays().then( ( displays ) ->
             if ( displays.length == 0 )
-              reject 'WebVR supported, but no VRDisplays found.'
+              # reject 'WebVR supported, but no VRDisplays found.'
+              reject VR_STATE.NO_VR_DISPLAY
             else
               resolve()
           )
         else
-          reject 'Your browser does not support WebVR. See <a href="https://webvr.info">webvr.info</a> for assistance.'
+          # reject 'Your browser does not support WebVR.
+          # See <a href="https://webvr.info">webvr.info</a> for assistance.'
+          reject VR_NOT_SUPPORTED
       )
 
-    getVRDisplay: (onDisplay) ->
-      if ( navigator.getVRDisplays != undefined )
-        navigator.getVRDisplays().then( ( displays ) ->
-          if displays.length > 0
-            onDisplay( displays[ 0 ] )
-        )
-      return
+    # getVRDisplay: (onDisplay) ->
+    #   if ( navigator.getVRDisplays != undefined )
+    #     navigator.getVRDisplays().then( ( displays ) ->
+    #       if displays.length > 0
+    #         onDisplay( displays[ 0 ] )
+    #     )
+    #   return
 
     getMessageContainer: ( message ) ->
       container = document.createElement( 'div' )
@@ -85,3 +132,11 @@ angular.module('AltexoApp')
         button.textContent = 'NO VR DISPLAY'
 
       return button
+  }
+
+  # Object.defineProperties(UserService, {
+  #   'isReady': { get: -> true if ready }
+  #   'profile': { get: -> profile ? {} }
+  # })
+  # return () ->
+  #   new AlWebVR()

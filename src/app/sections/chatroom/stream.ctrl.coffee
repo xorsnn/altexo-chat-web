@@ -4,13 +4,17 @@ angular.module('AltexoApp')
 
 .controller 'StreamCtrl',
 ($scope, $location, $routeParams, $localStorage, $mdToast, $mdSidenav, $mdDialog, \
-  $timeout, $window, ScreenSharingExtension, RpcError) ->
+  $timeout, $window, ScreenSharingExtension, RpcError, AlWebVR) ->
 
     $scope.textMessage = ''
     $scope.controls = {
       audio: true
       video: true
     }
+
+    $scope.isVRAvaliable = AlWebVR.isVRAvaliable
+    $scope.getVRBtnTooltip = AlWebVR.getVRBtnTooltip
+    $scope.switchToVR = AlWebVR.switchToVR
 
     $timeout(500)  # wait until sidenav is closed
     .then -> $scope.chat.ensureConnected()

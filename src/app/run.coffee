@@ -40,7 +40,12 @@ angular.module('AltexoApp')
 
   return
 
-.run ($rootScope, $window, $document) ->
+.run ($rootScope, AlWebVR) ->
+  # NOTE: init webVR service
+  AlWebVR.init()
+  return
+
+.run ($rootScope, $window, $document, AlWebVR) ->
   # Bunch of helpers.
 
   $rootScope.$listenObject = (obj, name, handler) ->
@@ -65,9 +70,12 @@ angular.module('AltexoApp')
   #   animate = ->
   #     _rafid = requestAnimationFrame(animate)
   #     render()
-  # TODO: ( sergey ) consider moving this to another place
+
+  # TODO: ( sergey ) consider moving this to another place, it seems like
+  # rendering won't stop
   $rootScope.$runAnimation = (renderer, renderFx) ->
     renderer.animate( renderFx )
+    return
 
   return
 

@@ -10,18 +10,11 @@ require('p5/lib/addons/p5.sound')
 
 AltexoAvatar = require './video_stream/al-avatar.class.coffee'
 
-
 angular.module('AltexoApp')
-
 .directive 'altexoRoomRenderer', ($window, RendererHelper, $mdMedia, AlWebVR) -> {
   restrict: 'A'
   link: ($scope, $element, { altexoRoomRenderer }) ->
     chatRoom = $scope.$eval(altexoRoomRenderer)
-
-    webVR = new AlWebVR
-    webVR.checkAvailability().catch ( message ) ->
-      # TODO: style message container
-      document.body.appendChild( webVR.getMessageContainer( message ) )
 
     element = $element[0]
 
@@ -149,13 +142,12 @@ angular.module('AltexoApp')
 
       element.appendChild(renderer.domElement)
 
-      webVR.getVRDisplay ( display ) ->
-        console.log "found vr display"
-        console.log display
+      if AlWebVR.isVRAvaliable()
         renderer.vr.enabled = true
-        renderer.vr.setDevice( display )
-        btn = webVR.getButton( display, renderer.domElement )
-        document.body.appendChild( btn )
+        renderer.vr.setDevice( AlWebVR.getVRDisplay() )
+        AlWebVR.setCanvas(renderer.domElement)
+        # btn = webVR.getButton( $scope.$getVRDisplay, renderer.domElement )
+        # document.body.appendChild( btn )
 
       if DEBUG == 'true'
         animate = $scope.$runAnimation renderer , ->
