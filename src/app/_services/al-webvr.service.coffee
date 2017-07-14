@@ -78,7 +78,10 @@ angular.module('AltexoApp')
       if ( display )
         button.textContent = 'ENTER VR'
         button.onclick = () ->
-          if display.isPresenting then display.exitPresent() else display.requestPresent( [ { source: canvas } ] )
+          if display.isPresenting
+            display.exitPresent()
+          else
+            display.requestPresent( [ { source: canvas } ] )
 
         window.addEventListener( 'vrdisplaypresentchange', () ->
           button.textContent = display.isPresenting ? 'EXIT VR' : 'ENTER VR'

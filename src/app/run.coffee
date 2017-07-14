@@ -57,14 +57,24 @@ angular.module('AltexoApp')
       $window.removeEventListener(name, handler)
     $window.addEventListener(name, handler, false)
 
-  $rootScope.$runAnimation = (render) ->
-    _rafid = null
-    this.$on '$destroy', ->
-      unless _rafid == null
-        cancelAnimationFrame(_rafid)
-    animate = ->
-      _rafid = requestAnimationFrame(animate)
-      render()
+  # $rootScope.$runAnimation = (render) ->
+  #   _rafid = null
+  #   this.$on '$destroy', ->
+  #     unless _rafid == null
+  #       cancelAnimationFrame(_rafid)
+  #   animate = ->
+  #     _rafid = requestAnimationFrame(animate)
+  #     render()
+  # TODO: ( sergey ) consider moving this to another place
+  $rootScope.$runAnimation = (renderer, renderFx) ->
+    renderer.animate( renderFx )
+    # _rafid = null
+    # this.$on '$destroy', ->
+    #   unless _rafid == null
+    #     cancelAnimationFrame(_rafid)
+    # animate = ->
+    #   _rafid = requestAnimationFrame(animate)
+    #   render()
 
   return
 
@@ -73,7 +83,7 @@ angular.module('AltexoApp')
   $rootScope.showVideoStash = (show) ->
     $document.find('#videostash')
       .css('display', if show then 'block' else 'none')
-  
+
   if DEBUG == 'true'
 
     # <Alt+Key Up> : show stash
@@ -83,5 +93,5 @@ angular.module('AltexoApp')
         if ev.altKey and ev.keyCode in [38, 40]
           $rootScope.showVideoStash(ev.keyCode == 38)
     }
-    
+
   return

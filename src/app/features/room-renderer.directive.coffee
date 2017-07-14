@@ -147,24 +147,24 @@ angular.module('AltexoApp')
 
       element.appendChild(renderer.domElement)
 
-      # renderer.vr.enabled = true
-      # console.log "VR enable"
-      # webVR.getVRDisplay ( display ) ->
-      #   console.log "vr display: "
-      #   console.log display
-      #   renderer.vr.setDevice( display )
-      #   btn = webVR.getButton( display, renderer.domElement )
-      #   console.log btn
-      #   document.body.appendChild( btn )
+      renderer.vr.enabled = true
+      console.log "VR enable"
+      webVR.getVRDisplay ( display ) ->
+        console.log "vr display: "
+        console.log display
+        renderer.vr.setDevice( display )
+        btn = webVR.getButton( display, renderer.domElement )
+        console.log btn
+        document.body.appendChild( btn )
 
 
       if DEBUG == 'true'
-        animate = $scope.$runAnimation ->
+        animate = $scope.$runAnimation renderer , ->
           render()
           stats.update()
         element.appendChild(stats.dom)
       else
-        animate = $scope.$runAnimation(render)
+        animate = $scope.$runAnimation(renderer, render)
 
       toggleMic(chatRoom.muted.length > 0)
       animate() # start animation
