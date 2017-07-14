@@ -47,10 +47,6 @@ angular.module('AltexoApp')
     renderer.setPixelRatio($window.devicePixelRatio)
     renderer.setSize(element.offsetWidth, element.offsetHeight)
 
-    webVR.getVRDisplay( ( display ) ->
-      renderer.vr.setDevice( display )
-      document.body.appendChild( WEBVR.getButton( display, renderer.domElement ) )
-    )
 
     camera = new THREE.PerspectiveCamera(45, element.offsetWidth / element.offsetHeight, 1, 10000)
     camera.position.z = 1000
@@ -150,6 +146,12 @@ angular.module('AltexoApp')
       #   element.appendChild(RendererHelper.createInfoDiv())
 
       element.appendChild(renderer.domElement)
+
+      renderer.vr.enabled = true
+      webVR.getVRDisplay( ( display ) ->
+        renderer.vr.setDevice( display )
+        document.body.appendChild( WEBVR.getButton( display, renderer.domElement ) )
+      )
 
       if DEBUG == 'true'
         animate = $scope.$runAnimation ->
