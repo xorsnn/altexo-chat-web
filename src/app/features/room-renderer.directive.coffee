@@ -141,6 +141,7 @@ angular.module('AltexoApp')
         avatar.render()
 
       renderer.render(scene, camera)
+      return
 
     $element.ready ->
       # if DEBUG == 'true'
@@ -150,6 +151,7 @@ angular.module('AltexoApp')
 
       webVR.getVRDisplay ( display ) ->
         console.log "found vr display"
+        console.log display
         renderer.vr.enabled = true
         renderer.vr.setDevice( display )
         btn = webVR.getButton( display, renderer.domElement )
@@ -165,6 +167,7 @@ angular.module('AltexoApp')
 
       toggleMic(chatRoom.muted.length > 0)
       animate() # start animation
+      return
 
     $scope.$listenObject(chatRoom, 'mute', toggleMic)
     $scope.$listenObject(chatRoom, 'add', createAvatar)

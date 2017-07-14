@@ -20,7 +20,8 @@ angular.module('AltexoApp')
     getVRDisplay: (onDisplay) ->
       if ( navigator.getVRDisplays != undefined )
         navigator.getVRDisplays().then( ( displays ) ->
-          onDisplay( displays[ 0 ] )
+          if displays.length > 0
+            onDisplay( displays[ 0 ] )
         )
       return
 
