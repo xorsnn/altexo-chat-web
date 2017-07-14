@@ -18,16 +18,10 @@ angular.module('AltexoApp')
       )
 
     getVRDisplay: (onDisplay) ->
-      console.log "cheking if has getVRDisplays"
-      # if ( 'getVRDisplays' in navigator )
       if ( navigator.getVRDisplays != undefined )
-        console.log "has VR displays"
         navigator.getVRDisplays().then( ( displays ) ->
-          console.log "got VR display"
           onDisplay( displays[ 0 ] )
         )
-      else
-        console.log "check failed"
       return
 
     getMessageContainer: ( message ) ->

@@ -127,9 +127,10 @@ angular.module('AltexoApp')
     RendererHelper.addParticleGrid(scene)
 
     render = ->
-      # camera.position.x += ( mouseX - camera.position.x ) * 0.05
-      # camera.position.y += ( - mouseY - camera.position.y ) * 0.05
-      # camera.lookAt( scene.position )
+      unless renderer.vr.enabled
+        camera.position.x += ( mouseX - camera.position.x ) * 0.05
+        camera.position.y += ( - mouseY - camera.position.y ) * 0.05
+        camera.lookAt( scene.position )
 
       if chatRoom.muted.length
         spectrum = fft.analyze()
@@ -147,16 +148,11 @@ angular.module('AltexoApp')
 
       element.appendChild(renderer.domElement)
 
-      renderer.vr.enabled = true
-      console.log "VR enable"
       webVR.getVRDisplay ( display ) ->
-        console.log "vr display: "
-        console.log display
+        renderer.vr.enabled = true
         renderer.vr.setDevice( display )
         btn = webVR.getButton( display, renderer.domElement )
-        console.log btn
         document.body.appendChild( btn )
-
 
       if DEBUG == 'true'
         animate = $scope.$runAnimation renderer , ->

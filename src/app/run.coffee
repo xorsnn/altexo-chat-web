@@ -68,13 +68,6 @@ angular.module('AltexoApp')
   # TODO: ( sergey ) consider moving this to another place
   $rootScope.$runAnimation = (renderer, renderFx) ->
     renderer.animate( renderFx )
-    # _rafid = null
-    # this.$on '$destroy', ->
-    #   unless _rafid == null
-    #     cancelAnimationFrame(_rafid)
-    # animate = ->
-    #   _rafid = requestAnimationFrame(animate)
-    #   render()
 
   return
 
