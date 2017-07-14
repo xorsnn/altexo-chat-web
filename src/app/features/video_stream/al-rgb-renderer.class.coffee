@@ -41,6 +41,11 @@ module.exports =
       @reflectionMesh.position.y = value
       @
 
+    setZPosition: (value) ->
+      @originalMesh.position.z = value
+      @reflectionMesh.position.z = value
+      @
+
     setYRotation: (value) ->
       @originalMesh.rotation.y = value
       @reflectionMesh.rotation.y = value

@@ -1,4 +1,5 @@
 THREE = require('three')
+{ Z_OFFSET } = require('./al-video-stream.const.coffee')
 
 class AlLabel
   label: null
@@ -72,7 +73,7 @@ class AlLabel
     @label.position.y = 180
     @label.rotation.y = @rendererData.modification.rotation.y
     @label.position.z = (((textGeo.boundingBox.max.x - textGeo.boundingBox.min.x) *
-      Math.sin(@rendererData.modification.rotation.y)) / 2)
+      Math.sin(@rendererData.modification.rotation.y)) / 2) - Z_OFFSET
     return
 
 module.exports = AlLabel

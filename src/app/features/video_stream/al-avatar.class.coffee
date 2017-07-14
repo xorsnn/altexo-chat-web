@@ -7,7 +7,7 @@ AlLabel = require './al-label.class.coffee'
 FullscreenRenderer = require './fullscreen-renderer.class.coffee'
 
 { NO_VIDEO, DEPTH_VIDEO, RGB_VIDEO,
-  ICOSAHEDRON_RADIUS,
+  ICOSAHEDRON_RADIUS, Z_OFFSET,
   SURFACE_DISTANCE_KOEFFICIENT } = require './al-video-stream.const.coffee'
 
 class AlAvatar
@@ -70,7 +70,7 @@ class AlAvatar
         position: {
           x: seat(0, false).x
           y: seat(0, false).y
-          z: 0
+          z: seat(0, false).z
         }
       }
       mesh: {
@@ -97,7 +97,7 @@ class AlAvatar
             x: seat(0, false).x
             # surface coordinate - 120
             y: ICOSAHEDRON_RADIUS + ICOSAHEDRON_RADIUS * SURFACE_DISTANCE_KOEFFICIENT
-            z: 0
+            z: seat(0, false).z
           }
         }
       }
@@ -138,6 +138,7 @@ class AlAvatar
       @rgbRenderer.setTexture(@rendererData.texture)
       .setXPosition(@rendererData.modification.position.x)
       .setYPosition(@rendererData.modification.position.y)
+      .setZPosition(@rendererData.modification.position.z)
       .setYRotation(@rendererData.modification.rotation.y)
 
       @hologramRenderer = new AlHologramRenderer(@rendererData, @scene)
@@ -311,12 +312,14 @@ class AlAvatar
         return {
           x: 80
           y: -240
+          z: -Z_OFFSET
           angle: -Math.PI / 6
         }
       else
         return {
           x: 320
           y: -240
+          z: -Z_OFFSET
           angle: -Math.PI / 6
         }
     if k == 1
@@ -324,17 +327,20 @@ class AlAvatar
         return {
           x: -80
           y: -240
+          z: -Z_OFFSET
           angle: Math.PI / 6
         }
       else
         return {
           x: -320
           y: -240
+          z: -Z_OFFSET
           angle: Math.PI / 6
         }
     return {
       x: 0
       y: -240
+      z: -Z_OFFSET
       angle: 0
     }
 

@@ -1,5 +1,5 @@
 THREE = require('three')
-{ SURFACE_DISTANCE_KOEFFICIENT,
+{ SURFACE_DISTANCE_KOEFFICIENT, Z_OFFSET,
   ICOSAHEDRON_RADIUS, SURFACE_Y } = require('./al-video-stream.const.coffee')
 
 class AlSoundRenderer
@@ -58,6 +58,7 @@ class AlSoundRenderer
 
     @rendererData.mesh.soundViz.position.x = @rendererData.sound.modification.position.x
     @rendererData.mesh.soundViz.position.y = SURFACE_Y + @rendererData.sound.modification.position.y
+    @rendererData.mesh.soundViz.position.z = -Z_OFFSET
 
     unless @visualisatorReflectionMaterial
       @visualisatorReflectionMaterial = new THREE.ShaderMaterial({
@@ -80,6 +81,7 @@ class AlSoundRenderer
 
     @rendererData.mesh.soundVizReflection.position.x = @rendererData.sound.modification.position.x
     @rendererData.mesh.soundVizReflection.position.y = SURFACE_Y - @rendererData.sound.modification.position.y
+    @rendererData.mesh.soundVizReflection.position.z = -Z_OFFSET
     @rendererData.mesh.soundVizReflection.rotation.x = - Math.PI
 
     return

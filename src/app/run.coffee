@@ -74,8 +74,8 @@ angular.module('AltexoApp')
   # TODO: ( sergey ) consider moving this to another place, it seems like
   # rendering won't stop
   $rootScope.$runAnimation = (renderer, renderFx) ->
-    renderer.animate( renderFx )
-    return
+    animate = ->
+      renderer.animate( renderFx )
 
   return
 
