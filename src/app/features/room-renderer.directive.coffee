@@ -147,15 +147,15 @@ angular.module('AltexoApp')
 
       element.appendChild(renderer.domElement)
 
-      renderer.vr.enabled = true
-      console.log "VR enable"
-      webVR.getVRDisplay ( display ) ->
-        console.log "vr display: "
-        console.log display
-        renderer.vr.setDevice( display )
-        btn = webVR.getButton( display, renderer.domElement )
-        console.log btn
-        document.body.appendChild( btn )
+      # renderer.vr.enabled = true
+      # console.log "VR enable"
+      # webVR.getVRDisplay ( display ) ->
+      #   console.log "vr display: "
+      #   console.log display
+      #   renderer.vr.setDevice( display )
+      #   btn = webVR.getButton( display, renderer.domElement )
+      #   console.log btn
+      #   document.body.appendChild( btn )
 
 
       if DEBUG == 'true'
