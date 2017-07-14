@@ -149,6 +149,7 @@ angular.module('AltexoApp')
       element.appendChild(renderer.domElement)
 
       webVR.getVRDisplay ( display ) ->
+        console.log "found vr display"
         renderer.vr.enabled = true
         renderer.vr.setDevice( display )
         btn = webVR.getButton( display, renderer.domElement )
