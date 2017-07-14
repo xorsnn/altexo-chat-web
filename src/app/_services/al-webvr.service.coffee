@@ -36,15 +36,21 @@ angular.module('AltexoApp')
       else
         'Loading...'
 
-    setCanvas: (canvas) ->
-      canvas = canvas
+    setCanvas: (newCanvas) ->
+      canvas = newCanvas
       return
 
     switchToVR: () ->
+      console.log "switching"
+      console.log display
+      console.log canvas
       if display and canvas
+        console.log "switching"
         if display.isPresenting
+          console.log "1"
           display.exitPresent()
         else
+          console.log "2"
           display.requestPresent( [ { source: canvas } ] )
       return
 
