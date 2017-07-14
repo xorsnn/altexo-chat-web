@@ -16,9 +16,11 @@ angular.module('AltexoApp')
       )
 
     getVRDisplay: (onDisplay) ->
+      console.log "cheking if has getVRDisplays"
       if ( 'getVRDisplays' in navigator )
-        navigator.getVRDisplays()
-        .then( ( displays ) ->
+        console.log "has VR displays"
+        navigator.getVRDisplays().then( ( displays ) ->
+          console.log "got VR display"
           onDisplay( displays[ 0 ] )
         )
 
