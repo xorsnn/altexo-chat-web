@@ -127,9 +127,9 @@ angular.module('AltexoApp')
     RendererHelper.addParticleGrid(scene)
 
     render = ->
-      camera.position.x += ( mouseX - camera.position.x ) * 0.05
-      camera.position.y += ( - mouseY - camera.position.y ) * 0.05
-      camera.lookAt( scene.position )
+      # camera.position.x += ( mouseX - camera.position.x ) * 0.05
+      # camera.position.y += ( - mouseY - camera.position.y ) * 0.05
+      # camera.lookAt( scene.position )
 
       if chatRoom.muted.length
         spectrum = fft.analyze()
