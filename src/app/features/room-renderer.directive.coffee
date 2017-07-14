@@ -153,7 +153,7 @@ angular.module('AltexoApp')
         console.log "vr display: "
         console.log display
         renderer.vr.setDevice( display )
-        btn = WEBVR.getButton( display, renderer.domElement )
+        btn = webVR.getButton( display, renderer.domElement )
         console.log btn
         document.body.appendChild( btn )
 
