@@ -122,7 +122,8 @@ class AlHologramRenderer
         new THREE.LineSegments( geometry, @rendererData.hologram.hologramMaterial )
     else
       @rendererData.hologram.mesh = \
-        new THREE.PointCloud( geometry, @rendererData.hologram.hologramMaterial )
+        new THREE.Points( geometry, @rendererData.hologram.hologramMaterial )
+    @rendererData.hologram.mesh.frustumCulled = false
 
     @rendererData.hologram.hologramReflectionMaterial = new THREE.ShaderMaterial({
       uniforms:
@@ -146,7 +147,8 @@ class AlHologramRenderer
         new THREE.LineSegments( geometry, @rendererData.hologram.hologramReflectionMaterial)
     else
       @rendererData.hologram.reflectionMesh = \
-        new THREE.PointCloud( geometry, @rendererData.hologram.hologramReflectionMaterial )
+        new THREE.Points( geometry, @rendererData.hologram.hologramReflectionMaterial )
+    @rendererData.hologram.reflectionMesh.frustumCulled = false
 
     return
 

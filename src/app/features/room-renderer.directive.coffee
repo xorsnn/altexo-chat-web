@@ -130,7 +130,6 @@ angular.module('AltexoApp')
       unless renderer.vr.enabled
         camera.position.x += ( mouseX - camera.position.x ) * 0.05
         camera.position.y += ( - mouseY - camera.position.y ) * 0.05
-        # camera.lookAt( scene.position )
         camera.lookAt( new THREE.Vector3(
           scene.position.x,
           scene.position.y,
@@ -195,11 +194,12 @@ angular.module('AltexoApp')
     $scope.$listenDocument 'mousedown', (ev) ->
       mouse.x = ( ev.clientX / $window.innerWidth ) * 2 - 1
       mouse.y = -( ( ev.clientY / $window.innerHeight ) * 2 - 1 )
-      raycaster.setFromCamera(mouse, camera)
-      intersects = raycaster.intersectObjects(scene.children)
-      if intersects.length > 0
-        avatars.forEach (avatar) ->
-          avatar.objectsClicked(intersects)
+      # TODO: (sergey) temporary disable fullscreen (AL-343)
+      # raycaster.setFromCamera(mouse, camera)
+      # intersects = raycaster.intersectObjects(scene.children)
+      # if intersects.length > 0
+      #   avatars.forEach (avatar) ->
+      #     avatar.objectsClicked(intersects)
       return
 }
 
