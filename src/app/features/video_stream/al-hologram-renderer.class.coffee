@@ -1,4 +1,5 @@
 THREE = require('three')
+{ Z_OFFSET } = require('./al-video-stream.const.coffee')
 
 class AlHologramRenderer
 
@@ -15,7 +16,6 @@ class AlHologramRenderer
   }
 
   constructor: (@rendererData, @scene) ->
-
     @_init()
     return
 
@@ -106,7 +106,7 @@ class AlHologramRenderer
         hAmount: {type: 'f', value: @HOLOGRAM_H}
         modificationPosX: {type: 'f', value: @rendererData.modification.position.x}
         # modificationPosY: {type: 'f', value: @rendererData.modification.position.y}
-        # modificationPosZ: {type: 'f', value: @rendererData.modification.position.z}
+        modificationPosZ: {type: 'f', value: @rendererData.modification.position.z}
         # modificationRotationX: {type: 'f', value: @rendererData.modification.rotation.x}
         modificationRotationY: {type: 'f', value: @rendererData.modification.rotation.y}
         # modificationRotationZ: {type: 'f', value: @rendererData.modification.rotation.z}
@@ -131,7 +131,7 @@ class AlHologramRenderer
         hAmount: {type: 'f', value: @HOLOGRAM_H}
         modificationPosX: {type: 'f', value: @rendererData.modification.position.x}
         # modificationPosY: {type: 'f', value: @rendererData.modification.position.y}
-        # modificationPosZ: {type: 'f', value: @rendererData.modification.position.z}
+        modificationPosZ: {type: 'f', value: @rendererData.modification.position.z}
         # modificationRotationX: {type: 'f', value: @rendererData.modification.rotation.x}
         modificationRotationY: {type: 'f', value: @rendererData.modification.rotation.y}
         # modificationRotationZ: {type: 'f', value: @rendererData.modification.rotation.z}
