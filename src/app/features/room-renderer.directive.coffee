@@ -43,7 +43,7 @@ angular.module('AltexoApp')
 
 
     camera = new THREE.PerspectiveCamera(45, element.offsetWidth / element.offsetHeight, 1, 10000)
-    # camera.position.z = 1000
+    camera.position.z = 1000 - Z_OFFSET
 
     scene = new THREE.Scene()
 
@@ -130,6 +130,8 @@ angular.module('AltexoApp')
       unless renderer.vr.enabled
         camera.position.x += ( mouseX - camera.position.x ) * 0.05
         camera.position.y += ( - mouseY - camera.position.y ) * 0.05
+        camera.position.y = if camera.position.y >= 0 then camera.position.y else 0
+        
         camera.lookAt( new THREE.Vector3(
           scene.position.x,
           scene.position.y,

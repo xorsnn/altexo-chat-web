@@ -98,10 +98,9 @@ void main() {
   newPos.y = pos.y;
   newPos.z = -pos.x * sin(modificationRotationY) + pos.z * cos(modificationRotationY);
 
-  // gl_Position = projectionMatrix * modelViewMatrix * vec4(pos.x, pos.y, pos.z, 1.0);
   gl_Position = projectionMatrix * modelViewMatrix * vec4(newPos.xy, newPos.z + modificationPosZ, 1.0);
-  // gl_Position = projectionMatrix * modelViewMatrix * vec4(newPos, 1.0);
-  gl_PointSize = 2.5;
+  // gl_PointSize = 2.5;
+  gl_PointSize = 3.5;
 
   vec4 modelMat = modelMatrix * vec4(pos, 1.0);
   if (modelMat.y > -120.0) {
