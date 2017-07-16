@@ -24,8 +24,8 @@ class AlHologramRenderer
     points = []
     width = @HOLOGRAM_W
     height = @HOLOGRAM_H
-    yAmount = 480 / 3
-    xAmount = 640 / 3
+    yAmount = 480
+    xAmount = 640
     COORD_MULTIPLIER = 1
     for y in [0...height] by height / yAmount
       row = []
