@@ -10,3 +10,4 @@ scripts/
 node_modules/
 *.swp
 *.swo
+*.orig
