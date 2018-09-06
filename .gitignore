@@ -7,3 +7,4 @@ npm-debug.log
 docker-compose-run.yml
 tmp/
 scripts/
+node_modules/
