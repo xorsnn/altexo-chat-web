@@ -1,7 +1,7 @@
 THREE = require('three')
 
-REFLECTION_FRAG = require('raw!../../../shaders/reflection.frag')
-REFLECTION_VERT = require('raw!../../../shaders/reflection.vert')
+REFLECTION_FRAG = require('raw-loader!../../../shaders/reflection.frag')
+REFLECTION_VERT = require('raw-loader!../../../shaders/reflection.vert')
 
 module.exports =
   class Renderer
@@ -39,6 +39,11 @@ module.exports =
 
     setYPosition: (value) ->
       @reflectionMesh.position.y = value
+      @
+
+    setZPosition: (value) ->
+      @originalMesh.position.z = value
+      @reflectionMesh.position.z = value
       @
 
     setYRotation: (value) ->

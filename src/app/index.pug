@@ -17,6 +17,9 @@ html(lang='en')
     meta(property='og:image', content='https://chat.altexo.com/img/preview.png')
     meta(property="og:site_name", content="altexo.com")
 
+    //- VR
+    meta(http-equiv="origin-trial", data-feature="WebVR (For Chrome M59+)", data-expires="2017-08-25", content="AhM8TOrCn5vDTP9bI62JSkWqlLR0nKmIItF95S1I+dOxUgQi54GZ/k6uu3vTJhHgLiyIK5kQ3vIwM3SdvlU99AcAAABfeyJvcmlnaW4iOiJodHRwczovL2FsdGV4by5jb206NDQzIiwiZmVhdHVyZSI6IldlYlZSMS4xIiwiZXhwaXJ5IjoxNTAzNjQzNDAxLCJpc1N1YmRvbWFpbiI6dHJ1ZX0=")
+
     link(rel='icon',type='image/png', href='/img/favicon.png')
     link(rel='stylesheet', href='/css/angular-csp.css')
     link(rel='chrome-webstore-item', href=AL_WEBSTORE_APP_LINK)
@@ -41,7 +44,6 @@ html(lang='en')
     md-sidenav.md-sidenav-left.ng-cloak(ng-if='!$user.profile.id', md-component-id='left', md-is-locked-open='leftSidenavLocked', md-whiteframe='4')
       md-toolbar.md-theme-indigo(layout='row', layout-align='left center')
         img(ng-src=require('../img/logo_white.svg'), height=50, style='margin-left:16px')
-      //- md-button.md-primary(ng-click='showLoginDialog($event)') Sign in
       md-divider
       al-used-rooms
 

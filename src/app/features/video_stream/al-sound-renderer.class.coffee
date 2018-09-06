@@ -1,5 +1,5 @@
 THREE = require('three')
-{ SURFACE_DISTANCE_KOEFFICIENT,
+{ SURFACE_DISTANCE_KOEFFICIENT, Z_OFFSET,
   ICOSAHEDRON_RADIUS, SURFACE_Y } = require('./al-video-stream.const.coffee')
 
 class AlSoundRenderer
@@ -22,8 +22,8 @@ class AlSoundRenderer
         uniforms:
           spectrum: { type: 'fv1', value: @spectrum }
           distanceK: { type: 'f', value: SURFACE_DISTANCE_KOEFFICIENT}
-        vertexShader: require('raw!./shaders/icosahedron.vert')
-        fragmentShader: require('raw!./shaders/icosahedron.frag')
+        vertexShader: require('raw-loader!./shaders/icosahedron.vert')
+        fragmentShader: require('raw-loader!./shaders/icosahedron.frag')
         wireframe: true
         side: THREE.DoubleSide
         transparent: true
@@ -58,6 +58,7 @@ class AlSoundRenderer
 
     @rendererData.mesh.soundViz.position.x = @rendererData.sound.modification.position.x
     @rendererData.mesh.soundViz.position.y = SURFACE_Y + @rendererData.sound.modification.position.y
+    @rendererData.mesh.soundViz.position.z = -Z_OFFSET
 
     unless @visualisatorReflectionMaterial
       @visualisatorReflectionMaterial = new THREE.ShaderMaterial({
@@ -66,8 +67,8 @@ class AlSoundRenderer
           centerY: {type: 'f', value: SURFACE_Y - @rendererData.sound.modification.position.y}
           spectrum: { type: 'fv1', value: @spectrum }
           distanceK: { type: 'f', value: SURFACE_DISTANCE_KOEFFICIENT}
-        vertexShader: require('raw!./shaders/icosahedron_reflection.vert')
-        fragmentShader: require('raw!./shaders/icosahedron_reflection.frag')
+        vertexShader: require('raw-loader!./shaders/icosahedron_reflection.vert')
+        fragmentShader: require('raw-loader!./shaders/icosahedron_reflection.frag')
         wireframe: true
         side: THREE.DoubleSide
         transparent: true
@@ -80,6 +81,7 @@ class AlSoundRenderer
 
     @rendererData.mesh.soundVizReflection.position.x = @rendererData.sound.modification.position.x
     @rendererData.mesh.soundVizReflection.position.y = SURFACE_Y - @rendererData.sound.modification.position.y
+    @rendererData.mesh.soundVizReflection.position.z = -Z_OFFSET
     @rendererData.mesh.soundVizReflection.rotation.x = - Math.PI
 
     return

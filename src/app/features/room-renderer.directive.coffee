@@ -1,4 +1,5 @@
 THREE = require('three')
+require('three/examples/js/vr/WebVR')
 
 if DEBUG == 'true'
   Stats = require('three/examples/js/libs/stats.min')
@@ -8,11 +9,10 @@ require('p5/lib/addons/p5.dom')
 require('p5/lib/addons/p5.sound')
 
 AltexoAvatar = require './video_stream/al-avatar.class.coffee'
-
+{ Z_OFFSET } = require './video_stream/al-video-stream.const.coffee'
 
 angular.module('AltexoApp')
-
-.directive 'altexoRoomRenderer', ($window, RendererHelper, $mdMedia) -> {
+.directive 'altexoRoomRenderer', ($window, RendererHelper, $mdMedia, AlWebVR) -> {
   restrict: 'A'
   link: ($scope, $element, { altexoRoomRenderer }) ->
     chatRoom = $scope.$eval(altexoRoomRenderer)
@@ -41,8 +41,9 @@ angular.module('AltexoApp')
     renderer.setPixelRatio($window.devicePixelRatio)
     renderer.setSize(element.offsetWidth, element.offsetHeight)
 
+
     camera = new THREE.PerspectiveCamera(45, element.offsetWidth / element.offsetHeight, 1, 10000)
-    camera.position.z = 1000
+    camera.position.z = 1000 - Z_OFFSET
 
     scene = new THREE.Scene()
 
@@ -85,6 +86,7 @@ angular.module('AltexoApp')
         .setFullscreen(chatRoom.isFullscreen(contact)))
 
       shuffle()
+      return
 
     removeAvatar = (contact) ->
       console.debug '>> REMOVE AVATAR', contact
@@ -94,20 +96,25 @@ angular.module('AltexoApp')
 
       shuffle()
 
+      return
+
     updateAvatar = (contact) ->
       console.debug '>> UPDATE AVATAR', contact
 
       avatars.get(contact.id).setLabel(contact.name)
       .setMode(contact.mode)
+      return
 
     startMic = ->
       console.debug '>> START p5.MICROPHONE'
       mic.start()
+      return
 
     # REF: https://github.com/processing/p5.js-sound/commit/1d7816b154ea5ccb728742a67d5f55c0cc6ed62e
     stopMic = ->
       console.debug '>> STOP p5.MICROPHONE'
       mic.stream?.getTracks().forEach (track) -> track.stop()
+      return
 
     toggleMic = (value) ->
       if value then startMic() else stopMic()
@@ -120,36 +127,51 @@ angular.module('AltexoApp')
     RendererHelper.addParticleGrid(scene)
 
     render = ->
-      camera.position.x += ( mouseX - camera.position.x ) * 0.05
-      camera.position.y += ( - mouseY - camera.position.y ) * 0.05
-      camera.lookAt( scene.position )
+      unless renderer.vr.enabled
+        camera.position.x += ( mouseX - camera.position.x ) * 0.05
+        camera.position.y += ( - mouseY - camera.position.y ) * 0.05
+        camera.position.y = if camera.position.y >= 0 then camera.position.y else 0
+        
+        camera.lookAt( new THREE.Vector3(
+          scene.position.x,
+          scene.position.y,
+          scene.position.z - Z_OFFSET ) )
 
       if chatRoom.muted.length
         spectrum = fft.analyze()
         chatRoom.muted.forEach (id) ->
           avatars.get(id).setSpectrum(spectrum)
+          return
 
       avatars.forEach (avatar) ->
         avatar.render()
+        return
 
       renderer.render(scene, camera)
+      return
 
     $element.ready ->
-      # if DEBUG == 'true'
-      #   element.appendChild(RendererHelper.createInfoDiv())
-
       element.appendChild(renderer.domElement)
 
+      if AlWebVR.isVRAvaliable()
+        renderer.vr.enabled = true
+        renderer.vr.setDevice( AlWebVR.getVRDisplay() )
+        AlWebVR.setCanvas(renderer.domElement)
+
       if DEBUG == 'true'
-        animate = $scope.$runAnimation ->
+        animate = $scope.$runAnimation( renderer , ->
           render()
           stats.update()
+          return
+        )
+
         element.appendChild(stats.dom)
       else
-        animate = $scope.$runAnimation(render)
+        animate = $scope.$runAnimation(renderer, render)
 
       toggleMic(chatRoom.muted.length > 0)
-      animate()  # start animation
+      animate() # start animation
+      return
 
     $scope.$listenObject(chatRoom, 'mute', toggleMic)
     $scope.$listenObject(chatRoom, 'add', createAvatar)
@@ -164,19 +186,22 @@ angular.module('AltexoApp')
       camera.updateProjectionMatrix()
 
       renderer.setSize(element.offsetWidth, element.offsetHeight)
+      return
 
     $scope.$listenDocument 'mousemove', (ev) ->
       mouseX = ev.clientX - windowHalfX
       mouseY = (ev.clientY - windowHalfY) * 0.2
+      return
 
     $scope.$listenDocument 'mousedown', (ev) ->
       mouse.x = ( ev.clientX / $window.innerWidth ) * 2 - 1
       mouse.y = -( ( ev.clientY / $window.innerHeight ) * 2 - 1 )
-      raycaster.setFromCamera(mouse, camera)
-      intersects = raycaster.intersectObjects(scene.children)
-      if intersects.length > 0
-        avatars.forEach (avatar) ->
-          avatar.objectsClicked(intersects)
+      # TODO: (sergey) temporary disable fullscreen (AL-343)
+      # raycaster.setFromCamera(mouse, camera)
+      # intersects = raycaster.intersectObjects(scene.children)
+      # if intersects.length > 0
+      #   avatars.forEach (avatar) ->
+      #     avatar.objectsClicked(intersects)
       return
 }
 
@@ -195,20 +220,9 @@ angular.module('AltexoApp')
         particle = new THREE.Sprite( material )
         particle.position.x = ix * separation - ( ( amountx * separation ) / 2 )
         particle.position.y = - 120
-        particle.position.z = iy * separation - ( ( amounty * separation ) / 2 )
+        particle.position.z = iy * separation - ( ( amounty * separation ) / 2 ) - Z_OFFSET
         particle.scale.x = particle.scale.y = 2
-
         scene.add(particle)
 
     return
-
-  createInfoDiv: ->
-    info = document.createElement( 'div' )
-    info.style.position = 'absolute'
-    info.style.top = '10px'
-    info.style.width = '100%'
-    info.style.textAlign = 'center'
-    info.innerHTML = '<a href="https://altexo.com" target="_blank">Altexo</a> demo'
-
-    return info
 }

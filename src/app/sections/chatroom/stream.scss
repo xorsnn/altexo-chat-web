@@ -22,7 +22,7 @@
     }
   }
 }
-// .stream {
+
 .logo_dark {
   position: fixed;
   z-index: 100;
@@ -64,4 +64,13 @@
   right: 20px;
   top: 20px;
 }
-// }
+
+.toggle-vr-btn.toggle-vr-btn--disabled {
+  background-color: rgba(0,0,0,0.12)!important;
+  color: rgba(0,0,0,0.38)!important;
+  cursor: default!important;
+
+  md-icon {
+    color: rgba(0,0,0,0.38)!important;
+  }
+}

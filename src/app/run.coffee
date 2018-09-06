@@ -40,7 +40,12 @@ angular.module('AltexoApp')
 
   return
 
-.run ($rootScope, $window, $document) ->
+.run ($rootScope, AlWebVR) ->
+  # NOTE: init webVR service
+  AlWebVR.init()
+  return
+
+.run ($rootScope, $window, $document, AlWebVR) ->
   # Bunch of helpers.
 
   $rootScope.$listenObject = (obj, name, handler) ->
@@ -57,14 +62,20 @@ angular.module('AltexoApp')
       $window.removeEventListener(name, handler)
     $window.addEventListener(name, handler, false)
 
-  $rootScope.$runAnimation = (render) ->
-    _rafid = null
-    this.$on '$destroy', ->
-      unless _rafid == null
-        cancelAnimationFrame(_rafid)
+  # $rootScope.$runAnimation = (render) ->
+  #   _rafid = null
+  #   this.$on '$destroy', ->
+  #     unless _rafid == null
+  #       cancelAnimationFrame(_rafid)
+  #   animate = ->
+  #     _rafid = requestAnimationFrame(animate)
+  #     render()
+
+  # TODO: ( sergey ) consider moving this to another place, it seems like
+  # rendering won't stop
+  $rootScope.$runAnimation = (renderer, renderFx) ->
     animate = ->
-      _rafid = requestAnimationFrame(animate)
-      render()
+      renderer.animate( renderFx )
 
   return
 
@@ -73,7 +84,7 @@ angular.module('AltexoApp')
   $rootScope.showVideoStash = (show) ->
     $document.find('#videostash')
       .css('display', if show then 'block' else 'none')
-  
+
   if DEBUG == 'true'
 
     # <Alt+Key Up> : show stash
@@ -83,5 +94,5 @@ angular.module('AltexoApp')
         if ev.altKey and ev.keyCode in [38, 40]
           $rootScope.showVideoStash(ev.keyCode == 38)
     }
-    
+
   return

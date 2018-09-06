@@ -12,26 +12,33 @@ module.exports = {
 
   define: (name, value) => ({
     plugins: [
-      new webpack.DefinePlugin({ [name]: JSON.stringify(value) })
+      new webpack.DefinePlugin({
+        [name]: JSON.stringify(value)
+      })
     ]
   }),
 
   copy: (from, to) => ({
     plugins: [
-      new CopyWebpackPlugin([{ from, to }], { copyUnmodified: true }),
+      new CopyWebpackPlugin([{
+        from,
+        to
+      }], {
+        copyUnmodified: true
+      }),
     ]
   }),
 
   setupCoffee: () => ({
     module: {
-      preLoaders: [{
+      rules: [{
+        enforce: 'pre',
         test: /\.coffee$/, // include .coffee files
         exclude: /node_modules|bower_components/, // exclude any and all files in the node_modules folder
         loader: 'coffeelint-loader'
-      }],
-      loaders: [{
+      }, {
         test: /\.coffee$/,
-        loader: 'ng-annotate!coffee-loader',
+        loader: 'ng-annotate-loader!coffee-loader',
         exclude: /node_modules|bower_components/
       }]
     }
@@ -39,19 +46,19 @@ module.exports = {
 
   setupScss: () => ({
     module: {
-      loaders: [{
+      rules: [{
         test: /\.scss$/,
-        loader: 'style!css!sass'
+        loader: 'style-loader!css-loader!sass-loader'
       }, {
         test: /\.css$/,
-        loader: "style!css"
+        loader: "style-loader!css-loader"
       }]
     }
   }),
 
   setupMedia: () => ({
     module: {
-      loaders: [{
+      rules: [{
         test: /\.(woff|woff2|ttf|eot|svg)(\?]?.*)?$/,
         loader: 'file-loader?name=res/[name].[ext]?[hash]'
       }, {
@@ -72,21 +79,21 @@ module.exports = {
 
   setupPug: (angularTemplates, root) => ({
     module: {
-      loaders: [{
+      rules: [{
         // don't touch angular templates
         test: /\.pug/,
         exclude: angularTemplates,
         loaders: [
-          'pug'
+          'pug-loader'
         ]
       }, {
         // only handle angular templates
         test: /\.pug$/,
         include: angularTemplates,
         loaders: [
-          'ngtemplate?requireAngular&relativeTo=/src/app/',
-          'html?root=' + root + '&attrs=img:src img:ng-src img:md-svg-src&interpolate',
-          'jade-html-loader'
+          'ngtemplate-loader?requireAngular&relativeTo=/src/app/',
+          'html-loader?root=' + root + '&attrs=img:src img:ng-src img:md-svg-src&interpolate',
+          'pug-html-loader'
         ]
       }]
     }
@@ -105,7 +112,7 @@ module.exports = {
 
   extractCss: (path) => ({
     module: {
-      loaders: [{
+      rules: [{
         test: /\.css$/,
         loader: ExtractTextPlugin.extract('style', 'css'),
         include: path
@@ -140,9 +147,6 @@ module.exports = {
   }),
 
   enableHotReloading: () => ({
-    entry: {
-      bundle: ['webpack/hot/dev-server']
-    },
     plugins: [
       new webpack.HotModuleReplacementPlugin()
     ]
@@ -159,7 +163,9 @@ module.exports = {
 
   clean: (path) => ({
     plugins: [
-      new CleanWebpackPlugin([path], { root: process.cwd() })
+      new CleanWebpackPlugin([path], {
+        root: process.cwd()
+      })
     ]
   }),
 };

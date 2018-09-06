@@ -1,4 +1,5 @@
 THREE = require('three')
+{ Z_OFFSET } = require('./al-video-stream.const.coffee')
 
 class AlHologramRenderer
 
@@ -8,14 +9,13 @@ class AlHologramRenderer
   HOLOGRAM_H: 480 / 3
 
   hologramShaders: {
-    frag: require('raw!./shaders/hologramRenderer.frag')
-    vert: require('raw!./shaders/hologramRenderer.vert')
-    fragReflection: require('raw!./shaders/hologramRendererReflection.frag')
-    vertReflection: require('raw!./shaders/hologramRendererReflection.vert')
+    frag: require('raw-loader!./shaders/hologramRenderer.frag')
+    vert: require('raw-loader!./shaders/hologramRenderer.vert')
+    fragReflection: require('raw-loader!./shaders/hologramRendererReflection.frag')
+    vertReflection: require('raw-loader!./shaders/hologramRendererReflection.vert')
   }
 
   constructor: (@rendererData, @scene) ->
-
     @_init()
     return
 
@@ -24,8 +24,8 @@ class AlHologramRenderer
     points = []
     width = @HOLOGRAM_W
     height = @HOLOGRAM_H
-    yAmount = 480 / 3
-    xAmount = 640 / 3
+    yAmount = 480
+    xAmount = 640
     COORD_MULTIPLIER = 1
     for y in [0...height] by height / yAmount
       row = []
@@ -106,7 +106,7 @@ class AlHologramRenderer
         hAmount: {type: 'f', value: @HOLOGRAM_H}
         modificationPosX: {type: 'f', value: @rendererData.modification.position.x}
         # modificationPosY: {type: 'f', value: @rendererData.modification.position.y}
-        # modificationPosZ: {type: 'f', value: @rendererData.modification.position.z}
+        modificationPosZ: {type: 'f', value: @rendererData.modification.position.z}
         # modificationRotationX: {type: 'f', value: @rendererData.modification.rotation.x}
         modificationRotationY: {type: 'f', value: @rendererData.modification.rotation.y}
         # modificationRotationZ: {type: 'f', value: @rendererData.modification.rotation.z}
@@ -122,7 +122,8 @@ class AlHologramRenderer
         new THREE.LineSegments( geometry, @rendererData.hologram.hologramMaterial )
     else
       @rendererData.hologram.mesh = \
-        new THREE.PointCloud( geometry, @rendererData.hologram.hologramMaterial )
+        new THREE.Points( geometry, @rendererData.hologram.hologramMaterial )
+    @rendererData.hologram.mesh.frustumCulled = false
 
     @rendererData.hologram.hologramReflectionMaterial = new THREE.ShaderMaterial({
       uniforms:
@@ -131,7 +132,7 @@ class AlHologramRenderer
         hAmount: {type: 'f', value: @HOLOGRAM_H}
         modificationPosX: {type: 'f', value: @rendererData.modification.position.x}
         # modificationPosY: {type: 'f', value: @rendererData.modification.position.y}
-        # modificationPosZ: {type: 'f', value: @rendererData.modification.position.z}
+        modificationPosZ: {type: 'f', value: @rendererData.modification.position.z}
         # modificationRotationX: {type: 'f', value: @rendererData.modification.rotation.x}
         modificationRotationY: {type: 'f', value: @rendererData.modification.rotation.y}
         # modificationRotationZ: {type: 'f', value: @rendererData.modification.rotation.z}
@@ -146,7 +147,8 @@ class AlHologramRenderer
         new THREE.LineSegments( geometry, @rendererData.hologram.hologramReflectionMaterial)
     else
       @rendererData.hologram.reflectionMesh = \
-        new THREE.PointCloud( geometry, @rendererData.hologram.hologramReflectionMaterial )
+        new THREE.Points( geometry, @rendererData.hologram.hologramReflectionMaterial )
+    @rendererData.hologram.reflectionMesh.frustumCulled = false
 
     return
 
