@@ -13,6 +13,10 @@ Holographic chat application. While video conferencing is somewhat mainstream, t
 Here is an example of WebVR client. Volumetric data is transmitted over the internet using WebRTC. The video is recorded using Samsung galaxy 7.
 ![WebVR altexto example](https://github.com/xorsnn/altexo-chat-web/blob/master/static/WebVR.gif)
 
+### Web client ###
+
+![Web client example](https://github.com/xorsnn/altexo-chat-web/blob/master/static/web.gif)
+
 ### Other resources ###
 See more demos and examples on the [youtube channel](https://youtu.be/hpWKITMRGRw)
 
