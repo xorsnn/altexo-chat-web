@@ -2,6 +2,11 @@
 
 Holographic chat application. While video conferencing is somewhat mainstream, the next major jump is to add a new dimension to make collaboration more authentic and fun. Using Altexo, you can communicate with holograms.
 
+## Other components ##
+
+- [altexo desktop application](https://github.com/xorsnn/altexo-desktop-app)
+- [altexo signal server](https://github.com/xorsnn/altexo-signal-server)
+
 ## Examples ##
 Here is an example of WebVR client. Volumetric data is transmitted over the internet using WebRTC. The video is recorded using Samsung galaxy 7.
 ![WebVR altexto example](https://github.com/xorsnn/altexo-chat-web/blob/master/static/WebVR.gif)
