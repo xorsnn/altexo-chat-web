@@ -16,3 +16,5 @@ bower install
 npm run build
 ```
 
+## Desktop app ##
+The [desktop application](https://github.com/xorsnn/altexo-desktop-app) is responsible for interacting with the equipment such as Microsoft Kinect or Intel RealSense and encoding of volumetric data.
