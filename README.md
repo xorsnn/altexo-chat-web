@@ -14,7 +14,7 @@ Here is an example of WebVR client. Volumetric data is transmitted over the inte
 ![WebVR altexto example](https://github.com/xorsnn/altexo-chat-web/blob/master/static/WebVR.gif)
 
 ### Web client ###
-Web client works best on Google Chrome
+Web client works best on Google Chrome.
 ![Web client example](https://github.com/xorsnn/altexo-chat-web/blob/master/static/web.gif)
 
 ### Other resources ###
