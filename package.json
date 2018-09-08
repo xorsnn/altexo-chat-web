@@ -1,6 +1,6 @@
 {
   "name": "AlteXo",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "altexo site",
   "scripts": {
     "start": "node server.js",

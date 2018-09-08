@@ -1,0 +1,5 @@
+altexo_frontend_chat_build:
+  build: .
+  container_name: altexo-frontend-chat
+  ports:
+    - "8080:80"
