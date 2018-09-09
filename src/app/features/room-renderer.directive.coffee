@@ -8,7 +8,7 @@ p5 = require('p5')
 require('p5/lib/addons/p5.dom')
 require('p5/lib/addons/p5.sound')
 
-AltexoAvatar = require './video_stream/al-avatar.class.coffee'
+AlAvatar = require './video_stream/al-avatar.class.coffee'
 { Z_OFFSET } = require './video_stream/al-video-stream.const.coffee'
 
 angular.module('AltexoApp')
@@ -75,7 +75,7 @@ angular.module('AltexoApp')
       seatNumber = chatRoom.getSeat(contact)
       media = $mdMedia('xs')
 
-      avatar = new AltexoAvatar().setSeat(seatNumber, media).bind {
+      avatar = new AlAvatar().setSeat(seatNumber, media).bind {
         video: chatRoom.selectVideoElement(contact)
         scene, camera
       }

@@ -101,14 +101,6 @@ angular.module('AltexoApp')
         })
         $mdDialog.show(alertDialog)
         return
-      # unless (chrome and chrome.app and chrome.app.isInstalled)
-      #   alertDialog = $mdDialog.alert({
-      #     title: 'No extension detected'
-      #     htmlContent: '<button>Add to Chrome</button>'
-      #     ok: 'Ok'
-      #   })
-      #   $mdDialog.show(alertDialog)
-      #   return
       unless ScreenSharingExtension.isInstalled()
         confirmDialog = $mdDialog.confirm({
           title: 'No extension detected'
