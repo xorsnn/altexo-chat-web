@@ -2,6 +2,9 @@
 
 Holographic chat application. While video conferencing is somewhat mainstream, the next major jump is to add a new dimension to make collaboration more authentic and fun. Using Altexo, you can communicate with holograms.
 
+## Docs ##
+- [docs and general info](https://github.com/xorsnn/altexo-docs)
+
 ## Other components ##
 
 - [altexo desktop application](https://github.com/xorsnn/altexo-desktop-app)
